@@ -1,0 +1,175 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===========================================
+   GLOBALS.CSS - Minimal Base Styles
+
+   This file provides ONLY structural defaults.
+   All visual identity (colors, effects, animations)
+   should be defined in theme.css based on PAGE_DESIGN.md
+   =========================================== */
+
+@layer base {
+  /* Reset heading sizes to allow custom styling */
+  h1, h2, h3, h4, h5, h6 {
+    font-size: unset;
+    font-weight: unset;
+  }
+
+  /* ========================================
+     CSS VARIABLES - Neutral Defaults
+     These should be OVERRIDDEN in theme.css
+     ======================================== */
+  :root {
+    /* Layout */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 10%;
+
+    /* Card / Surface */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+
+    /* Popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+
+    /* Primary - OVERRIDE IN theme.css */
+    --primary: 0 0% 20%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - OVERRIDE IN theme.css */
+    --secondary: 0 0% 40%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Muted */
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    /* Accent - OVERRIDE IN theme.css */
+    --accent: 0 0% 30%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Border / Input */
+    --border: 0 0% 90%;
+    --input: 0 0% 96%;
+    --ring: 0 0% 20%;
+
+    /* Radius */
+    --radius: 0.5rem;
+
+    /* Semantic - OVERRIDE IN theme.css */
+    --success: 150 60% 45%;
+    --warning: 45 100% 55%;
+    --error: 0 70% 55%;
+  }
+
+  /* Dark mode defaults - OVERRIDE IN theme.css */
+  [data-theme='dark'] {
+    --background: 0 0% 8%;
+    --foreground: 0 0% 95%;
+
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 0 0% 80%;
+    --primary-foreground: 0 0% 10%;
+
+    --secondary: 0 0% 60%;
+    --secondary-foreground: 0 0% 10%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 0 0% 70%;
+    --accent-foreground: 0 0% 10%;
+
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 18%;
+    --input: 0 0% 15%;
+    --ring: 0 0% 80%;
+
+    --success: 150 60% 35%;
+    --warning: 45 90% 45%;
+    --error: 0 60% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground min-h-[100vh] flex flex-col;
+    font-family: var(--font-space-grotesk), system-ui, sans-serif;
+  }
+  code, pre, kbd, samp {
+    font-family: var(--font-mono), ui-monospace, monospace;
+  }
+}
+
+/* Theme loading transition */
+html {
+  opacity: 0;
+}
+
+html[data-theme='dark'],
+html[data-theme='light'] {
+  opacity: initial;
+}
+
+/* Fallback for when no theme is set yet */
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) {
+    opacity: initial;
+  }
+}
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) {
+    opacity: initial;
+  }
+}
+
+/* ==========================================
+   MINIMAL UTILITY CLASSES
+   Only structural helpers - no visual effects
+   ========================================== */
+
+@layer components {
+  /* Container for centered content */
+  .content-container {
+    @apply container mx-auto px-4;
+  }
+
+  /* Basic card structure (no visual effects) */
+  .card-base {
+    @apply p-6 rounded-lg border bg-card text-card-foreground;
+  }
+
+  /* Section padding */
+  .section-padding {
+    @apply py-16 md:py-24;
+  }
+}
+
+/* ==========================================
+   REDUCED MOTION SUPPORT
+   Respect user preferences
+   ========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

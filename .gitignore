@@ -1,0 +1,63 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+build/
+dist/
+.next/
+out/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Payload CMS
+media/
+public/media/*
+!public/media/seed/
+
+# Generated files
+public/robots.txt
+public/sitemap*.xml
+*.tsbuildinfo
+
+# Testing
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+coverage/
+
+# IDE & Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Deployment
+.vercel/
+.turbo/
+
+# Cache
+.cache/
+.eslintcache
+
+# Misc
+*.pem
+
+docs-private

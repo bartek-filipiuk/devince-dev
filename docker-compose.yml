@@ -1,0 +1,24 @@
+# Development Docker Compose for Devince
+# PostgreSQL runs on port 5436 to avoid conflicts with other projects
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: devince_db
+    restart: unless-stopped
+    ports:
+      - "5436:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: payload
+    volumes:
+      - devince_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  devince_postgres_data:
