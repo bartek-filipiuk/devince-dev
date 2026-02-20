@@ -1,159 +1,115 @@
-# Deployment Guide: Next.js + Payload CMS to CapRover
+# Deployment Guide: devince.dev
 
-## Quick Deploy Checklist
+## Infrastructure
 
-```bash
-# 1. Create database
-ssh root@SERVER_IP 'docker exec -it $(docker ps -q -f name=srv-captain--postgres) psql -U USER -d DB -c "CREATE DATABASE APP_NAME_payload;"'
+| Component | Details |
+|-----------|---------|
+| **Server** | Hetzner AX41 — 12 CPU, 64GB RAM, 512GB NVMe |
+| **IP** | `65.109.60.26` |
+| **SSH** | `ssh hetzner-ax41-1` (configured in `~/.ssh/config`) |
+| **Platform** | Coolify v4 (self-hosted) |
+| **Coolify UI** | https://cool.qaci.pl |
+| **Proxy** | Traefik v3.6 (managed by Coolify) |
+| **Domain** | https://devince.dev |
+| **SSL** | Let's Encrypt (auto-renewed by Traefik) |
 
-# 2. Create app + set port + env vars in ONE call
-TOKEN=$(curl -s -X POST https://captain.DOMAIN/api/v2/login \
-  -H "Content-Type: application/json" \
-  -d '{"password":"CAPROVER_PASSWORD"}' | jq -r '.data.token')
+## How Deployment Works
 
-curl -X POST https://captain.DOMAIN/api/v2/user/apps/appDefinitions/register \
-  -H "Content-Type: application/json" \
-  -H "x-captain-auth: $TOKEN" \
-  -d '{"appName":"APP_NAME","hasPersistentData":true}'
-
-curl -X POST https://captain.DOMAIN/api/v2/user/apps/appDefinitions/update \
-  -H "Content-Type: application/json" \
-  -H "x-captain-auth: $TOKEN" \
-  -d '{
-    "appName":"APP_NAME",
-    "containerHttpPort":3000,
-    "instanceCount":1,
-    "volumes":[
-      {"hostPath":"","containerPath":"/app/public/media","volumeName":"APP_NAME-media"}
-    ],
-    "envVars":[
-      {"key":"DATABASE_URI","value":"postgresql://USER:PASS@srv-captain--postgres:5432/APP_NAME_payload"},
-      {"key":"PAYLOAD_SECRET","value":"YOUR_SECRET_KEY_MIN_32_CHARS"},
-      {"key":"NEXT_PUBLIC_SERVER_URL","value":"https://YOUR_DOMAIN"},
-      {"key":"NEXT_PUBLIC_SITE_NAME","value":"Site Name"},
-      {"key":"PREVIEW_SECRET","value":"preview-secret"}
-    ]
-  }'
-
-# 3. Deploy (tarball method - no git required)
-caprover deploy --tarFile deploy.tar --caproverUrl https://captain.DOMAIN --caproverPassword PASS --appName APP_NAME
-
-# 4. Enable SSL + custom domain
-curl -X POST https://captain.DOMAIN/api/v2/user/apps/appDefinitions/enablebasedomainssl \
-  -H "Content-Type: application/json" -H "x-captain-auth: $TOKEN" \
-  -d '{"appName":"APP_NAME"}'
-
-curl -X POST https://captain.DOMAIN/api/v2/user/apps/appDefinitions/customdomain \
-  -H "Content-Type: application/json" -H "x-captain-auth: $TOKEN" \
-  -d '{"appName":"APP_NAME","customDomain":"YOUR_DOMAIN"}'
-
-curl -X POST https://captain.DOMAIN/api/v2/user/apps/appDefinitions/enablecustomdomainssl \
-  -H "Content-Type: application/json" -H "x-captain-auth: $TOKEN" \
-  -d '{"appName":"APP_NAME","customDomain":"YOUR_DOMAIN"}'
-
-# 5. Seed database
-curl https://YOUR_DOMAIN/next/seed
 ```
+git push main → GitHub Actions → Coolify API → Docker build → rolling deploy
+```
+
+1. Push or merge to `main` triggers `.github/workflows/deploy.yml`
+2. GitHub Actions calls Coolify API to queue a deployment
+3. Coolify pulls the repo, builds Docker image from `Dockerfile`
+4. Coolify does a rolling update — new container starts, old one stops
+5. Build takes ~4 minutes, zero downtime
+
+Manual trigger is also available via GitHub Actions → "Run workflow".
+
+## Coolify Resources
+
+| Resource | UUID | Type |
+|----------|------|------|
+| **Project** | `agw8kgc4ksw0gswk004gwwow` | Coolify project |
+| **Application** | `nwgk0s00440skc0kwsskw4w4` | Dockerfile app |
+| **Database** | `yk8ckw80gwww4owo0088wswg` | PostgreSQL 16 |
+
+## GitHub Secrets
+
+These are configured in the repo `bartek-filipiuk/devince-dev`:
+
+| Secret | Purpose |
+|--------|---------|
+| `COOLIFY_API_TOKEN` | Coolify API Bearer token |
+| `COOLIFY_URL` | `https://cool.qaci.pl` |
+| `COOLIFY_APP_UUID` | `nwgk0s00440skc0kwsskw4w4` |
+
+## Environment Variables (in Coolify)
+
+Set via Coolify UI or API. All are both build-time and runtime:
+
+| Variable | Example | Notes |
+|----------|---------|-------|
+| `DATABASE_URI` | `postgresql://devince:...@yk8ckw80gwww4owo0088wswg:5432/payload` | Internal Docker hostname |
+| `PAYLOAD_SECRET` | `DevincePayload2026SecretKey9xMnP` | Min 32 characters |
+| `NEXT_PUBLIC_SERVER_URL` | `https://devince.dev` | Full URL with https |
+| `NEXT_PUBLIC_SITE_NAME` | `Devince` | Displayed in header/SEO |
+| `PREVIEW_SECRET` | `DevincePreview2026sK8nR` | For draft previews |
+
+## Admin Access
+
+| | |
+|-|-|
+| **Admin panel** | https://devince.dev/admin |
+| **Email** | `admin@example.com` |
+| **Password** | `admin123` |
+
+Change these after first login.
 
 ---
 
-## Critical Lessons Learned
+## Common Operations
 
-### 1. Container HTTP Port Must Be 3000
+### Deploy manually (without push)
 
-**Problem:** CapRover defaults to port 80, but Next.js runs on 3000.
-
-**Solution:** Always set `containerHttpPort: 3000` when creating/updating the app.
-
-**Gotcha:** Updating environment variables through API **resets the port to 80**. Always include `containerHttpPort: 3000` in every update call.
-
-### 2. Instance Count Resets to 0
-
-**Problem:** After API updates, the service sometimes scales to 0 instances.
-
-**Solution:** Always include `"instanceCount": 1` in update API calls.
-
-### 3. Database Schema in Production
-
-**Problem:** `push: true` in drizzle config only works in dev mode. Standalone Next.js builds don't support runtime schema push.
-
-**Solutions (pick one):**
-- **Option A:** Export schema from local, import to production:
-  ```bash
-  # Local: export schema
-  pg_dump -U postgres -d payload --schema-only > schema.sql
-
-  # Production: import schema
-  ssh root@SERVER 'docker exec -i $(docker ps -q -f name=srv-captain--postgres) psql -U USER -d APP_payload' < schema.sql
-  ```
-- **Option B:** Use Payload migrations (requires migration files in `src/migrations/`)
-
-### 4. generateStaticParams Breaks Docker Build
-
-**Problem:** Next.js tries to connect to database during build when using `generateStaticParams()`.
-
-**Solution:** Remove `generateStaticParams` and add `export const dynamic = 'force-dynamic'` to all database-dependent pages.
-
-Files typically affected:
-- `src/app/(frontend)/[slug]/page.tsx`
-- `src/app/(frontend)/posts/[slug]/page.tsx`
-- `src/app/(frontend)/posts/page/[pageNumber]/page.tsx`
-- `src/app/(frontend)/program/[slug]/page.tsx`
-- `src/app/(frontend)/projects/[slug]/page.tsx`
-- Any locale re-export files (e.g., `en/*/page.tsx`)
-
-### 5. Tarball Deployment (No Git Required)
-
-**Problem:** Project may not be a git repository.
-
-**Solution:** Use tarball deployment:
 ```bash
-# Create tarball (respects .gitignore)
-tar -cvf deploy.tar --exclude=node_modules --exclude=.next --exclude=.git .
+# Via GitHub Actions UI
+gh workflow run deploy.yml -R bartek-filipiuk/devince-dev
 
-# Deploy
-caprover deploy --tarFile deploy.tar --caproverUrl URL --caproverPassword PASS --appName APP
+# Via Coolify API directly
+curl -H "Authorization: Bearer $COOLIFY_TOKEN" \
+  "https://cool.qaci.pl/api/v1/deploy?uuid=nwgk0s00440skc0kwsskw4w4"
 ```
 
-### 6. TypeScript: Image IDs Are Numbers
+### View deployment logs
 
-**Problem:** PostgreSQL uses numeric IDs. TypeScript may expect `string | number`.
+```bash
+# Latest deployment status
+ssh hetzner-ax41-1 "docker exec coolify-db psql -U coolify -d coolify \
+  -c \"SELECT deployment_uuid, status, created_at FROM application_deployment_queues \
+  WHERE application_name='devince-dev' ORDER BY created_at DESC LIMIT 5;\""
 
-**Solution:** Use `number` type for image IDs in seed data:
-```typescript
-let postImage: { id: number } | null = null
+# App container logs
+ssh hetzner-ax41-1 'docker logs --tail 50 $(docker ps -q -f "name=nwgk0s00440skc0kwsskw4w4") 2>&1'
 ```
 
-### 7. Internal Docker Hostname
+### Restart application
 
-**Problem:** Database connection fails with external hostname.
-
-**Solution:** Use internal Docker service name:
+```bash
+ssh hetzner-ax41-1 'docker restart $(docker ps -q -f "name=nwgk0s00440skc0kwsskw4w4")'
 ```
-postgresql://USER:PASS@srv-captain--postgres:5432/DATABASE
+
+### Seed database
+
+```bash
+curl -X POST https://devince.dev/next/seed
 ```
-NOT `localhost` or external IP.
 
----
+### Access database
 
-## Dockerfile Requirements
-
-```dockerfile
-# Key sections for Payload CMS
-
-# Build args for Next.js build
-ARG DATABASE_URI
-ARG PAYLOAD_SECRET
-ARG NEXT_PUBLIC_SERVER_URL
-ARG NEXT_PUBLIC_SITE_NAME
-
-# Runner stage - copy for migrations
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/src ./src
-COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
-
-# Run migrations then start
-CMD npx payload migrate --config ./src/payload.config.ts 2>/dev/null || echo "Migration completed or skipped" && HOSTNAME="0.0.0.0" node server.js
+```bash
+ssh hetzner-ax41-1 "docker exec -it yk8ckw80gwww4owo0088wswg psql -U devince -d payload"
 ```
 
 ---
@@ -162,89 +118,50 @@ CMD npx payload migrate --config ./src/payload.config.ts 2>/dev/null || echo "Mi
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| 502 Bad Gateway | Wrong port (80 vs 3000) | Set `containerHttpPort: 3000` |
-| 502 Bad Gateway | Service has 0 instances | `docker service scale srv-captain--APP=1` |
-| 502 "Host not found" | DNS resolution issue | Restart nginx: `docker service update --force captain-nginx` |
-| "missing secret key" | Env vars not set | Re-set env vars via API with port + instanceCount |
-| Build fails on generateStaticParams | DB not available at build | Use `dynamic = 'force-dynamic'` |
-| "relation does not exist" | Schema not created | Import schema or run migrations |
+| 503 on domain | App not deployed or Traefik has no route | Check Coolify, redeploy |
+| 500 on pages | Database tables missing | Restart container (triggers `push:true` schema sync) |
+| "relation does not exist" | Schema not pushed | Restart container or run `drizzle-kit push` manually |
+| Build fails "could not read Username" | Repo is private | Make repo public or add deploy key in Coolify |
+| Deploy queued but nothing happens | Coolify worker stuck | `ssh hetzner-ax41-1 "docker restart coolify"` |
+| SSL certificate error | Cert not issued yet | Wait 1-2 min after first deploy, Traefik auto-issues |
 
----
+### Manual schema push (emergency)
 
-## Useful Commands
+If `push:true` fails to sync schema on startup:
 
 ```bash
-# View logs
-ssh root@SERVER 'docker service logs srv-captain--APP --tail 50'
+# Generate schema file
+ssh hetzner-ax41-1 'docker exec $(docker ps -q -f "name=nwgk0s00440skc0kwsskw4w4") \
+  npx payload generate:db-schema --config ./src/payload.config.ts'
 
-# Restart app
-ssh root@SERVER 'docker service update --force srv-captain--APP'
-
-# Check service status
-ssh root@SERVER 'docker service ps srv-captain--APP'
-
-# Reload nginx config
-ssh root@SERVER 'docker exec $(docker ps -q -f name=captain-nginx) nginx -s reload'
-
-# Check nginx upstream config
-ssh root@SERVER 'docker exec $(docker ps -q -f name=captain-nginx) cat /etc/nginx/conf.d/captain.conf | grep -A 10 "server_name.*YOUR_DOMAIN"'
-
-# Scale service
-ssh root@SERVER 'docker service scale srv-captain--APP=1'
+# Push schema to DB
+ssh hetzner-ax41-1 'docker exec $(docker ps -q -f "name=nwgk0s00440skc0kwsskw4w4") \
+  npx drizzle-kit push \
+  --dialect=postgresql \
+  --url="postgresql://devince:DevinceDb2026xR7nQ@yk8ckw80gwww4owo0088wswg:5432/payload" \
+  --schema=/app/src/payload-generated-schema.ts \
+  --force'
 ```
 
 ---
 
-### 8. Persistent Volume Overwrites Seed Images
+## Architecture Notes
 
-**Problem:** Mounting a persistent volume to `/app/public/media` overwrites seed images from Docker image.
+### Database schema sync
 
-**Solution:** Copy seed images to a separate location in Dockerfile:
-```dockerfile
-# Copy seed images to separate location (volume mount overwrites /app/public/media)
-COPY --from=builder /app/public/media/seed ./seed-images
-```
+Payload CMS uses `push: true` in `src/payload.config.ts` with `drizzle-kit` (production dependency) to auto-sync the database schema at runtime. This means:
 
-Then update seed code to check both locations:
-```typescript
-const dockerSeedDir = path.join(process.cwd(), 'seed-images')
-const localSeedDir = path.join(process.cwd(), 'public/media/seed')
-const seedImagesDir = fs.existsSync(dockerSeedDir) ? dockerSeedDir : localSeedDir
-```
+- **No manual migrations needed** — schema changes are applied when Payload initializes
+- `drizzle-kit` must stay in `dependencies` (not `devDependencies`) for this to work in Docker
+- The `Dockerfile` CMD also runs `npx payload migrate` before starting, but this is a fallback for explicit migration files
 
-### 9. Tarball Size Limit
+### Docker build
 
-**Problem:** CapRover has upload size limits (~100MB). Generated media files make tarball too large.
+Multi-stage Dockerfile:
+1. **deps** — installs all node_modules (including devDependencies for build)
+2. **builder** — builds Next.js standalone with env vars as build args
+3. **runner** — minimal production image with standalone build + full node_modules (needed for Payload runtime + drizzle-kit)
 
-**Solution:** Exclude generated images from tarball:
-```bash
-tar -cvf deploy.tar \
-  --exclude=node_modules \
-  --exclude=.next \
-  --exclude=.git \
-  --exclude='public/media/*.png' \
-  --exclude='public/media/*.jpg' \
-  .
-```
+### Seed images
 
----
-
-## Files Required
-
-| File | Purpose |
-|------|---------|
-| `captain-definition` | `{"schemaVersion": 2, "dockerfilePath": "./Dockerfile"}` |
-| `Dockerfile` | Multi-stage build with migration support |
-| `.dockerignore` | Exclude node_modules, .next, .git |
-
----
-
-## Environment Variables
-
-| Variable | Example | Notes |
-|----------|---------|-------|
-| DATABASE_URI | `postgresql://user:pass@srv-captain--postgres:5432/db` | Use internal Docker hostname |
-| PAYLOAD_SECRET | `YourSecretKey32CharsMinimum` | Min 32 characters |
-| NEXT_PUBLIC_SERVER_URL | `https://yourdomain.com` | Full URL with https |
-| NEXT_PUBLIC_SITE_NAME | `Site Name` | Displayed in header/SEO |
-| PREVIEW_SECRET | `any-secret-string` | For draft previews |
+Seed images are copied to `/app/seed-images` in Docker because a volume mount on `/app/public/media` would overwrite them. The seed code checks both locations.
