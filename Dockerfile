@@ -76,4 +76,5 @@ EXPOSE 3000
 ENV PORT 3000
 
 # Run migrations then start the server
-CMD npx payload migrate --config ./src/payload.config.ts 2>/dev/null || echo "Migration completed or skipped" && HOSTNAME="0.0.0.0" node server.js
+# Note: push:true in payload.config.ts handles schema sync via drizzle-kit
+CMD npx payload migrate --config ./src/payload.config.ts || echo "Migration skipped"; HOSTNAME="0.0.0.0" node server.js
