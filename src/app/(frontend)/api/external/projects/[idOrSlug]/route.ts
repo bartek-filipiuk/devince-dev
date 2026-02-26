@@ -4,10 +4,12 @@ import { createErrorResponse, createSuccessResponse, handleRouteError } from '..
 import {
   getPayloadClient,
   parseLocale,
+  validateContentFormat,
   resolveContent,
   resolveDocId,
   isErrorResponse,
   toDocSummary,
+  validateUrl,
 } from '../../_lib/payload.js'
 import type { CreateProjectRequest } from '../../_lib/types.js'
 
@@ -28,6 +30,7 @@ export async function PATCH(
   try {
     const { idOrSlug } = await params
     const locale = parseLocale(request)
+    if (isErrorResponse(locale)) return locale
 
     const payload = await getPayloadClient()
 
@@ -41,23 +44,38 @@ export async function PATCH(
     if (body.heroImage !== undefined) data.heroImage = body.heroImage
     if (body.meta !== undefined) data.meta = body.meta
     if (body.publishedAt !== undefined) data.publishedAt = body.publishedAt
-    if (body.githubUrl !== undefined) data.githubUrl = body.githubUrl
-    if (body.productionUrl !== undefined) data.productionUrl = body.productionUrl
+
+    if (body.githubUrl !== undefined) {
+      const urlError = validateUrl(body.githubUrl, 'githubUrl')
+      if (urlError) return urlError
+      data.githubUrl = body.githubUrl
+    }
+    if (body.productionUrl !== undefined) {
+      const urlError = validateUrl(body.productionUrl, 'productionUrl')
+      if (urlError) return urlError
+      data.productionUrl = body.productionUrl
+    }
 
     if (body.description !== undefined) {
-      const description = await resolveContent(
-        body.description,
-        body.contentFormat ?? 'markdown',
-        'description',
-      )
+      const contentFormat = validateContentFormat(body.contentFormat)
+      if (isErrorResponse(contentFormat)) return contentFormat
+
+      const description = await resolveContent(body.description, contentFormat, 'description')
       if (isErrorResponse(description)) return description
       data.description = description
     }
 
     if (body.technologies !== undefined) {
-      data.technologies = Array.isArray(body.technologies)
-        ? body.technologies.map((name) => ({ name }))
-        : []
+      if (
+        !Array.isArray(body.technologies) ||
+        body.technologies.some((t) => typeof t !== 'string')
+      ) {
+        return createErrorResponse(
+          'VALIDATION_ERROR',
+          'technologies must be an array of strings',
+        )
+      }
+      data.technologies = body.technologies.map((name) => ({ name }))
     }
 
     const project = await payload.update({
@@ -65,7 +83,7 @@ export async function PATCH(
       id: projectId,
       data,
       locale,
-      draft: data._status === 'draft',
+      ...(body._status !== undefined ? { draft: body._status === 'draft' } : {}),
     })
 
     return createSuccessResponse(toDocSummary(project))

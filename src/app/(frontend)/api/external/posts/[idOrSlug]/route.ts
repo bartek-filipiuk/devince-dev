@@ -5,6 +5,7 @@ import { resolveCategories } from '../../_lib/categories.js'
 import {
   getPayloadClient,
   parseLocale,
+  validateContentFormat,
   resolveContent,
   resolveDocId,
   isErrorResponse,
@@ -29,6 +30,7 @@ export async function PATCH(
   try {
     const { idOrSlug } = await params
     const locale = parseLocale(request)
+    if (isErrorResponse(locale)) return locale
 
     const payload = await getPayloadClient()
 
@@ -45,16 +47,24 @@ export async function PATCH(
     if (body._status !== undefined) data._status = body._status
 
     if (body.content !== undefined) {
-      const content = await resolveContent(
-        body.content,
-        body.contentFormat ?? 'markdown',
-        'content',
-      )
+      const contentFormat = validateContentFormat(body.contentFormat)
+      if (isErrorResponse(contentFormat)) return contentFormat
+
+      const content = await resolveContent(body.content, contentFormat, 'content')
       if (isErrorResponse(content)) return content
       data.content = content
     }
 
     if (body.categories !== undefined) {
+      if (
+        !Array.isArray(body.categories) ||
+        body.categories.some((cat) => typeof cat !== 'number' && typeof cat !== 'string')
+      ) {
+        return createErrorResponse(
+          'VALIDATION_ERROR',
+          'categories must be an array of numbers or strings',
+        )
+      }
       data.categories = body.categories.length
         ? await resolveCategories(payload, body.categories)
         : []
@@ -65,7 +75,7 @@ export async function PATCH(
       id: postId,
       data,
       locale,
-      draft: data._status === 'draft',
+      ...(body._status !== undefined ? { draft: body._status === 'draft' } : {}),
     })
 
     return createSuccessResponse(toDocSummary(post))

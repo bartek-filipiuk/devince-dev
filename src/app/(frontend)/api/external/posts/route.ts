@@ -5,6 +5,7 @@ import { resolveCategories } from '../_lib/categories.js'
 import {
   getPayloadClient,
   parseLocale,
+  validateContentFormat,
   resolveContent,
   isErrorResponse,
   toDocSummary,
@@ -24,6 +25,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const locale = parseLocale(request)
+    if (isErrorResponse(locale)) return locale
 
     if (!body.title) {
       return createErrorResponse('VALIDATION_ERROR', 'title is required')
@@ -32,18 +34,29 @@ export async function POST(request: NextRequest) {
       return createErrorResponse('VALIDATION_ERROR', 'content is required')
     }
 
-    const content = await resolveContent(
-      body.content,
-      body.contentFormat ?? 'markdown',
-      'content',
-    )
+    const contentFormat = validateContentFormat(body.contentFormat)
+    if (isErrorResponse(contentFormat)) return contentFormat
+
+    const content = await resolveContent(body.content, contentFormat, 'content')
     if (isErrorResponse(content)) return content
 
     const payload = await getPayloadClient()
 
-    const categoryIds = body.categories?.length
-      ? await resolveCategories(payload, body.categories)
-      : undefined
+    let categoryIds: number[] | undefined
+    if (body.categories !== undefined) {
+      if (
+        !Array.isArray(body.categories) ||
+        body.categories.some((cat) => typeof cat !== 'number' && typeof cat !== 'string')
+      ) {
+        return createErrorResponse(
+          'VALIDATION_ERROR',
+          'categories must be an array of numbers or strings',
+        )
+      }
+      categoryIds = body.categories.length
+        ? await resolveCategories(payload, body.categories)
+        : []
+    }
 
     const data: Record<string, unknown> = {
       title: body.title,

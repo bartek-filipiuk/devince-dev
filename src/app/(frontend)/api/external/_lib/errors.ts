@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-type ErrorCode =
+export type ErrorCode =
   | 'AUTH_MISSING'
   | 'AUTH_INVALID'
   | 'SERVICE_UNAVAILABLE'
@@ -8,7 +8,7 @@ type ErrorCode =
   | 'NOT_FOUND'
   | 'INTERNAL_ERROR'
 
-const ERROR_STATUS: Record<ErrorCode, number> = {
+export const ERROR_STATUS: Record<ErrorCode, number> = {
   AUTH_MISSING: 401,
   AUTH_INVALID: 401,
   SERVICE_UNAVAILABLE: 503,
@@ -34,6 +34,5 @@ export function createSuccessResponse(data: Record<string, unknown> | object, st
 
 export function handleRouteError(context: string, error: unknown) {
   console.error(`${context}:`, error)
-  // Never leak internal error details to callers
   return createErrorResponse('INTERNAL_ERROR', `Failed to ${context.toLowerCase()}`)
 }

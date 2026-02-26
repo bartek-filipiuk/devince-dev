@@ -8,7 +8,7 @@ REST API enabling AI agents (Claude, etc.) to programmatically create and update
 
 All endpoints require a static Bearer token via the `Authorization` header.
 
-```
+```http
 Authorization: Bearer <EXTERNAL_API_TOKEN>
 ```
 

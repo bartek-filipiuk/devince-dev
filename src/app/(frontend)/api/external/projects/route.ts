@@ -4,9 +4,11 @@ import { createErrorResponse, createSuccessResponse, handleRouteError } from '..
 import {
   getPayloadClient,
   parseLocale,
+  validateContentFormat,
   resolveContent,
   isErrorResponse,
   toDocSummary,
+  validateUrl,
 } from '../_lib/payload.js'
 import type { CreateProjectRequest } from '../_lib/types.js'
 
@@ -23,6 +25,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const locale = parseLocale(request)
+    if (isErrorResponse(locale)) return locale
 
     if (!body.title) {
       return createErrorResponse('VALIDATION_ERROR', 'title is required')
@@ -31,12 +34,32 @@ export async function POST(request: NextRequest) {
       return createErrorResponse('VALIDATION_ERROR', 'description is required')
     }
 
-    const description = await resolveContent(
-      body.description,
-      body.contentFormat ?? 'markdown',
-      'description',
-    )
+    const contentFormat = validateContentFormat(body.contentFormat)
+    if (isErrorResponse(contentFormat)) return contentFormat
+
+    const description = await resolveContent(body.description, contentFormat, 'description')
     if (isErrorResponse(description)) return description
+
+    if (body.githubUrl) {
+      const urlError = validateUrl(body.githubUrl, 'githubUrl')
+      if (urlError) return urlError
+    }
+    if (body.productionUrl) {
+      const urlError = validateUrl(body.productionUrl, 'productionUrl')
+      if (urlError) return urlError
+    }
+
+    if (body.technologies !== undefined) {
+      if (
+        !Array.isArray(body.technologies) ||
+        body.technologies.some((t) => typeof t !== 'string')
+      ) {
+        return createErrorResponse(
+          'VALIDATION_ERROR',
+          'technologies must be an array of strings',
+        )
+      }
+    }
 
     const payload = await getPayloadClient()
 

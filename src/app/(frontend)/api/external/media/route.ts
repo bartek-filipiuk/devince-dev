@@ -20,7 +20,12 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
     const uploaded = formData.get('file')
-    const alt = formData.get('alt') as string | null
+    const rawAlt = formData.get('alt')
+
+    if (rawAlt !== null && typeof rawAlt !== 'string') {
+      return createErrorResponse('VALIDATION_ERROR', 'alt must be a string')
+    }
+    const alt = rawAlt
 
     if (!uploaded || !(uploaded instanceof Blob)) {
       return createErrorResponse('VALIDATION_ERROR', 'file field is required')

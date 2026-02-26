@@ -13,12 +13,29 @@ export async function getPayloadClient(): Promise<Payload> {
   return getPayload({ config: configPromise })
 }
 
-export function parseLocale(request: NextRequest): 'pl' | 'en' {
+export function parseLocale(request: NextRequest): 'pl' | 'en' | ErrorResponse {
   const locale = request.nextUrl.searchParams.get('locale')
-  if (locale && (VALID_LOCALES as readonly string[]).includes(locale)) {
+  if (!locale) return 'pl'
+  if ((VALID_LOCALES as readonly string[]).includes(locale)) {
     return locale as 'pl' | 'en'
   }
-  return 'pl'
+  return createErrorResponse(
+    'VALIDATION_ERROR',
+    `Invalid locale "${locale}". Allowed: ${VALID_LOCALES.join(', ')}`,
+  )
+}
+
+export function validateContentFormat(
+  contentFormat: string | undefined,
+): ContentFormat | ErrorResponse {
+  const format = contentFormat ?? 'markdown'
+  if (format !== 'markdown' && format !== 'lexical') {
+    return createErrorResponse(
+      'VALIDATION_ERROR',
+      'contentFormat must be "markdown" or "lexical"',
+    )
+  }
+  return format
 }
 
 /**
@@ -40,7 +57,7 @@ export async function resolveContent(
     return markdownToLexical(raw)
   }
 
-  if (typeof raw !== 'object') {
+  if (raw === null || Array.isArray(raw) || typeof raw !== 'object') {
     return createErrorResponse(
       'VALIDATION_ERROR',
       `${fieldName} must be an object when contentFormat is "lexical"`,
@@ -72,8 +89,11 @@ export async function resolveDocId(
     const id = parseInt(idOrSlug, 10)
     try {
       await payload.findByID({ collection, id, depth: 0, locale })
-    } catch {
-      return createErrorResponse('NOT_FOUND', `${label} not found: ${idOrSlug}`)
+    } catch (error) {
+      if ((error as { status?: number }).status === 404) {
+        return createErrorResponse('NOT_FOUND', `${label} not found: ${idOrSlug}`)
+      }
+      throw error
     }
     return id
   }
@@ -109,4 +129,31 @@ export function toDocSummary(doc: {
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
   }
+}
+
+export function validateUrl(value: string, fieldName: string): ErrorResponse | null {
+  if (!value.startsWith('http://') && !value.startsWith('https://')) {
+    return createErrorResponse(
+      'VALIDATION_ERROR',
+      `${fieldName} must start with http:// or https://`,
+    )
+  }
+  return null
+}
+
+export function validateArrayField<T>(
+  value: unknown,
+  fieldName: string,
+  itemValidator: (item: unknown) => item is T,
+): T[] | ErrorResponse {
+  if (!Array.isArray(value)) {
+    return createErrorResponse('VALIDATION_ERROR', `${fieldName} must be an array`)
+  }
+  if (value.some((item) => !itemValidator(item))) {
+    return createErrorResponse(
+      'VALIDATION_ERROR',
+      `${fieldName} contains invalid items`,
+    )
+  }
+  return value as T[]
 }
