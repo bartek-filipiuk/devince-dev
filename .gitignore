@@ -22,6 +22,7 @@ pnpm-debug.log*
 
 # Payload CMS
 media/
+!src/**/api/**/media/
 public/media/*
 !public/media/seed/
 
