@@ -1,37 +1,20 @@
-name: Deploy MCP Server to Coolify
+name: Deploy MCP Server (Manual)
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'mcp-server/**'
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      !contains(github.event.head_commit.message, '[skip ci]')
 
     steps:
-      - name: Trigger Coolify Deployment
+      - name: Note
         run: |
-          response=$(curl -s --max-time 60 -w "\n%{http_code}" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_API_TOKEN }}" \
-            -H "Accept: application/json" \
-            "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_MCP_UUID }}")
-
-          http_code=$(echo "$response" | tail -1)
-          body=$(echo "$response" | head -n -1)
-
-          echo "Response: $body"
-          echo "HTTP Status: $http_code"
-
-          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
-            echo "MCP Server deployment triggered successfully"
-          else
-            echo "Failed to trigger MCP Server deployment"
-            exit 1
-          fi
+          echo "MCP server is deployed manually via Docker on the Hetzner server."
+          echo "See docs/MCP_SERVER.md for deployment instructions."
+          echo ""
+          echo "To deploy:"
+          echo "  ssh hetzner-ax41-1"
+          echo "  cd ~/mcp-server-deploy/mcp-server"
+          echo "  git pull"
+          echo "  docker compose up -d --build"
