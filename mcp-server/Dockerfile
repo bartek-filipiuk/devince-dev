@@ -1,11 +1,12 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm ci --omit=dev
 
 FROM node:22-alpine AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+COPY package.json package-lock.json* ./
+RUN npm ci
 COPY . .
 RUN npm run build
 
@@ -15,8 +16,7 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 mcp && adduser --system --uid 1001 mcp
 COPY --from=builder --chown=mcp:mcp /app/dist ./dist
 COPY --from=builder --chown=mcp:mcp /app/package.json ./
-COPY --from=deps /app/package-lock.json* ./
-RUN npm ci --omit=dev && chown -R mcp:mcp node_modules
+COPY --from=deps --chown=mcp:mcp /app/node_modules ./node_modules
 USER mcp
 EXPOSE 3001
 ENV PORT=3001

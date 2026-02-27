@@ -49,12 +49,21 @@ function validateExternalUrl(url: string): string | null {
   const hostname = parsed.hostname.toLowerCase()
   if (
     hostname === 'localhost' ||
+    hostname === '0.0.0.0' ||
+    hostname.startsWith('0.') ||
     hostname === '127.0.0.1' ||
     hostname === '::1' ||
     hostname.startsWith('10.') ||
     hostname.startsWith('192.168.') ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(hostname) ||
     hostname === '169.254.169.254' ||
-    hostname.endsWith('.internal')
+    hostname.endsWith('.internal') ||
+    hostname.startsWith('fc') ||
+    hostname.startsWith('fd') ||
+    hostname.startsWith('fe80:') ||
+    hostname.startsWith('[fc') ||
+    hostname.startsWith('[fd') ||
+    hostname.startsWith('[fe80:')
   ) {
     return 'Internal/private URLs are not allowed'
   }

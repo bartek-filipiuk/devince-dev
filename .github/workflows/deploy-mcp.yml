@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Trigger Coolify Deployment
         run: |
-          response=$(curl -s -w "\n%{http_code}" \
+          response=$(curl -s --max-time 60 -w "\n%{http_code}" \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_API_TOKEN }}" \
             -H "Accept: application/json" \
             "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_MCP_UUID }}")

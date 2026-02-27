@@ -97,7 +97,7 @@ npx @modelcontextprotocol/inspector http://localhost:3001/mcp \
 
 ## Architecture
 
-```
+```text
 Claude Code  --(HTTPS + Bearer)--> mcp.devince.dev (Traefik)
                                       |
                                    MCP Server (port 3001)
