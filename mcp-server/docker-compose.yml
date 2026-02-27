@@ -1,0 +1,27 @@
+services:
+  mcp-server:
+    container_name: devince-mcp
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    expose:
+      - "3001"
+    networks:
+      - coolify
+    labels:
+      - "traefik.enable=true"
+      # HTTP -> HTTPS redirect
+      - "traefik.http.routers.devince-mcp-http.entryPoints=http"
+      - "traefik.http.routers.devince-mcp-http.rule=Host(`mcp.devince.dev`)"
+      - "traefik.http.routers.devince-mcp-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      # HTTPS with TLS
+      - "traefik.http.routers.devince-mcp-https.entryPoints=https"
+      - "traefik.http.routers.devince-mcp-https.rule=Host(`mcp.devince.dev`)"
+      - "traefik.http.routers.devince-mcp-https.tls=true"
+      - "traefik.http.routers.devince-mcp-https.tls.certresolver=letsencrypt"
+      - "traefik.http.services.devince-mcp-https.loadbalancer.server.port=3001"
+
+networks:
+  coolify:
+    external: true

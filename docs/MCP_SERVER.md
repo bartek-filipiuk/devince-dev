@@ -36,17 +36,26 @@ Verify with:
 claude mcp list
 ```
 
-## Deploy on Coolify
+## Deploy on Hetzner (Direct Docker)
 
-### 1. Create a new application
+The MCP server runs as a standalone Docker container behind Traefik on the Hetzner server. It attaches to the `coolify` network so Traefik routes `mcp.devince.dev` to it automatically with TLS.
 
-- Source: GitHub repo `bartek-filipiuk/devince-dev`
-- Build pack: Dockerfile
-- Dockerfile location: `mcp-server/Dockerfile`
-- Base directory: `mcp-server`
-- Port: 3001
+### Prerequisites
 
-### 2. Set environment variables
+- DNS A record: `mcp.devince.dev` → `65.109.60.26`
+- `EXTERNAL_API_TOKEN` set on devince.dev (via Coolify env vars)
+
+### 1. Clone and configure
+
+```bash
+ssh hetzner-ax41-1
+cd ~
+git clone https://github.com/bartek-filipiuk/devince-dev.git mcp-server-deploy
+cd mcp-server-deploy/mcp-server
+cp .env.example .env
+```
+
+Edit `.env`:
 
 | Variable | Value |
 |----------|-------|
@@ -54,24 +63,31 @@ claude mcp list
 | `EXTERNAL_API_TOKEN` | Same token configured on devince.dev |
 | `DEVINCE_BASE_URL` | `https://devince.dev` |
 
-### 3. Configure domain
+### 2. Start the container
 
-- Domain: `mcp.devince.dev`
-- Traefik will auto-provision TLS via Let's Encrypt
+```bash
+docker compose up -d --build
+```
 
-### 4. Add GitHub Actions secret
+Traefik auto-provisions a Let's Encrypt TLS certificate for `mcp.devince.dev`.
 
-Add `COOLIFY_MCP_UUID` to the repo secrets (the Coolify application UUID).
+### 3. Update (after code changes)
 
-Auto-deploy triggers on push to `main` when `mcp-server/**` files change.
+```bash
+ssh hetzner-ax41-1
+cd ~/mcp-server-deploy
+git pull
+cd mcp-server
+docker compose up -d --build
+```
 
-### 5. Verify
+### 4. Verify
 
 ```bash
 # Health check
 curl https://mcp.devince.dev/health
 
-# Test MCP endpoint (should return tool list)
+# Test MCP endpoint
 curl -X POST https://mcp.devince.dev/mcp \
   -H "Authorization: Bearer $MCP_AUTH_TOKEN" \
   -H "Content-Type: application/json" \
