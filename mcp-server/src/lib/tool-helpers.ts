@@ -21,8 +21,8 @@ export function errorResult(text: string) {
   return { content: [{ type: 'text' as const, text }], isError: true as const }
 }
 
-export function contentResult(res: ApiResponse<ContentData>, collection: string, action: string, baseUrl: string) {
-  const text = formatContentResult(res, collection, action, baseUrl)
+export function contentResult(res: ApiResponse<ContentData>, collection: string, action: string, baseUrl: string, adminSlug?: string) {
+  const text = formatContentResult(res, collection, action, baseUrl, adminSlug)
   if (res.error) return errorResult(text)
   return textResult(text)
 }
@@ -32,6 +32,7 @@ export function formatContentResult(
   collection: string,
   action: string,
   baseUrl: string,
+  adminSlug?: string,
 ): string {
   if (res.error) {
     return `Error ${action} ${collection}: [${res.error.code}] ${res.error.message}`
@@ -46,7 +47,7 @@ export function formatContentResult(
     `  Title: ${d.title}`,
     `  Slug: ${d.slug}`,
     `  Status: ${d._status}`,
-    `  Admin: ${baseUrl}/admin/collections/${collection}s/${d.id}`,
+    `  Admin: ${baseUrl}/admin/collections/${adminSlug ?? `${collection}s`}/${d.id}`,
   ].join('\n')
 }
 

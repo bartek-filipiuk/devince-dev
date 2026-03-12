@@ -29,6 +29,23 @@ export interface CreateProjectRequest extends BaseRequest {
   productionUrl?: string
 }
 
+export interface CreateProgramRequest extends BaseRequest {
+  title: string
+  type: 'course' | 'workshop' | 'event'
+  heroHeadline?: string
+  heroDescription?: string
+  startDate?: string
+  endDate?: string
+  format?: 'online' | 'physical' | 'hybrid'
+  onlineLink?: string
+  locationName?: string
+  locationAddress?: string
+  pricing?: 'free' | 'paid'
+  duration?: string
+  ctaLabel?: string
+  ctaUrl?: string
+}
+
 export interface DocSummary {
   id: number
   title: string
