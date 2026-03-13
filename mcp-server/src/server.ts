@@ -2,6 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { ApiClient } from './lib/api-client.js'
 import { registerPostTools } from './tools/posts.js'
 import { registerProjectTools } from './tools/projects.js'
+import { registerProgramTools } from './tools/programs.js'
 import { registerMediaTools } from './tools/media.js'
 
 export function createServer(api: ApiClient, baseUrl: string): McpServer {
@@ -12,6 +13,7 @@ export function createServer(api: ApiClient, baseUrl: string): McpServer {
 
   registerPostTools(server, api, baseUrl)
   registerProjectTools(server, api, baseUrl)
+  registerProgramTools(server, api, baseUrl)
   registerMediaTools(server, api, baseUrl)
 
   return server

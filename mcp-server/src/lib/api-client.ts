@@ -137,6 +137,14 @@ export class ApiClient {
     return this.request<ContentData>('PATCH', `/projects/${encodeURIComponent(idOrSlug)}`, data, locale)
   }
 
+  async createProgram(data: Record<string, unknown>, locale?: string): Promise<ApiResponse<ContentData>> {
+    return this.request<ContentData>('POST', '/programs', data, locale)
+  }
+
+  async updateProgram(idOrSlug: string, data: Record<string, unknown>, locale?: string): Promise<ApiResponse<ContentData>> {
+    return this.request<ContentData>('PATCH', `/programs/${encodeURIComponent(idOrSlug)}`, data, locale)
+  }
+
   async uploadMedia(source: { imageUrl: string } | { base64: string; mimeType: string }, alt?: string): Promise<ApiResponse<MediaData>> {
     let blob: Blob
     let filename: string
