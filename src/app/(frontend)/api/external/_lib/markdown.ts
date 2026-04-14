@@ -2,10 +2,10 @@ import {
   convertMarkdownToLexical,
   defaultEditorConfig,
   BlocksFeature,
+  CodeBlock,
   sanitizeServerEditorConfig,
   type SanitizedServerEditorConfig,
 } from '@payloadcms/richtext-lexical'
-import { CodeBlock } from '@payloadcms/richtext-lexical'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
@@ -16,11 +16,13 @@ function getEditorConfig(): Promise<SanitizedServerEditorConfig> {
     editorConfigPromise = (async () => {
       try {
         const payload = await getPayload({ config: configPromise })
-        const config = {
-          ...defaultEditorConfig,
-          features: [...defaultEditorConfig.features, BlocksFeature({ blocks: [CodeBlock()] })],
-        }
-        return await sanitizeServerEditorConfig(config, payload.config)
+        return await sanitizeServerEditorConfig(
+          {
+            ...defaultEditorConfig,
+            features: [...defaultEditorConfig.features, BlocksFeature({ blocks: [CodeBlock()] })],
+          },
+          payload.config,
+        )
       } catch (error) {
         editorConfigPromise = null
         throw error
