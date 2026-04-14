@@ -51,6 +51,9 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
       />
     ),
     code: ({ node }) => <CodeBlock className="col-start-2" {...node.fields} />,
+    Code: ({ node }: { node: SerializedBlockNode<CodeBlockProps> }) => (
+      <CodeBlock className="col-start-2" {...node.fields} />
+    ),
     cta: ({ node }) => <CallToActionBlock {...node.fields} />,
   },
 })
