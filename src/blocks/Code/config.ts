@@ -9,18 +9,15 @@ export const Code: Block = {
       type: 'select',
       defaultValue: 'typescript',
       options: [
-        {
-          label: 'Typescript',
-          value: 'typescript',
-        },
-        {
-          label: 'Javascript',
-          value: 'javascript',
-        },
-        {
-          label: 'CSS',
-          value: 'css',
-        },
+        { label: 'TypeScript', value: 'typescript' },
+        { label: 'JavaScript', value: 'javascript' },
+        { label: 'Python', value: 'python' },
+        { label: 'Bash', value: 'bash' },
+        { label: 'JSON', value: 'json' },
+        { label: 'CSS', value: 'css' },
+        { label: 'HTML', value: 'html' },
+        { label: 'PHP', value: 'php' },
+        { label: 'SQL', value: 'sql' },
       ],
     },
     {
