@@ -12,7 +12,7 @@ import {
   OrderedListFeature,
   type LinkFields,
 } from '@payloadcms/richtext-lexical'
-import { Code } from '@/blocks/Code/config'
+import { CodeBlock } from '@payloadcms/richtext-lexical'
 
 export const defaultLexical = lexicalEditor({
   features: [
@@ -23,7 +23,7 @@ export const defaultLexical = lexicalEditor({
     UnderlineFeature(),
     BoldFeature(),
     ItalicFeature(),
-    BlocksFeature({ blocks: [Code] }),
+    BlocksFeature({ blocks: [CodeBlock()] }),
     LinkFeature({
       enabledCollections: ['pages', 'posts'],
       fields: ({ defaultFields }) => {
