@@ -145,6 +145,10 @@ export class ApiClient {
     return this.request<ContentData>('PATCH', `/programs/${encodeURIComponent(idOrSlug)}`, data, locale)
   }
 
+  async setProgramLayout(idOrSlug: string, layout: Record<string, unknown>[], locale?: string): Promise<ApiResponse<ContentData>> {
+    return this.request<ContentData>('PUT', `/programs/${encodeURIComponent(idOrSlug)}/layout`, { layout }, locale)
+  }
+
   async uploadMedia(source: { imageUrl: string } | { base64: string; mimeType: string }, alt?: string): Promise<ApiResponse<MediaData>> {
     let blob: Blob
     let filename: string
