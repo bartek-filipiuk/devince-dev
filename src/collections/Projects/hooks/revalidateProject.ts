@@ -16,6 +16,7 @@ export const revalidateProject: CollectionAfterChangeHook<Project> = ({
       payload.logger.info(`Revalidating project at path: ${path}`)
 
       revalidatePath(path)
+      revalidatePath('/projects')
       revalidateTag('projects-sitemap')
     }
 
@@ -26,6 +27,7 @@ export const revalidateProject: CollectionAfterChangeHook<Project> = ({
       payload.logger.info(`Revalidating old project at path: ${oldPath}`)
 
       revalidatePath(oldPath)
+      revalidatePath('/projects')
       revalidateTag('projects-sitemap')
     }
   }
@@ -37,6 +39,7 @@ export const revalidateDelete: CollectionAfterDeleteHook<Project> = ({ doc, req:
     const path = `/projects/${doc?.slug}`
 
     revalidatePath(path)
+    revalidatePath('/projects')
     revalidateTag('projects-sitemap')
   }
 
