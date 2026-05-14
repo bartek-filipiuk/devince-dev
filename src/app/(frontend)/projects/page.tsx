@@ -9,7 +9,6 @@ import PageClient from './page.client'
 import { getLocale } from '@/utilities/getLocale'
 
 export const dynamic = 'force-dynamic'
-export const revalidate = 600
 
 export default async function Page() {
   const locale = await getLocale()
