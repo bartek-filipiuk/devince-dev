@@ -1,6 +1,6 @@
 import type { GlobalAfterChangeHook } from 'payload'
 
-import { revalidateTag } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 
 export const revalidateSiteSettings: GlobalAfterChangeHook = ({
   doc,
@@ -10,6 +10,7 @@ export const revalidateSiteSettings: GlobalAfterChangeHook = ({
     payload.logger.info(`Revalidating site-settings`)
 
     revalidateTag('global_site-settings')
+    revalidatePath('/', 'layout')
   }
 
   return doc
