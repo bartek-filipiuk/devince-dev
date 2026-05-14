@@ -1,6 +1,7 @@
 import type { GlobalAfterChangeHook } from 'payload'
 
-import { revalidatePath, revalidateTag } from 'next/cache'
+import { revalidateTag } from 'next/cache'
+import { revalidatePaths } from '@/utilities/revalidate'
 
 export const revalidateSiteSettings: GlobalAfterChangeHook = ({
   doc,
@@ -10,7 +11,17 @@ export const revalidateSiteSettings: GlobalAfterChangeHook = ({
     payload.logger.info(`Revalidating site-settings`)
 
     revalidateTag('global_site-settings')
-    revalidatePath('/', 'layout')
+    // Site Settings affects Footer (on every page) + /contact directly.
+    // Listing pages are included because the Footer is rendered there too.
+    revalidatePaths(
+      '/',
+      '/contact',
+      '/posts',
+      '/projects',
+      '/courses',
+      '/workshops',
+      '/events',
+    )
   }
 
   return doc
