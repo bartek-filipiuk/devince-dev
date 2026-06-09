@@ -1,0 +1,48 @@
+import type { CollectionConfig } from 'payload'
+import { slugField } from 'payload'
+import { authenticated } from '../../access/authenticated'
+import { enrolledOrAdmin } from '../../access/enrolledOrAdmin'
+import { populatePublishedAt } from '../../hooks/populatePublishedAt'
+
+export const Lessons: CollectionConfig = {
+  slug: 'lessons',
+  access: {
+    create: authenticated,
+    delete: authenticated,
+    read: enrolledOrAdmin,
+    update: authenticated,
+  },
+  admin: {
+    useAsTitle: 'title',
+    defaultColumns: ['title', 'program', 'phase', 'order'],
+  },
+  fields: [
+    { name: 'title', type: 'text', required: true },
+    { name: 'program', type: 'relationship', relationTo: 'program', required: true },
+    { name: 'phase', type: 'text', label: 'Faza' },
+    { name: 'order', type: 'number', defaultValue: 0, label: 'Kolejność' },
+    {
+      name: 'type',
+      type: 'select',
+      defaultValue: 'text',
+      options: [
+        { label: 'Tekst', value: 'text' },
+        { label: 'Embed', value: 'embed' },
+        { label: 'Wideo', value: 'video' },
+        { label: 'Do pobrania', value: 'download' },
+      ],
+    },
+    { name: 'content', type: 'richText' },
+    { name: 'youtubeEmbedUrl', type: 'text', label: 'YouTube embed (pomoc, opcjonalne)' },
+    {
+      name: 'downloadFile',
+      type: 'upload',
+      relationTo: 'media',
+      admin: { condition: (d) => d?.type === 'download' },
+    },
+    { name: 'publishedAt', type: 'date', admin: { position: 'sidebar' } },
+    slugField(),
+  ],
+  hooks: { beforeChange: [populatePublishedAt] },
+  versions: { drafts: { autosave: { interval: 100 } }, maxPerDoc: 20 },
+}

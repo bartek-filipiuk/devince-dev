@@ -6,10 +6,12 @@ import { fileURLToPath } from 'url'
 
 import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
+import { Lessons } from './collections/Lessons'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Program } from './collections/Program'
 import { Projects } from './collections/Projects'
+import { StripeEvents } from './collections/StripeEvents'
 import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
@@ -80,7 +82,7 @@ export default buildConfig({
     },
     push: true, // Enable automatic schema push for all environments
   }),
-  collections: [Pages, Posts, Program, Projects, Media, Categories, Users],
+  collections: [Pages, Posts, Program, Lessons, Projects, Media, Categories, Users, StripeEvents],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer, SiteSettings],
   plugins,

@@ -1,15 +1,21 @@
 import type { CollectionConfig } from 'payload'
 
-import { authenticated } from '../../access/authenticated'
-
 export const Users: CollectionConfig = {
   slug: 'users',
   access: {
-    admin: authenticated,
-    create: authenticated,
-    delete: authenticated,
-    read: authenticated,
-    update: authenticated,
+    admin: ({ req: { user } }) => Boolean(user?.roles?.includes('admin')),
+    create: ({ req: { user } }) => Boolean(user?.roles?.includes('admin')),
+    delete: ({ req: { user } }) => Boolean(user?.roles?.includes('admin')),
+    read: ({ req: { user } }) => {
+      if (!user) return false
+      if (user.roles?.includes('admin')) return true
+      return { id: { equals: user.id } }
+    },
+    update: ({ req: { user } }) => {
+      if (!user) return false
+      if (user.roles?.includes('admin')) return true
+      return { id: { equals: user.id } }
+    },
   },
   admin: {
     defaultColumns: ['name', 'email'],
@@ -17,10 +23,19 @@ export const Users: CollectionConfig = {
   },
   auth: true,
   fields: [
+    { name: 'name', type: 'text' },
     {
-      name: 'name',
-      type: 'text',
+      name: 'roles',
+      type: 'select',
+      hasMany: true,
+      defaultValue: ['customer'],
+      options: [
+        { label: 'Admin', value: 'admin' },
+        { label: 'Customer', value: 'customer' },
+      ],
+      access: { update: ({ req: { user } }) => Boolean(user?.roles?.includes('admin')) },
     },
+    { name: 'purchases', type: 'relationship', relationTo: 'program', hasMany: true },
   ],
   timestamps: true,
 }

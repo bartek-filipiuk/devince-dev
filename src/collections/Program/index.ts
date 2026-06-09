@@ -189,6 +189,18 @@ export const Program: CollectionConfig<'program'> = {
               ],
             },
             {
+              name: 'stripePaymentLink',
+              type: 'text',
+              label: 'Stripe Payment Link (dla płatnych)',
+              admin: { condition: (data) => data?.pricing === 'paid' },
+            },
+            {
+              name: 'stripePriceId',
+              type: 'text',
+              label: 'Stripe Price ID (opcjonalnie)',
+              admin: { condition: (data) => data?.pricing === 'paid' },
+            },
+            {
               name: 'duration',
               type: 'text',
               label: 'Czas trwania (np. "8 tygodni")',
