@@ -5,6 +5,7 @@ import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
 import { Categories } from './collections/Categories'
+import { CourseAssets } from './collections/CourseAssets'
 import { Media } from './collections/Media'
 import { Lessons } from './collections/Lessons'
 import { Pages } from './collections/Pages'
@@ -82,7 +83,18 @@ export default buildConfig({
     },
     push: true, // Enable automatic schema push for all environments
   }),
-  collections: [Pages, Posts, Program, Lessons, Projects, Media, Categories, Users, StripeEvents],
+  collections: [
+    Pages,
+    Posts,
+    Program,
+    Lessons,
+    Projects,
+    Media,
+    CourseAssets,
+    Categories,
+    Users,
+    StripeEvents,
+  ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer, SiteSettings],
   plugins,

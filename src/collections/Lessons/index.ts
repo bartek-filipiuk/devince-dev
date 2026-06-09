@@ -37,7 +37,9 @@ export const Lessons: CollectionConfig = {
     {
       name: 'downloadFile',
       type: 'upload',
-      relationTo: 'media',
+      // Private upload collection (not publicly served). Served only through the
+      // enrollment-gated /api/course/download/[id] route, which streams bytes.
+      relationTo: 'course-assets',
       admin: { condition: (d) => d?.type === 'download' },
     },
     { name: 'publishedAt', type: 'date', admin: { position: 'sidebar' } },

@@ -73,6 +73,7 @@ export interface Config {
     lessons: Lesson;
     projects: Project;
     media: Media;
+    'course-assets': CourseAsset;
     categories: Category;
     users: User;
     'stripe-events': StripeEvent;
@@ -99,6 +100,7 @@ export interface Config {
     lessons: LessonsSelect<false> | LessonsSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    'course-assets': CourseAssetsSelect<false> | CourseAssetsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'stripe-events': StripeEventsSelect<false> | StripeEventsSelect<true>;
@@ -1098,7 +1100,7 @@ export interface Lesson {
     [k: string]: unknown;
   } | null;
   youtubeEmbedUrl?: string | null;
-  downloadFile?: (number | null) | Media;
+  downloadFile?: (number | null) | CourseAsset;
   publishedAt?: string | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
@@ -1108,6 +1110,25 @@ export interface Lesson {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course-assets".
+ */
+export interface CourseAsset {
+  id: number;
+  alt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1391,6 +1412,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'course-assets';
+        value: number | CourseAsset;
       } | null)
     | ({
         relationTo: 'categories';
@@ -1960,6 +1985,24 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course-assets_select".
+ */
+export interface CourseAssetsSelect<T extends boolean = true> {
+  alt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
