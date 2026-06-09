@@ -4,10 +4,12 @@ import { ExternalLink, Github } from 'lucide-react'
 import type { Project } from '@/payload-types'
 
 import { Media } from '@/components/Media'
+import { defaultLocale, t, type Locale } from '@/i18n'
 
 export const ProjectHero: React.FC<{
   project: Project
-}> = ({ project }) => {
+  locale?: Locale
+}> = ({ project, locale = defaultLocale }) => {
   const { heroImage, title, technologies, githubUrl, productionUrl } = project
 
   const hasTechnologies = technologies && technologies.length > 0
@@ -54,7 +56,7 @@ export const ProjectHero: React.FC<{
                 className="project-link-button project-link-button--primary"
               >
                 <ExternalLink size={20} />
-                Live Site
+                {t(locale, 'project.liveSite')}
               </a>
             )}
           </div>

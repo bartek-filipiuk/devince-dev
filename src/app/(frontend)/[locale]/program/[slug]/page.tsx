@@ -51,7 +51,7 @@ export default async function ProgramPage({ params: paramsPromise }: Args) {
 
       {layout && layout.length > 0 && (
         <div className="program-content">
-          <RenderBlocks blocks={layout} />
+          <RenderBlocks blocks={layout} locale={locale} />
         </div>
       )}
     </article>

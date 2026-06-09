@@ -1,6 +1,7 @@
 import React from 'react'
 
 import type { ContactCTABlock as ContactCTAProps } from '@/payload-types'
+import { defaultLocale, type Locale } from '@/i18n'
 
 import RichText from '@/components/RichText'
 import { CMSLink } from '@/components/Link'
@@ -65,13 +66,14 @@ const socialIcons: Record<string, React.ReactNode> = {
  * - .contact-social-link: Individual social link
  * - .contact-cta: Primary CTA button
  */
-export const ContactCTABlock: React.FC<ContactCTAProps> = ({
+export const ContactCTABlock: React.FC<ContactCTAProps & { locale?: Locale }> = ({
   headline,
   description,
   contactEmail,
   contactPhone,
   socialLinks,
   primaryCTA,
+  locale = defaultLocale,
 }) => {
   return (
     <section className="contact-section py-20 relative overflow-hidden">
@@ -142,6 +144,7 @@ export const ContactCTABlock: React.FC<ContactCTAProps> = ({
             {primaryCTA?.label && (
               <CMSLink
                 {...primaryCTA}
+                locale={locale}
                 size="lg"
                 className="contact-cta bg-background text-foreground hover:bg-background/90 px-8 py-4 rounded-lg font-semibold inline-flex items-center gap-2"
               />

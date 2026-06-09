@@ -42,7 +42,7 @@ export default async function ProjectPage({ params: paramsPromise }: Args) {
 
       {draft && <LivePreviewListener />}
 
-      <ProjectHero project={project} />
+      <ProjectHero project={project} locale={locale} />
 
       <div className="project-content">
         <div className="container">

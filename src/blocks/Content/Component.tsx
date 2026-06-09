@@ -5,12 +5,13 @@ import React from 'react'
 import RichText from '@/components/RichText'
 
 import type { ContentBlock as ContentBlockProps } from '@/payload-types'
+import { defaultLocale, type Locale } from '@/i18n'
 
 import { CMSLink } from '../../components/Link'
 import { ScrollReveal } from '@/components/ScrollReveal'
 
-export const ContentBlock: React.FC<ContentBlockProps> = (props) => {
-  const { columns } = props
+export const ContentBlock: React.FC<ContentBlockProps & { locale?: Locale }> = (props) => {
+  const { columns, locale = defaultLocale } = props
 
   const colsSpanClasses = {
     full: '12',
@@ -38,7 +39,7 @@ export const ContentBlock: React.FC<ContentBlockProps> = (props) => {
               >
                 {richText && <RichText data={richText} enableGutter={false} />}
 
-                {enableLink && <CMSLink {...link} />}
+                {enableLink && <CMSLink {...link} locale={locale} />}
               </ScrollReveal>
             )
           })}

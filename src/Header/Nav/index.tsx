@@ -14,7 +14,7 @@ import { getLocalizedPath } from '@/utilities/getLocale'
 export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
   const navItems = data?.navItems || []
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { locale } = useLocale()
+  const { locale, t } = useLocale()
 
   return (
     <>
@@ -24,7 +24,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
           return <CMSLink key={i} {...link} locale={locale} appearance="link" className="nav-link text-sm font-medium uppercase tracking-wider" />
         })}
         <Link href={getLocalizedPath('/search', locale)}>
-          <span className="sr-only">Search</span>
+          <span className="sr-only">{t('header.search')}</span>
           <SearchIcon className="w-5 text-primary" />
         </Link>
         <LanguageSwitcher />
@@ -33,14 +33,14 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
       {/* Mobile Menu Button */}
       <div className="flex md:hidden items-center gap-2">
         <Link href={getLocalizedPath('/search', locale)}>
-          <span className="sr-only">Search</span>
+          <span className="sr-only">{t('header.search')}</span>
           <SearchIcon className="w-5 text-primary" />
         </Link>
         <LanguageSwitcher />
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="p-2 text-primary"
-          aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+          aria-label={mobileMenuOpen ? t('header.closeMenu') : t('header.openMenu')}
         >
           {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>

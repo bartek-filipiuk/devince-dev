@@ -11,6 +11,7 @@ import { Search } from '@/search/Component'
 import PageClient from './page.client'
 import { CardPostData } from '@/components/Card'
 import { getLocaleFromParams } from '@/utilities/getLocale'
+import { t } from '@/i18n'
 
 type Args = {
   params: Promise<{ locale: string }>
@@ -72,7 +73,7 @@ export default async function Page({ params: paramsPromise, searchParams: search
       <PageClient />
       <div className="container mb-16">
         <div className="prose dark:prose-invert max-w-none text-center">
-          <h1 className="mb-8 lg:mb-16">Search</h1>
+          <h1 className="mb-8 lg:mb-16">{t(locale, 'search.title')}</h1>
 
           <div className="max-w-[50rem] mx-auto">
             <Search />
@@ -83,14 +84,16 @@ export default async function Page({ params: paramsPromise, searchParams: search
       {posts.totalDocs > 0 ? (
         <CollectionArchive posts={posts.docs as CardPostData[]} />
       ) : (
-        <div className="container">No results found.</div>
+        <div className="container">{t(locale, 'search.pageNoResults')}</div>
       )}
     </div>
   )
 }
 
-export function generateMetadata(): Metadata {
+export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
+  const { locale: localeParam } = await paramsPromise
+  const locale = getLocaleFromParams(localeParam)
   return {
-    title: `Devince Search`,
+    title: t(locale, 'search.metaTitle'),
   }
 }

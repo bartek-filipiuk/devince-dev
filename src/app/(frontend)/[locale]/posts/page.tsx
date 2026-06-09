@@ -8,6 +8,7 @@ import { getPayload } from 'payload'
 import React from 'react'
 import PageClient from './page.client'
 import { getLocaleFromParams } from '@/utilities/getLocale'
+import { t } from '@/i18n'
 
 export const dynamic = 'force-dynamic'
 
@@ -40,7 +41,7 @@ export default async function Page({ params: paramsPromise }: Args) {
       <PageClient />
       <div className="container mb-16">
         <div className="prose dark:prose-invert max-w-none">
-          <h1>Posts</h1>
+          <h1>{t(locale, 'posts.title')}</h1>
         </div>
       </div>
 
@@ -49,6 +50,7 @@ export default async function Page({ params: paramsPromise }: Args) {
           collection="posts"
           currentPage={posts.page}
           limit={12}
+          locale={locale}
           totalDocs={posts.totalDocs}
         />
       </div>
@@ -64,8 +66,10 @@ export default async function Page({ params: paramsPromise }: Args) {
   )
 }
 
-export function generateMetadata(): Metadata {
+export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
+  const { locale: localeParam } = await paramsPromise
+  const locale = getLocaleFromParams(localeParam)
   return {
-    title: `Devince Posts`,
+    title: t(locale, 'posts.metaTitle'),
   }
 }

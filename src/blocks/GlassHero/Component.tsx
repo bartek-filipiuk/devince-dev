@@ -1,6 +1,7 @@
 import React from 'react'
 
 import type { GlassHeroBlock as GlassHeroProps } from '@/payload-types'
+import { defaultLocale, type Locale } from '@/i18n'
 
 import RichText from '@/components/RichText'
 import { CMSLink } from '@/components/Link'
@@ -22,12 +23,13 @@ import { ScrollReveal } from '@/components/ScrollReveal'
  * - .hero-cta-primary: Primary button
  * - .hero-cta-secondary: Secondary button
  */
-export const GlassHeroBlock: React.FC<GlassHeroProps> = ({
+export const GlassHeroBlock: React.FC<GlassHeroProps & { locale?: Locale }> = ({
   headline,
   subheadline,
   primaryCTA,
   secondaryCTA,
   backgroundMedia,
+  locale = defaultLocale,
 }) => {
   return (
     <section className="hero-section relative min-h-[90vh] flex items-center justify-center overflow-hidden">
@@ -69,6 +71,7 @@ export const GlassHeroBlock: React.FC<GlassHeroProps> = ({
                 {primaryCTA && primaryCTA.label && (
                   <CMSLink
                     {...primaryCTA}
+                    locale={locale}
                     size="lg"
                     className="hero-cta-primary px-8 py-4 rounded-lg font-semibold"
                   />
@@ -76,6 +79,7 @@ export const GlassHeroBlock: React.FC<GlassHeroProps> = ({
                 {secondaryCTA && secondaryCTA.label && (
                   <CMSLink
                     {...secondaryCTA}
+                    locale={locale}
                     size="lg"
                     className="hero-cta-secondary px-8 py-4 rounded-lg font-semibold"
                   />

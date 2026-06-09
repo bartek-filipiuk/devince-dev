@@ -18,7 +18,7 @@ export const ProjectCard: React.FC<{
   showTechnologies?: boolean
 }> = (props) => {
   const { card, link } = useClickableCard({})
-  const { locale } = useLocale()
+  const { locale, t } = useLocale()
   const { className, doc, showTechnologies = true } = props
 
   const { slug, technologies, meta, title, heroImage } = doc || {}
@@ -37,7 +37,7 @@ export const ProjectCard: React.FC<{
       ref={card.ref}
     >
       <div className="project-card-image">
-        {!imageToShow && <div className="project-card-no-image">No image</div>}
+        {!imageToShow && <div className="project-card-no-image">{t('project.noImage')}</div>}
         {imageToShow && typeof imageToShow !== 'string' && (
           <Media resource={imageToShow as MediaType} size="33vw" />
         )}

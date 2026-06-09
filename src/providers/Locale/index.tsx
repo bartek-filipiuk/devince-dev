@@ -41,6 +41,6 @@ export function useLocale() {
 }
 
 export function useTranslation() {
-  const { t } = useLocale()
-  return { t }
+  const { t, locale } = useLocale()
+  return { t, locale }
 }

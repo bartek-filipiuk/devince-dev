@@ -4,12 +4,14 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/utilities/ui'
+import { useTranslation } from '@/providers/Locale'
 
 type NewsletterFormProps = {
   className?: string
 }
 
 export const NewsletterForm: React.FC<NewsletterFormProps> = ({ className }) => {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
@@ -29,15 +31,15 @@ export const NewsletterForm: React.FC<NewsletterFormProps> = ({ className }) => 
 
       if (response.ok) {
         setStatus('success')
-        setMessage(data.message || 'Successfully subscribed!')
+        setMessage(data.message || t('newsletter.successMessage'))
         setEmail('')
       } else {
         setStatus('error')
-        setMessage(data.error || 'Subscription failed')
+        setMessage(data.error || t('newsletter.failed'))
       }
     } catch (error) {
       setStatus('error')
-      setMessage('An error occurred. Please try again.')
+      setMessage(t('newsletter.errorRetry'))
     }
   }
 
@@ -46,7 +48,7 @@ export const NewsletterForm: React.FC<NewsletterFormProps> = ({ className }) => 
       <div className="flex gap-2">
         <Input
           type="email"
-          placeholder="Enter your email"
+          placeholder={t('newsletter.placeholder')}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -59,7 +61,7 @@ export const NewsletterForm: React.FC<NewsletterFormProps> = ({ className }) => 
           variant="secondary"
           className="whitespace-nowrap"
         >
-          {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
+          {status === 'loading' ? t('newsletter.subscribing') : t('newsletter.subscribe')}
         </Button>
       </div>
       {message && (

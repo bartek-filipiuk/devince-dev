@@ -1,6 +1,7 @@
 import React from 'react'
 import { Mail, Phone, MapPin } from 'lucide-react'
 import { cn } from '@/utilities/ui'
+import { defaultLocale, t, type Locale } from '@/i18n'
 
 type Address = {
   street?: string | null
@@ -19,12 +20,14 @@ type ContactInfoProps = {
   contact?: Contact | null
   detailed?: boolean
   className?: string
+  locale?: Locale
 }
 
 export const ContactInfo: React.FC<ContactInfoProps> = ({
   contact,
   detailed = false,
   className,
+  locale = defaultLocale,
 }) => {
   if (!contact) return null
 
@@ -55,7 +58,7 @@ export const ContactInfo: React.FC<ContactInfoProps> = ({
           <div className="flex items-start gap-3">
             <Mail className="w-5 h-5 mt-0.5 text-primary" />
             <div>
-              <p className="text-sm text-muted-foreground">Email</p>
+              <p className="text-sm text-muted-foreground">{t(locale, 'contact.email')}</p>
               <a href={`mailto:${email}`} className="hover:text-primary transition-colors">
                 {email}
               </a>
@@ -67,7 +70,7 @@ export const ContactInfo: React.FC<ContactInfoProps> = ({
           <div className="flex items-start gap-3">
             <Phone className="w-5 h-5 mt-0.5 text-primary" />
             <div>
-              <p className="text-sm text-muted-foreground">Phone</p>
+              <p className="text-sm text-muted-foreground">{t(locale, 'contact.phone')}</p>
               <a href={`tel:${phone}`} className="hover:text-primary transition-colors">
                 {phone}
               </a>
@@ -79,7 +82,7 @@ export const ContactInfo: React.FC<ContactInfoProps> = ({
           <div className="flex items-start gap-3">
             <MapPin className="w-5 h-5 mt-0.5 text-primary" />
             <div>
-              <p className="text-sm text-muted-foreground">Address</p>
+              <p className="text-sm text-muted-foreground">{t(locale, 'contact.address')}</p>
               {addressParts.map((part, index) => (
                 <p key={index}>{part}</p>
               ))}

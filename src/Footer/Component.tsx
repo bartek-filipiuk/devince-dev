@@ -10,7 +10,7 @@ import { Logo } from '@/components/Logo/Logo'
 import { SocialLinks } from '@/components/SocialLinks'
 import { ContactInfo } from '@/components/ContactInfo'
 import { NewsletterForm } from '@/components/NewsletterForm'
-import { defaultLocale, type Locale } from '@/i18n'
+import { defaultLocale, t, type Locale } from '@/i18n'
 import { getLocalizedPath } from '@/utilities/getLocale'
 
 export async function Footer({ locale = defaultLocale }: { locale?: Locale }) {
@@ -39,7 +39,7 @@ export async function Footer({ locale = defaultLocale }: { locale?: Locale }) {
 
           {/* Navigation Column */}
           <div>
-            <h4 className="font-semibold mb-4 text-white">Navigation</h4>
+            <h4 className="font-semibold mb-4 text-white">{t(locale, 'footer.navigation')}</h4>
             <nav className="flex flex-col gap-2">
               {navItems.map(({ link }, i) => {
                 return (
@@ -58,8 +58,8 @@ export async function Footer({ locale = defaultLocale }: { locale?: Locale }) {
           {/* Contact Info Column */}
           {showContactInfo && siteSettings?.contact && (
             <div>
-              <h4 className="font-semibold mb-4 text-white">Contact</h4>
-              <ContactInfo contact={siteSettings.contact} />
+              <h4 className="font-semibold mb-4 text-white">{t(locale, 'footer.contact')}</h4>
+              <ContactInfo contact={siteSettings.contact} locale={locale} />
             </div>
           )}
 
@@ -67,7 +67,7 @@ export async function Footer({ locale = defaultLocale }: { locale?: Locale }) {
           {showNewsletter && (
             <div>
               <h4 className="font-semibold mb-4 text-white">
-                {footerData?.newsletterTitle || 'Subscribe to our newsletter'}
+                {footerData?.newsletterTitle || t(locale, 'newsletter.subscribeTitle')}
               </h4>
               {footerData?.newsletterDescription && (
                 <p className="text-gray-400 text-sm mb-4">
@@ -84,7 +84,8 @@ export async function Footer({ locale = defaultLocale }: { locale?: Locale }) {
           <div className="flex items-center gap-4">
             <ThemeSelector />
             <span className="text-gray-500 text-sm">
-              &copy; {new Date().getFullYear()} {siteSettings?.siteName || 'All rights reserved'}
+              &copy; {new Date().getFullYear()}{' '}
+              {siteSettings?.siteName || t(locale, 'footer.allRightsReserved')}
             </span>
           </div>
 

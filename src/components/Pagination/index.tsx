@@ -20,7 +20,7 @@ export const Pagination: React.FC<{
   totalPages: number
 }> = (props) => {
   const router = useRouter()
-  const { locale } = useLocale()
+  const { locale, t } = useLocale()
 
   const { className, page, totalPages } = props
   const hasNextPage = page < totalPages
@@ -33,10 +33,12 @@ export const Pagination: React.FC<{
 
   return (
     <div className={cn('my-12', className)}>
-      <PaginationComponent>
+      <PaginationComponent ariaLabel={t('pagination.label')}>
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious
+              ariaLabel={t('pagination.goToPrevious')}
+              label={t('pagination.previous')}
               disabled={!hasPrevPage}
               onClick={() => {
                 router.push(pageHref(page - 1))
@@ -46,7 +48,7 @@ export const Pagination: React.FC<{
 
           {hasExtraPrevPages && (
             <PaginationItem>
-              <PaginationEllipsis />
+              <PaginationEllipsis label={t('pagination.morePages')} />
             </PaginationItem>
           )}
 
@@ -87,12 +89,14 @@ export const Pagination: React.FC<{
 
           {hasExtraNextPages && (
             <PaginationItem>
-              <PaginationEllipsis />
+              <PaginationEllipsis label={t('pagination.morePages')} />
             </PaginationItem>
           )}
 
           <PaginationItem>
             <PaginationNext
+              ariaLabel={t('pagination.goToNext')}
+              label={t('pagination.next')}
               disabled={!hasNextPage}
               onClick={() => {
                 router.push(pageHref(page + 1))

@@ -21,7 +21,7 @@ export const Card: React.FC<{
   title?: string
 }> = (props) => {
   const { card, link } = useClickableCard({})
-  const { locale } = useLocale()
+  const { locale, t } = useLocale()
   const { className, doc, relationTo, showCategories, title: titleFromProps } = props
 
   const { slug, categories, meta, title, heroImage } = doc || {}
@@ -55,7 +55,7 @@ export const Card: React.FC<{
                   if (typeof category === 'object') {
                     const { title: titleFromCategory } = category
 
-                    const categoryTitle = titleFromCategory || 'Untitled category'
+                    const categoryTitle = titleFromCategory || t('card.untitledCategory')
 
                     const isLast = index === categories.length - 1
 
