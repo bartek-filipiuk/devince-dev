@@ -4,10 +4,32 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { Suspense, useState } from 'react'
 
+/**
+ * Open-redirect guard: only allow a same-origin RELATIVE path.
+ * Accept values that start with a single "/" and are NOT "//..." (protocol-
+ * relative) and do NOT contain a scheme (e.g. "/\\evil.com", "javascript:").
+ * Anything else (absolute URLs, protocol-relative, backslash tricks) -> /account.
+ */
+function safeNext(next: string | null): string {
+  if (!next) return '/account'
+  // Must begin with exactly one slash (relative, same-origin path).
+  if (!next.startsWith('/') || next.startsWith('//')) return '/account'
+  // Reject backslashes (browsers treat "/\" like "//" -> protocol-relative).
+  if (next.includes('\\')) return '/account'
+  // Reject whitespace and any C0 control characters that could smuggle a scheme.
+  if (/\s/.test(next)) return '/account'
+  for (let i = 0; i < next.length; i++) {
+    if (next.charCodeAt(i) < 0x20) return '/account'
+  }
+  // Reject a leading scheme even after the slash (defense in depth).
+  if (/^\/[a-z][a-z0-9+.-]*:/i.test(next)) return '/account'
+  return next
+}
+
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const next = searchParams.get('next')
+  const next = safeNext(searchParams.get('next'))
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -33,7 +55,7 @@ function LoginForm() {
         return
       }
 
-      router.push(next ?? '/account')
+      router.push(next)
     } catch {
       setError('Nieprawidłowy email lub hasło.')
       setLoading(false)
