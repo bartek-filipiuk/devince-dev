@@ -3,7 +3,22 @@ import { defaultLocale, isValidLocale } from './i18n/config'
 import { stripDefaultLocalePrefix } from './utilities/localeRedirect'
 
 const PUBLIC_FILE = /\.(.*)$/
-const EXCLUDED_PREFIXES = ['/admin', '/api', '/_next', '/next', '/favicon', '/robots.txt', '/sitemap']
+const EXCLUDED_PREFIXES = [
+  '/admin',
+  '/api',
+  '/_next',
+  '/next',
+  '/favicon',
+  '/robots.txt',
+  '/sitemap',
+  // Course-platform routes are locale-neutral and live OUTSIDE the [locale]
+  // segment. They must NOT be rewritten into /[locale]/... (that 404s).
+  '/learn',
+  '/login',
+  '/account',
+  '/set-password',
+  '/forgot-password',
+]
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl

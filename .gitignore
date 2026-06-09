@@ -72,3 +72,6 @@ CLAUDE.md
 
 # Stray npm lockfile — project uses pnpm (pnpm-lock.yaml is the source of truth)
 package-lock.json
+
+# Security audit output (findings contain exploit detail — keep local)
+.security-audit/

@@ -95,7 +95,7 @@ export default buildConfig({
     Users,
     StripeEvents,
   ],
-  cors: [getServerSideURL()].filter(Boolean),
+  cors: [getServerSideURL(), process.env.NEXT_PUBLIC_COURSES_URL].filter(Boolean) as string[],
   globals: [Header, Footer, SiteSettings],
   plugins,
   secret: process.env.PAYLOAD_SECRET,
