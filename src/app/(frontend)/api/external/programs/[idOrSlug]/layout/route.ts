@@ -74,6 +74,9 @@ export async function PUT(
       id: programId,
       data: { layout },
       locale,
+      // API-key-authenticated server route, no Payload user session. Bypass
+      // collection access explicitly so admin-only Program write access allows it.
+      overrideAccess: true,
     })
 
     return createSuccessResponse({

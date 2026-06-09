@@ -1,16 +1,16 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
-import { authenticated } from '../../access/authenticated'
+import { adminOnly } from '../../access/adminOnly'
 import { enrolledOrAdmin } from '../../access/enrolledOrAdmin'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
 
 export const Lessons: CollectionConfig = {
   slug: 'lessons',
   access: {
-    create: authenticated,
-    delete: authenticated,
+    create: adminOnly,
+    delete: adminOnly,
     read: enrolledOrAdmin,
-    update: authenticated,
+    update: adminOnly,
   },
   admin: {
     useAsTitle: 'title',
