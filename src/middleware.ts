@@ -1,68 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { locales, defaultLocale, isValidLocale } from './i18n/config'
+import { defaultLocale, isValidLocale } from './i18n/config'
 
-// Paths that should not be localized
 const PUBLIC_FILE = /\.(.*)$/
-const EXCLUDED_PATHS = [
-  '/admin',
-  '/api',
-  '/_next',
-  '/next',
-  '/favicon',
-  '/robots.txt',
-  '/sitemap.xml',
-]
-
-function getLocaleFromPath(pathname: string): string | null {
-  const segments = pathname.split('/')
-  const firstSegment = segments[1]
-
-  if (firstSegment && isValidLocale(firstSegment)) {
-    return firstSegment
-  }
-
-  return null
-}
+const EXCLUDED_PREFIXES = ['/admin', '/api', '/_next', '/next', '/favicon', '/robots.txt', '/sitemap']
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-
-  // Skip excluded paths
-  if (
-    EXCLUDED_PATHS.some((path) => pathname.startsWith(path)) ||
-    PUBLIC_FILE.test(pathname)
-  ) {
+  if (EXCLUDED_PREFIXES.some((p) => pathname.startsWith(p)) || PUBLIC_FILE.test(pathname)) {
     return NextResponse.next()
   }
-
-  const pathLocale = getLocaleFromPath(pathname)
-
-  // If the path already has a locale prefix
-  if (pathLocale) {
-    // If it's the default locale with prefix, redirect to remove prefix
-    // e.g., /pl/about -> /about
-    if (pathLocale === defaultLocale) {
-      const newPathname = pathname.replace(`/${defaultLocale}`, '') || '/'
-      return NextResponse.redirect(new URL(newPathname, request.url))
-    }
-
-    // Non-default locale, set header and continue
-    const response = NextResponse.next()
-    response.headers.set('x-locale', pathLocale)
-    response.headers.set('x-pathname', pathname)
-    return response
+  const seg = pathname.split('/')[1] ?? ''
+  // /pl/... -> redirect to canonical prefix-less
+  if (seg === defaultLocale) {
+    const stripped = pathname.replace(`/${defaultLocale}`, '') || '/'
+    return NextResponse.redirect(new URL(stripped, request.url))
   }
-
-  // No locale in path - this is for the default locale (pl)
-  const response = NextResponse.next()
-  response.headers.set('x-locale', defaultLocale)
-  response.headers.set('x-pathname', pathname)
-  return response
+  // /en/... -> pass through to [locale]=en
+  if (isValidLocale(seg)) {
+    const res = NextResponse.next()
+    res.headers.set('x-locale', seg)
+    res.headers.set('x-pathname', pathname)
+    return res
+  }
+  // no locale prefix -> default locale: rewrite into [locale], keep URL
+  const url = request.nextUrl.clone()
+  url.pathname = `/${defaultLocale}${pathname}`
+  const res = NextResponse.rewrite(url)
+  res.headers.set('x-locale', defaultLocale)
+  res.headers.set('x-pathname', pathname)
+  return res
 }
 
 export const config = {
-  matcher: [
-    // Skip all internal paths (_next)
-    '/((?!_next|admin|api|favicon|robots.txt|sitemap.xml).*)',
-  ],
+  matcher: ['/((?!_next|admin|api|favicon|robots.txt|sitemap).*)'],
 }

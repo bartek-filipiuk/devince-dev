@@ -8,19 +8,22 @@ import { CMSLink } from '@/components/Link'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import Link from 'next/link'
 import { SearchIcon, Menu, X } from 'lucide-react'
+import { useLocale } from '@/providers/Locale'
+import { getLocalizedPath } from '@/utilities/getLocale'
 
 export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
   const navItems = data?.navItems || []
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { locale } = useLocale()
 
   return (
     <>
       {/* Desktop Navigation */}
       <nav className="nav-desktop hidden md:flex gap-6 items-center">
         {navItems.map(({ link }, i) => {
-          return <CMSLink key={i} {...link} appearance="link" className="nav-link text-sm font-medium uppercase tracking-wider" />
+          return <CMSLink key={i} {...link} locale={locale} appearance="link" className="nav-link text-sm font-medium uppercase tracking-wider" />
         })}
-        <Link href="/search">
+        <Link href={getLocalizedPath('/search', locale)}>
           <span className="sr-only">Search</span>
           <SearchIcon className="w-5 text-primary" />
         </Link>
@@ -29,7 +32,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
 
       {/* Mobile Menu Button */}
       <div className="flex md:hidden items-center gap-2">
-        <Link href="/search">
+        <Link href={getLocalizedPath('/search', locale)}>
           <span className="sr-only">Search</span>
           <SearchIcon className="w-5 text-primary" />
         </Link>
@@ -59,6 +62,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
                   <CMSLink
                     key={i}
                     {...link}
+                    locale={locale}
                     appearance="link"
                     onClick={() => setMobileMenuOpen(false)}
                     className="text-xl font-medium py-2 border-b border-border/50 last:border-0"

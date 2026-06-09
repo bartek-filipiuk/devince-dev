@@ -8,6 +8,8 @@ import type { Header } from '@/payload-types'
 
 import { Logo } from '@/components/Logo/Logo'
 import { HeaderNav } from './Nav'
+import { useLocale } from '@/providers/Locale'
+import { getLocalizedPath } from '@/utilities/getLocale'
 
 interface HeaderClientProps {
   data: Header
@@ -18,6 +20,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   const [theme, setTheme] = useState<string | null>(null)
   const { headerTheme, setHeaderTheme } = useHeaderTheme()
   const pathname = usePathname()
+  const { locale } = useLocale()
 
   useEffect(() => {
     setHeaderTheme(null)
@@ -35,7 +38,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
       {...(theme ? { 'data-theme': theme } : {})}
     >
       <div className="container py-4 flex justify-between items-center">
-        <Link href="/">
+        <Link href={getLocalizedPath('/', locale)}>
           <Logo loading="eager" priority="high" className="dark:invert" />
         </Link>
         <HeaderNav data={data} />

@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { Media } from '@/components/Media'
 import type { Program, Media as MediaType } from '@/payload-types'
 import { Calendar, MapPin, Globe } from 'lucide-react'
+import { defaultLocale, type Locale } from '@/i18n'
+import { getLocalizedPath } from '@/utilities/getLocale'
 
 type ProgramCardData = Pick<
   Program,
@@ -12,6 +14,7 @@ type ProgramCardData = Pick<
 type Props = {
   program: ProgramCardData
   showDescription?: boolean
+  locale?: Locale
 }
 
 const formatDate = (date: string | null | undefined): string => {
@@ -49,13 +52,17 @@ const getFormatLabel = (format: string | null | undefined): string => {
   }
 }
 
-export const ProgramCard: React.FC<Props> = ({ program, showDescription = true }) => {
+export const ProgramCard: React.FC<Props> = ({
+  program,
+  showDescription = true,
+  locale = defaultLocale,
+}) => {
   const { title, slug, type, heroImage, heroDescription, startDate, format, pricing } = program
 
   const hasHeroImage = heroImage && typeof heroImage !== 'string'
 
   return (
-    <Link href={`/program/${slug}`} className="program-card">
+    <Link href={getLocalizedPath(`/program/${slug}`, locale)} className="program-card">
       <div className="program-card-image">
         {hasHeroImage ? (
           <Media resource={heroImage as MediaType} fill imgClassName="object-cover" />

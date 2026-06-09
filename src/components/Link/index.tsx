@@ -4,12 +4,15 @@ import Link from 'next/link'
 import React from 'react'
 
 import type { Page, Post } from '@/payload-types'
+import { defaultLocale, type Locale } from '@/i18n'
+import { getLocalizedPath } from '@/utilities/getLocale'
 
 type CMSLinkType = {
   appearance?: 'inline' | ButtonProps['variant']
   children?: React.ReactNode
   className?: string
   label?: string | null
+  locale?: Locale
   newTab?: boolean | null
   onClick?: () => void
   reference?: {
@@ -28,6 +31,7 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
     children,
     className,
     label,
+    locale = defaultLocale,
     newTab,
     onClick,
     reference,
@@ -35,11 +39,18 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
     url,
   } = props
 
-  const href =
+  const referenceHref =
     type === 'reference' && typeof reference?.value === 'object' && reference.value.slug
       ? `${reference?.relationTo !== 'pages' ? `/${reference?.relationTo}` : ''}/${
           reference.value.slug
         }`
+      : null
+
+  // Localize internal reference links and internal custom urls (those starting with "/")
+  const href = referenceHref
+    ? getLocalizedPath(referenceHref, locale)
+    : url && url.startsWith('/')
+      ? getLocalizedPath(url, locale)
       : url
 
   if (!href) return null

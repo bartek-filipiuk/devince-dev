@@ -10,8 +10,10 @@ import { Logo } from '@/components/Logo/Logo'
 import { SocialLinks } from '@/components/SocialLinks'
 import { ContactInfo } from '@/components/ContactInfo'
 import { NewsletterForm } from '@/components/NewsletterForm'
+import { defaultLocale, type Locale } from '@/i18n'
+import { getLocalizedPath } from '@/utilities/getLocale'
 
-export async function Footer() {
+export async function Footer({ locale = defaultLocale }: { locale?: Locale }) {
   const footerData = (await getCachedGlobal('footer', 1)()) as Footer
   const siteSettings = (await getCachedGlobal('site-settings', 1)()) as SiteSetting
 
@@ -27,7 +29,7 @@ export async function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {/* Logo Column */}
           <div>
-            <Link className="flex items-center mb-4" href="/">
+            <Link className="flex items-center mb-4" href={getLocalizedPath('/', locale)}>
               <Logo />
             </Link>
             {siteSettings?.siteName && (
@@ -45,6 +47,7 @@ export async function Footer() {
                     className="text-gray-400 hover:text-white transition-colors"
                     key={i}
                     {...link}
+                    locale={locale}
                     appearance="inline"
                   />
                 )
