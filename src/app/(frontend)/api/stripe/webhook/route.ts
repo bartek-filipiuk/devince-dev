@@ -84,6 +84,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Normalize + dedupe (idempotent against re-delivery of the same purchase).
+      // The grant is the critical, idempotent side effect — do it first.
       const purchases = addProgramToPurchases(user.purchases as never, programId as never)
       await payload.update({
         collection: 'users',
@@ -92,19 +93,30 @@ export async function POST(req: NextRequest) {
         overrideAccess: true,
       })
 
-      // Generate a password-reset token WITHOUT sending Payload's own email
-      // (we deliver the access link via Brevo). In Payload 3.67,
-      // forgotPassword({ disableEmail: true }) returns the raw token string,
-      // which is stored verbatim in `resetPasswordToken` and accepted as-is by
-      // POST /api/users/reset-password (the /set-password page) — verified
-      // against the installed Payload source.
-      const token = (await payload.forgotPassword({
-        collection: 'users',
-        data: { email },
-        disableEmail: true,
-      })) as unknown as string
+      // Email delivery is best-effort and MUST NOT cause a Stripe retry storm or
+      // duplicate emails. If Brevo (or token generation) fails, log and CONTINUE
+      // so the event is still marked processed below. The access grant already
+      // succeeded; the customer can also recover access via /forgot-password.
+      try {
+        // Generate a password-reset token WITHOUT sending Payload's own email
+        // (we deliver the access link via Brevo). In Payload 3.67,
+        // forgotPassword({ disableEmail: true }) returns the raw token string,
+        // which is stored verbatim in `resetPasswordToken` and accepted as-is by
+        // POST /api/users/reset-password (the /set-password page) — verified
+        // against the installed Payload source.
+        const token = (await payload.forgotPassword({
+          collection: 'users',
+          data: { email },
+          disableEmail: true,
+        })) as unknown as string
 
-      await sendCourseAccessEmail({ to: email, token, isNew, programId: String(programId) })
+        await sendCourseAccessEmail({ to: email, token, isNew, programId: String(programId) })
+      } catch (err) {
+        console.error(
+          `[stripe webhook] access email failed for ${email} (program ${programId}); grant succeeded, continuing:`,
+          err,
+        )
+      }
     }
   }
 
