@@ -177,6 +177,8 @@ const translations = {
   },
 } as const
 
+export const translationsForTest = translations
+
 export type TranslationKey = keyof (typeof translations)['pl']
 
 export function getTranslation(locale: Locale, key: TranslationKey): string {
