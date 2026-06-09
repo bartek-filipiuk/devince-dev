@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { adminOnlyField } from '../../access/adminOnly'
+
 export const Users: CollectionConfig = {
   slug: 'users',
   access: {
@@ -33,9 +35,19 @@ export const Users: CollectionConfig = {
         { label: 'Admin', value: 'admin' },
         { label: 'Customer', value: 'customer' },
       ],
-      access: { update: ({ req: { user } }) => Boolean(user?.roles?.includes('admin')) },
+      access: { update: adminOnlyField },
     },
-    { name: 'purchases', type: 'relationship', relationTo: 'program', hasMany: true },
+    {
+      name: 'purchases',
+      type: 'relationship',
+      relationTo: 'program',
+      hasMany: true,
+      // Mass-assignment guard: only admins (or trusted server code via
+      // overrideAccess, e.g. the Stripe webhook) may set/grant purchases.
+      // Without this a logged-in customer could PATCH /api/users/{ownId}
+      // with { purchases: [anyProgramId] } and self-grant any paid course.
+      access: { update: adminOnlyField, create: adminOnlyField },
+    },
   ],
   timestamps: true,
 }
