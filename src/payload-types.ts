@@ -70,10 +70,13 @@ export interface Config {
     pages: Page;
     posts: Post;
     program: Program;
+    lessons: Lesson;
     projects: Project;
     media: Media;
+    'course-assets': CourseAsset;
     categories: Category;
     users: User;
+    'stripe-events': StripeEvent;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -94,10 +97,13 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     program: ProgramSelect<false> | ProgramSelect<true>;
+    lessons: LessonsSelect<false> | LessonsSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    'course-assets': CourseAssetsSelect<false> | CourseAssetsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    'stripe-events': StripeEventsSelect<false> | StripeEventsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -437,6 +443,8 @@ export interface Category {
 export interface User {
   id: number;
   name?: string | null;
+  roles?: ('admin' | 'customer')[] | null;
+  purchases?: (number | Program)[] | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -454,6 +462,61 @@ export interface User {
       }[]
     | null;
   password?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "program".
+ */
+export interface Program {
+  id: number;
+  title: string;
+  type: 'course' | 'workshop' | 'event';
+  heroImage?: (number | null) | Media;
+  heroHeadline?: string | null;
+  heroDescription?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  format?: ('online' | 'physical' | 'hybrid') | null;
+  onlineLink?: string | null;
+  locationName?: string | null;
+  locationAddress?: string | null;
+  pricing?: ('free' | 'paid') | null;
+  stripePaymentLink?: string | null;
+  stripePriceId?: string | null;
+  duration?: string | null;
+  ctaLabel?: string | null;
+  ctaUrl?: string | null;
+  layout?:
+    | (
+        | GlassHeroBlock
+        | FeaturesBlock
+        | TestimonialsBlock
+        | ContactCTABlock
+        | BrevoSignupBlock
+        | CallToActionBlock
+        | ContentBlock
+        | MediaBlock
+        | ArchiveBlock
+        | FormBlock
+      )[]
+    | null;
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    description?: string | null;
+  };
+  publishedAt?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -539,23 +602,6 @@ export interface FeaturesBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'features';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeaturedProjectsBlock".
- */
-export interface FeaturedProjectsBlock {
-  sectionTitle?: string | null;
-  sectionDescription?: string | null;
-  /**
-   * How many projects to display
-   */
-  limit?: number | null;
-  ctaLabel?: string | null;
-  ctaUrl?: string | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'featuredProjects';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1012,47 +1058,49 @@ export interface FormBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "program".
+ * via the `definition` "FeaturedProjectsBlock".
  */
-export interface Program {
-  id: number;
-  title: string;
-  type: 'course' | 'workshop' | 'event';
-  heroImage?: (number | null) | Media;
-  heroHeadline?: string | null;
-  heroDescription?: string | null;
-  startDate?: string | null;
-  endDate?: string | null;
-  format?: ('online' | 'physical' | 'hybrid') | null;
-  onlineLink?: string | null;
-  locationName?: string | null;
-  locationAddress?: string | null;
-  pricing?: ('free' | 'paid') | null;
-  duration?: string | null;
+export interface FeaturedProjectsBlock {
+  sectionTitle?: string | null;
+  sectionDescription?: string | null;
+  /**
+   * How many projects to display
+   */
+  limit?: number | null;
   ctaLabel?: string | null;
   ctaUrl?: string | null;
-  layout?:
-    | (
-        | GlassHeroBlock
-        | FeaturesBlock
-        | TestimonialsBlock
-        | ContactCTABlock
-        | BrevoSignupBlock
-        | CallToActionBlock
-        | ContentBlock
-        | MediaBlock
-        | ArchiveBlock
-        | FormBlock
-      )[]
-    | null;
-  meta?: {
-    title?: string | null;
-    /**
-     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
-     */
-    image?: (number | null) | Media;
-    description?: string | null;
-  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featuredProjects';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lessons".
+ */
+export interface Lesson {
+  id: number;
+  title: string;
+  program: number | Program;
+  phase?: string | null;
+  order?: number | null;
+  type?: ('text' | 'embed' | 'video' | 'download') | null;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  youtubeEmbedUrl?: string | null;
+  downloadFile?: (number | null) | CourseAsset;
   publishedAt?: string | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
@@ -1062,6 +1110,25 @@ export interface Program {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course-assets".
+ */
+export interface CourseAsset {
+  id: number;
+  alt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1120,6 +1187,17 @@ export interface Project {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stripe-events".
+ */
+export interface StripeEvent {
+  id: number;
+  eventId: string;
+  type?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1324,6 +1402,10 @@ export interface PayloadLockedDocument {
         value: number | Program;
       } | null)
     | ({
+        relationTo: 'lessons';
+        value: number | Lesson;
+      } | null)
+    | ({
         relationTo: 'projects';
         value: number | Project;
       } | null)
@@ -1332,12 +1414,20 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
+        relationTo: 'course-assets';
+        value: number | CourseAsset;
+      } | null)
+    | ({
         relationTo: 'categories';
         value: number | Category;
       } | null)
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'stripe-events';
+        value: number | StripeEvent;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1719,6 +1809,8 @@ export interface ProgramSelect<T extends boolean = true> {
   locationName?: T;
   locationAddress?: T;
   pricing?: T;
+  stripePaymentLink?: T;
+  stripePriceId?: T;
   duration?: T;
   ctaLabel?: T;
   ctaUrl?: T;
@@ -1743,6 +1835,26 @@ export interface ProgramSelect<T extends boolean = true> {
         image?: T;
         description?: T;
       };
+  publishedAt?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lessons_select".
+ */
+export interface LessonsSelect<T extends boolean = true> {
+  title?: T;
+  program?: T;
+  phase?: T;
+  order?: T;
+  type?: T;
+  content?: T;
+  youtubeEmbedUrl?: T;
+  downloadFile?: T;
   publishedAt?: T;
   generateSlug?: T;
   slug?: T;
@@ -1876,6 +1988,24 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course-assets_select".
+ */
+export interface CourseAssetsSelect<T extends boolean = true> {
+  alt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories_select".
  */
 export interface CategoriesSelect<T extends boolean = true> {
@@ -1900,6 +2030,8 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  roles?: T;
+  purchases?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1916,6 +2048,16 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stripe-events_select".
+ */
+export interface StripeEventsSelect<T extends boolean = true> {
+  eventId?: T;
+  type?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

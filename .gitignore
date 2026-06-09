@@ -26,6 +26,8 @@ media/
 !src/**/api/**/media/
 public/media/*
 !public/media/seed/
+# Private (gated) course downloads — stored outside public/, never committed
+private-media/
 
 # Generated files
 public/robots.txt

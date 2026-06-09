@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { authenticated } from '../../access/authenticated'
+import { adminOnly } from '../../access/adminOnly'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { Archive } from '../../blocks/ArchiveBlock/config'
 import { BrevoSignup } from '../../blocks/BrevoSignup/config'
@@ -28,10 +28,10 @@ import {
 export const Program: CollectionConfig<'program'> = {
   slug: 'program',
   access: {
-    create: authenticated,
-    delete: authenticated,
+    create: adminOnly,
+    delete: adminOnly,
     read: authenticatedOrPublished,
-    update: authenticated,
+    update: adminOnly,
   },
   defaultPopulate: {
     title: true,
@@ -187,6 +187,18 @@ export const Program: CollectionConfig<'program'> = {
                 { label: 'Bezpłatnie', value: 'free' },
                 { label: 'Płatne', value: 'paid' },
               ],
+            },
+            {
+              name: 'stripePaymentLink',
+              type: 'text',
+              label: 'Stripe Payment Link (dla płatnych)',
+              admin: { condition: (data) => data?.pricing === 'paid' },
+            },
+            {
+              name: 'stripePriceId',
+              type: 'text',
+              label: 'Stripe Price ID (opcjonalnie)',
+              admin: { condition: (data) => data?.pricing === 'paid' },
             },
             {
               name: 'duration',

@@ -88,6 +88,10 @@ export async function POST(request: NextRequest) {
       data: data as never,
       locale,
       draft: data._status === 'draft',
+      // This route is API-key-authenticated (validateAuth above) and runs
+      // server-side with no Payload user session. Bypass collection access
+      // explicitly so the admin-only Program write access does not block it.
+      overrideAccess: true,
     })
 
     return createSuccessResponse(toDocSummary(program), 201)
