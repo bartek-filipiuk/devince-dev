@@ -21,6 +21,7 @@ export const Footer: GlobalConfig = {
               fields: [
                 link({
                   appearances: false,
+                  localizedLabel: true,
                 }),
               ],
               maxRows: 6,
@@ -84,11 +85,13 @@ export const Footer: GlobalConfig = {
               type: 'text',
               label: 'Newsletter Title',
               defaultValue: 'Subscribe to our newsletter',
+              localized: true,
             },
             {
               name: 'newsletterDescription',
               type: 'textarea',
               label: 'Newsletter Description',
+              localized: true,
             },
           ],
         },
