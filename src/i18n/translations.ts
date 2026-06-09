@@ -147,6 +147,25 @@ const translations = {
     'project.noImage': 'Brak obrazu',
     'project.liveSite': 'Zobacz na żywo',
 
+    // Program
+    'program.type.course': 'Kurs',
+    'program.type.workshop': 'Warsztat',
+    'program.type.event': 'Wydarzenie',
+    'program.format.online': 'Online',
+    'program.format.physical': 'Stacjonarnie',
+    'program.format.hybrid': 'Hybrydowo',
+    'program.pricing.free': 'Bezpłatnie',
+    'program.pricing.paid': 'Płatne',
+    'program.label.date': 'Data',
+    'program.label.duration': 'Czas trwania',
+    'program.label.format': 'Format',
+    'program.label.location': 'Lokalizacja',
+    'program.label.price': 'Cena',
+    'program.noImage': 'Brak obrazu',
+
+    // SEO
+    'seo.defaultDescription': 'Strona zbudowana w oparciu o Payload i Next.js.',
+
     // Contact (page)
     'contact.notConfigured':
       'Dane kontaktowe nie zostały skonfigurowane. Zaktualizuj ustawienia witryny w panelu administracyjnym.',
@@ -303,6 +322,25 @@ const translations = {
     // Project
     'project.noImage': 'No image',
     'project.liveSite': 'Live Site',
+
+    // Program
+    'program.type.course': 'Course',
+    'program.type.workshop': 'Workshop',
+    'program.type.event': 'Event',
+    'program.format.online': 'Online',
+    'program.format.physical': 'In-Person',
+    'program.format.hybrid': 'Hybrid',
+    'program.pricing.free': 'Free',
+    'program.pricing.paid': 'Paid',
+    'program.label.date': 'Date',
+    'program.label.duration': 'Duration',
+    'program.label.format': 'Format',
+    'program.label.location': 'Location',
+    'program.label.price': 'Price',
+    'program.noImage': 'No image',
+
+    // SEO
+    'seo.defaultDescription': 'An open-source website built with Payload and Next.js.',
 
     // Contact (page)
     'contact.notConfigured':

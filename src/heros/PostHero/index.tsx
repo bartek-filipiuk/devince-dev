@@ -58,7 +58,7 @@ export const PostHero: React.FC<{
               <div className="flex flex-col gap-1">
                 <p className="text-sm">{t(locale, 'post.datePublished')}</p>
 
-                <time dateTime={publishedAt}>{formatDateTime(publishedAt)}</time>
+                <time dateTime={publishedAt}>{formatDateTime(publishedAt, locale)}</time>
               </div>
             )}
           </div>

@@ -47,7 +47,7 @@ export default async function ProgramPage({ params: paramsPromise }: Args) {
 
       <ProgramHero program={program} />
 
-      <ProgramMeta program={program} />
+      <ProgramMeta program={program} locale={locale} />
 
       {layout && layout.length > 0 && (
         <div className="program-content">
@@ -64,7 +64,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   const decodedSlug = decodeURIComponent(slug)
   const program = await queryProgramBySlug({ slug: decodedSlug, locale })
 
-  return generateMeta({ doc: program })
+  return generateMeta({ doc: program, locale, path: `/program/${decodedSlug}` })
 }
 
 const queryProgramBySlug = cache(async ({ slug, locale }: { slug: string; locale: Locale }) => {
