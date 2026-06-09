@@ -3,39 +3,27 @@
 import React from 'react'
 import type { Program } from '@/payload-types'
 import { Calendar, MapPin, Globe, Clock, ExternalLink } from 'lucide-react'
+import { defaultLocale, t, type Locale } from '@/i18n'
+import { formatDateTime } from '@/utilities/formatDateTime'
 
 type Props = {
   program: Program
+  locale?: Locale
 }
 
-const formatDate = (date: string | null | undefined): string => {
+const formatDate = (date: string | null | undefined, locale: Locale): string => {
   if (!date) return ''
-  return new Date(date).toLocaleDateString('pl-PL', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  return formatDateTime(date, locale)
 }
 
-const formatDateShort = (date: string | null | undefined): string => {
-  if (!date) return ''
-  return new Date(date).toLocaleDateString('pl-PL', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
-}
-
-const getFormatLabel = (format: string | null | undefined): string => {
+const getFormatLabel = (format: string | null | undefined, locale: Locale): string => {
   switch (format) {
     case 'online':
-      return 'Online'
+      return t(locale, 'program.format.online')
     case 'physical':
-      return 'Stacjonarnie'
+      return t(locale, 'program.format.physical')
     case 'hybrid':
-      return 'Hybrydowo'
+      return t(locale, 'program.format.hybrid')
     default:
       return ''
   }
@@ -59,7 +47,7 @@ const getFormatIcon = (format: string | null | undefined) => {
   }
 }
 
-export const ProgramMeta: React.FC<Props> = ({ program }) => {
+export const ProgramMeta: React.FC<Props> = ({ program, locale = defaultLocale }) => {
   const {
     startDate,
     endDate,
@@ -84,11 +72,11 @@ export const ProgramMeta: React.FC<Props> = ({ program }) => {
           <div className="program-meta-item">
             <Calendar className="program-meta-icon" />
             <div className="program-meta-content">
-              <span className="program-meta-label">Data</span>
+              <span className="program-meta-label">{t(locale, 'program.label.date')}</span>
               <span className="program-meta-value">
                 {hasDateRange
-                  ? `${formatDateShort(startDate)} - ${formatDateShort(endDate)}`
-                  : formatDate(startDate)}
+                  ? `${formatDate(startDate, locale)} - ${formatDate(endDate, locale)}`
+                  : formatDate(startDate, locale)}
               </span>
             </div>
           </div>
@@ -99,7 +87,7 @@ export const ProgramMeta: React.FC<Props> = ({ program }) => {
           <div className="program-meta-item">
             <Clock className="program-meta-icon" />
             <div className="program-meta-content">
-              <span className="program-meta-label">Czas trwania</span>
+              <span className="program-meta-label">{t(locale, 'program.label.duration')}</span>
               <span className="program-meta-value">{duration}</span>
             </div>
           </div>
@@ -110,8 +98,8 @@ export const ProgramMeta: React.FC<Props> = ({ program }) => {
           <div className="program-meta-item">
             <div className="program-meta-icon-group">{getFormatIcon(format)}</div>
             <div className="program-meta-content">
-              <span className="program-meta-label">Format</span>
-              <span className="program-meta-value">{getFormatLabel(format)}</span>
+              <span className="program-meta-label">{t(locale, 'program.label.format')}</span>
+              <span className="program-meta-value">{getFormatLabel(format, locale)}</span>
             </div>
           </div>
         )}
@@ -121,7 +109,7 @@ export const ProgramMeta: React.FC<Props> = ({ program }) => {
           <div className="program-meta-item">
             <MapPin className="program-meta-icon" />
             <div className="program-meta-content">
-              <span className="program-meta-label">Lokalizacja</span>
+              <span className="program-meta-label">{t(locale, 'program.label.location')}</span>
               <span className="program-meta-value">
                 {locationName}
                 {locationAddress && <span className="program-meta-address">{locationAddress}</span>}
@@ -134,9 +122,11 @@ export const ProgramMeta: React.FC<Props> = ({ program }) => {
         {pricing && (
           <div className="program-meta-item">
             <div className="program-meta-content">
-              <span className="program-meta-label">Cena</span>
+              <span className="program-meta-label">{t(locale, 'program.label.price')}</span>
               <span className={`program-meta-value program-meta-price--${pricing}`}>
-                {pricing === 'free' ? 'Bezpłatnie' : 'Płatne'}
+                {pricing === 'free'
+                  ? t(locale, 'program.pricing.free')
+                  : t(locale, 'program.pricing.paid')}
               </span>
             </div>
           </div>

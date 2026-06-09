@@ -1,0 +1,75 @@
+import type { Metadata } from 'next/types'
+
+import { CollectionArchive } from '@/components/CollectionArchive'
+import { PageRange } from '@/components/PageRange'
+import { Pagination } from '@/components/Pagination'
+import configPromise from '@payload-config'
+import { getPayload } from 'payload'
+import React from 'react'
+import PageClient from './page.client'
+import { getLocaleFromParams } from '@/utilities/getLocale'
+import { t } from '@/i18n'
+
+export const dynamic = 'force-dynamic'
+
+type Args = {
+  params: Promise<{ locale: string }>
+}
+
+export default async function Page({ params: paramsPromise }: Args) {
+  const { locale: localeParam } = await paramsPromise
+  const locale = getLocaleFromParams(localeParam)
+  const payload = await getPayload({ config: configPromise })
+
+  const posts = await payload.find({
+    collection: 'posts',
+    depth: 1,
+    limit: 12,
+    locale,
+    overrideAccess: false,
+    select: {
+      title: true,
+      slug: true,
+      categories: true,
+      meta: true,
+      heroImage: true,
+    },
+  })
+
+  return (
+    <div className="pt-24 pb-24">
+      <PageClient />
+      <div className="container mb-16">
+        <div className="prose dark:prose-invert max-w-none">
+          <h1>{t(locale, 'posts.title')}</h1>
+        </div>
+      </div>
+
+      <div className="container mb-8">
+        <PageRange
+          collection="posts"
+          currentPage={posts.page}
+          limit={12}
+          locale={locale}
+          totalDocs={posts.totalDocs}
+        />
+      </div>
+
+      <CollectionArchive posts={posts.docs} />
+
+      <div className="container">
+        {posts.totalPages > 1 && posts.page && (
+          <Pagination page={posts.page} totalPages={posts.totalPages} />
+        )}
+      </div>
+    </div>
+  )
+}
+
+export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
+  const { locale: localeParam } = await paramsPromise
+  const locale = getLocaleFromParams(localeParam)
+  return {
+    title: t(locale, 'posts.metaTitle'),
+  }
+}

@@ -7,7 +7,8 @@ import { ProjectCard } from '@/components/ProjectCard'
 import { ScrollReveal } from '@/components/ScrollReveal'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
-import { getLocale } from '@/utilities/getLocale'
+import { getLocale } from '@/utilities/getLocale.server'
+import { getLocalizedPath } from '@/utilities/getLocale'
 
 /**
  * FeaturedProjects Block - Server Component
@@ -92,7 +93,7 @@ export const FeaturedProjectsBlock: React.FC<FeaturedProjectsProps> = async ({
           <ScrollReveal>
             <div className="featured-projects-cta text-center mt-12">
               <Link
-                href={ctaUrl}
+                href={ctaUrl.startsWith('/') ? getLocalizedPath(ctaUrl, locale) : ctaUrl}
                 className="featured-projects-button inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
               >
                 {ctaLabel}

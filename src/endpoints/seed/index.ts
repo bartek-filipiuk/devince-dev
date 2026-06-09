@@ -240,7 +240,7 @@ export const seed = async ({
     collection: 'pages',
     draft: false,
     data: {
-      title: 'About',
+      title: 'O mnie',
       slug: 'about',
       hero: {
         type: 'none',
@@ -248,49 +248,49 @@ export const seed = async ({
       layout: [
         {
           blockType: 'glassHero',
-          headline: 'About Devins',
+          headline: 'O Devins',
           subheadline: createRichText(
-            "I'm Bartłomiej Filipiuk, a solo technical founder based in Wrocław, Poland. I build web applications, provide technical consulting, and help companies integrate AI into their products.",
+            'Nazywam się Bartłomiej Filipiuk i jestem niezależnym founderem technicznym z Wrocławia. Buduję aplikacje webowe, doradzam w kwestiach technologicznych i pomagam firmom integrować AI z ich produktami.',
           ),
         },
         {
           blockType: 'features',
-          sectionTitle: 'My Approach',
+          sectionTitle: 'Moje podejście',
           sectionDescription:
-            'Combining technical depth with practical business understanding.',
+            'Łączę głęboką wiedzę techniczną z praktycznym rozumieniem biznesu.',
           features: [
             {
               icon: 'code',
-              title: 'Hands-On Development',
+              title: 'Praca u podstaw',
               description:
-                'I personally deliver all client work. No outsourcing, no handoffs. You get direct access to the person building your product.',
+                'Każdy projekt realizuję osobiście. Bez outsourcingu, bez przekazywania zadań dalej. Masz bezpośredni kontakt z osobą, która buduje Twój produkt.',
             },
             {
               icon: 'lightning',
-              title: 'Modern Stack',
+              title: 'Nowoczesny stack',
               description:
-                'React, Next.js, Node.js, PostgreSQL, and the latest AI tools. I stay current with technologies that actually improve development outcomes.',
+                'React, Next.js, Node.js, PostgreSQL i najnowsze narzędzia AI. Trzymam rękę na pulsie technologii, które realnie poprawiają efekty pracy.',
             },
             {
               icon: 'users',
-              title: 'Community Connected',
+              title: 'Blisko społeczności',
               description:
-                'Active in the developer community through WrocDevs AI meetups. Connected to trends, tools, and best practices through hands-on involvement.',
+                'Aktywnie działam w społeczności programistów dzięki meetupom WrocDevs AI. Jestem na bieżąco z trendami, narzędziami i dobrymi praktykami.',
             },
           ],
         },
         {
           blockType: 'contactCTA',
-          headline: 'Want to Work Together?',
+          headline: 'Chcesz nawiązać współpracę?',
           description: createRichText(
-            'I work with startups and established companies who need reliable technical execution and clear communication.',
+            'Współpracuję ze startupami i firmami, które potrzebują rzetelnej realizacji technicznej i jasnej komunikacji.',
           ),
           contactEmail: 'contact@devince.dev',
           primaryCTA: {
             type: 'custom',
             reference: null,
             url: 'mailto:contact@devince.dev',
-            label: 'Get in Touch',
+            label: 'Skontaktuj się',
             appearance: 'default',
           },
         },
@@ -304,7 +304,7 @@ export const seed = async ({
     collection: 'pages',
     draft: false,
     data: {
-      title: 'Projects',
+      title: 'Projekty',
       slug: 'projects',
       hero: {
         type: 'none',
@@ -312,48 +312,48 @@ export const seed = async ({
       layout: [
         {
           blockType: 'glassHero',
-          headline: 'Projects',
+          headline: 'Projekty',
           subheadline: createRichText(
-            'A selection of SaaS products, open source contributions, and client work.',
+            'Wybór produktów SaaS, projektów open source oraz realizacji dla klientów.',
           ),
         },
         {
           blockType: 'features',
-          sectionTitle: 'Featured Work',
-          sectionDescription: 'Recent projects showcasing full-stack and AI capabilities.',
+          sectionTitle: 'Wybrane realizacje',
+          sectionDescription: 'Ostatnie projekty pokazujące możliwości full-stack i AI.',
           features: [
             {
               icon: 'code',
-              title: 'Client Project',
+              title: 'Projekt dla klienta',
               description:
-                'Full-stack application development for a tech startup. React frontend, Node.js backend, PostgreSQL database.',
+                'Tworzenie aplikacji full-stack dla startupu technologicznego. Frontend w React, backend w Node.js, baza danych PostgreSQL.',
             },
             {
               icon: 'lightning',
-              title: 'AI Integration',
+              title: 'Integracja AI',
               description:
-                'LLM-powered feature implementation for an established company. Custom workflows and intelligent automation.',
+                'Wdrożenie funkcji opartych na LLM dla działającej firmy. Niestandardowe workflow i inteligentna automatyzacja.',
             },
             {
               icon: 'globe',
-              title: 'Open Source',
+              title: 'Open source',
               description:
-                'Contributions to developer tools and utilities. Check GitHub for the latest projects and experiments.',
+                'Wkład w narzędzia i biblioteki dla programistów. Najnowsze projekty i eksperymenty znajdziesz na GitHubie.',
             },
           ],
         },
         {
           blockType: 'contactCTA',
-          headline: 'Have a Project in Mind?',
+          headline: 'Masz pomysł na projekt?',
           description: createRichText(
-            "Let's discuss how I can help bring your idea to life.",
+            'Porozmawiajmy o tym, jak mogę pomóc wcielić Twój pomysł w życie.',
           ),
           contactEmail: 'contact@devince.dev',
           primaryCTA: {
             type: 'custom',
             reference: null,
             url: 'mailto:contact@devince.dev',
-            label: 'Start a Project',
+            label: 'Rozpocznij projekt',
             appearance: 'default',
           },
         },
@@ -367,7 +367,7 @@ export const seed = async ({
     collection: 'pages',
     draft: false,
     data: {
-      title: 'Contact',
+      title: 'Kontakt',
       slug: 'contact',
       hero: {
         type: 'none',
@@ -375,23 +375,23 @@ export const seed = async ({
       layout: [
         {
           blockType: 'glassHero',
-          headline: 'Get in Touch',
+          headline: 'Skontaktuj się',
           subheadline: createRichText(
-            "Whether you have a project in mind, need technical advice, or just want to connect — I'd love to hear from you.",
+            'Masz pomysł na projekt, potrzebujesz porady technicznej albo po prostu chcesz nawiązać kontakt? Chętnie Cię wysłucham.',
           ),
         },
         {
           blockType: 'contactCTA',
-          headline: 'Contact Information',
+          headline: 'Dane kontaktowe',
           description: createRichText(
-            'Based in Wrocław, Poland. Working with clients nationwide and internationally (remote).',
+            'Działam z Wrocławia. Współpracuję z klientami w całej Polsce i na świecie (zdalnie).',
           ),
           contactEmail: 'contact@devince.dev',
           primaryCTA: {
             type: 'custom',
             reference: null,
             url: 'mailto:contact@devince.dev',
-            label: 'Send Email',
+            label: 'Wyślij e-mail',
             appearance: 'default',
           },
           socialLinks: [
@@ -493,8 +493,8 @@ export const seed = async ({
 
   payload.logger.info(`— Setting up navigation...`)
 
-  // Setup Header navigation
-  await payload.updateGlobal({
+  // Setup Header navigation (PL labels in default locale)
+  const headerGlobal = await payload.updateGlobal({
     slug: 'header',
     data: {
       navItems: [
@@ -505,7 +505,7 @@ export const seed = async ({
               relationTo: 'pages',
               value: homePage.id,
             },
-            label: 'Home',
+            label: 'Start',
           },
         },
         {
@@ -515,7 +515,7 @@ export const seed = async ({
               relationTo: 'pages',
               value: aboutPage.id,
             },
-            label: 'About',
+            label: 'O mnie',
           },
         },
         {
@@ -531,7 +531,7 @@ export const seed = async ({
             type: 'custom',
             reference: null,
             url: '/projects',
-            label: 'Projects',
+            label: 'Projekty',
           },
         },
         {
@@ -539,7 +539,7 @@ export const seed = async ({
             type: 'custom',
             reference: null,
             url: '/courses',
-            label: 'Courses',
+            label: 'Kursy',
           },
         },
         {
@@ -547,7 +547,7 @@ export const seed = async ({
             type: 'custom',
             reference: null,
             url: '/workshops',
-            label: 'Workshops',
+            label: 'Warsztaty',
           },
         },
         {
@@ -555,7 +555,7 @@ export const seed = async ({
             type: 'custom',
             reference: null,
             url: '/events',
-            label: 'Events',
+            label: 'Wydarzenia',
           },
         },
         {
@@ -565,15 +565,15 @@ export const seed = async ({
               relationTo: 'pages',
               value: contactPage.id,
             },
-            label: 'Contact',
+            label: 'Kontakt',
           },
         },
       ],
     },
   })
 
-  // Setup Footer navigation
-  await payload.updateGlobal({
+  // Setup Footer navigation (PL labels in default locale)
+  const footerGlobal = await payload.updateGlobal({
     slug: 'footer',
     data: {
       navItems: [
@@ -584,7 +584,7 @@ export const seed = async ({
               relationTo: 'pages',
               value: homePage.id,
             },
-            label: 'Home',
+            label: 'Start',
           },
         },
         {
@@ -594,7 +594,7 @@ export const seed = async ({
               relationTo: 'pages',
               value: aboutPage.id,
             },
-            label: 'About',
+            label: 'O mnie',
           },
         },
         {
@@ -604,7 +604,7 @@ export const seed = async ({
               relationTo: 'pages',
               value: projectsPage.id,
             },
-            label: 'Projects',
+            label: 'Projekty',
           },
         },
         {
@@ -614,7 +614,7 @@ export const seed = async ({
               relationTo: 'pages',
               value: contactPage.id,
             },
-            label: 'Contact',
+            label: 'Kontakt',
           },
         },
         {
@@ -631,6 +631,9 @@ export const seed = async ({
       showSocialLinks: true,
       showContactInfo: true,
       showNewsletter: false,
+      // Localized newsletter copy (PL default slot); EN seeded later.
+      newsletterTitle: 'Zapisz się do newslettera',
+      newsletterDescription: 'Najnowsze aktualizacje prosto na Twoją skrzynkę.',
     },
   })
 
@@ -751,7 +754,7 @@ export const seed = async ({
   const authorId = adminUser.docs[0]?.id
 
   // Blog Post 1: AI changes developer work
-  await payload.create({
+  const post1 = await payload.create({
     collection: 'posts',
     draft: false,
     data: {
@@ -994,7 +997,7 @@ export const seed = async ({
   })
 
   // Blog Post 2: LLM workflow automation
-  await payload.create({
+  const post2 = await payload.create({
     collection: 'posts',
     draft: false,
     data: {
@@ -1276,7 +1279,7 @@ export const seed = async ({
   const eventDate = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000) // 2 months
 
   // Course: AI in Product
-  await payload.create({
+  const course = await payload.create({
     collection: 'program',
     draft: false,
     data: {
@@ -1328,7 +1331,7 @@ export const seed = async ({
   })
 
   // Workshop: LLM Integration
-  await payload.create({
+  const workshop = await payload.create({
     collection: 'program',
     draft: false,
     data: {
@@ -1380,7 +1383,7 @@ export const seed = async ({
   })
 
   // Event: AI Meetup
-  await payload.create({
+  const event = await payload.create({
     collection: 'program',
     draft: false,
     data: {
@@ -1434,14 +1437,14 @@ export const seed = async ({
   payload.logger.info(`— Creating projects...`)
 
   // Project 1: Videtion (ytforge-saas)
-  await payload.create({
+  const projectVidetion = await payload.create({
     collection: 'projects',
     draft: false,
     data: {
       title: 'Videtion',
       slug: 'videtion',
       description: createRichText(
-        'AI-powered video creation SaaS platform. Automate your video content production with intelligent templates, voiceover generation, and seamless publishing to YouTube and social media platforms.',
+        'Platforma SaaS do tworzenia wideo oparta na AI. Automatyzuje produkcję treści wideo dzięki inteligentnym szablonom, generowaniu lektora i bezproblemowej publikacji na YouTube oraz w mediach społecznościowych.',
       ),
       technologies: [
         { name: 'Next.js' },
@@ -1457,14 +1460,14 @@ export const seed = async ({
   })
 
   // Project 2: ScrapBlogPosts
-  await payload.create({
+  const projectScrap = await payload.create({
     collection: 'projects',
     draft: false,
     data: {
       title: 'ScrapBlogPosts',
       slug: 'scrap-blog-posts',
       description: createRichText(
-        'Intelligent blog post scraping tool for content research and analysis. Extract, analyze, and organize content from multiple sources with AI-powered summarization and categorization.',
+        'Inteligentne narzędzie do scrapowania wpisów blogowych na potrzeby researchu i analizy treści. Pobiera, analizuje i porządkuje materiały z wielu źródeł, korzystając z podsumowań i kategoryzacji opartych na AI.',
       ),
       technologies: [
         { name: 'Python' },
@@ -1479,14 +1482,14 @@ export const seed = async ({
   })
 
   // Project 3: WrocDevs
-  await payload.create({
+  const projectWrocDevs = await payload.create({
     collection: 'projects',
     draft: false,
     data: {
       title: 'WrocDevs',
       slug: 'wrocdevs',
       description: createRichText(
-        'Community website for Wrocław developer meetups. Modern event management, speaker profiles, and community engagement features built for the local tech community.',
+        'Strona społeczności wrocławskich meetupów programistycznych. Nowoczesne zarządzanie wydarzeniami, profile prelegentów i funkcje angażujące społeczność, zbudowane dla lokalnej sceny technologicznej.',
       ),
       technologies: [
         { name: 'Next.js' },
@@ -1498,6 +1501,300 @@ export const seed = async ({
       productionUrl: 'https://wrocdevs.pl',
       publishedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 1 month ago
       _status: 'published',
+    },
+  })
+
+  // ========================================
+  // SEED ENGLISH TRANSLATIONS (locale: 'en')
+  // ========================================
+  // PL is the default locale; the docs above were authored in Polish in the
+  // default slot. Here we add real English values for the *localized* fields so
+  // the /en site shows genuine English instead of falling back to Polish.
+  //
+  // NOTE: Page layout blocks (GlassHero/Features/ContactCTA) are NOT localized
+  // fields, so their body text is shared across locales — we intentionally do
+  // NOT send block bodies in EN updates (doing so would overwrite the PL text).
+  // Only genuinely localized fields are translated below.
+  payload.logger.info(`— Seeding English translations (locale: en)...`)
+
+  const enCtx = { disableRevalidate: true }
+
+  // Pages: only `title` is localized (block bodies are shared, see note above).
+  await payload.update({
+    collection: 'pages',
+    id: homePage.id,
+    locale: 'en',
+    context: enCtx,
+    data: {
+      title: 'Home',
+      // Localized block fields on Home: Newsletter (BrevoSignup) + Featured Projects.
+      // We must pass the existing block `id`s so Payload matches them to the
+      // shared (non-localized) structure and only writes the localized leaves.
+      layout: homePage.layout?.map((block) => {
+        if (block.blockType === 'brevoSignup') {
+          return {
+            ...block,
+            headline: 'Stay in the loop',
+            description: createRichText(
+              'Subscribe to the newsletter for updates on new projects, articles, and events. No spam, unsubscribe anytime.',
+            ),
+            placeholder: 'Your email address',
+            buttonText: 'Subscribe',
+            successMessage: 'Thanks! Check your inbox to confirm your subscription.',
+          }
+        }
+        if (block.blockType === 'featuredProjects') {
+          return {
+            ...block,
+            sectionTitle: 'Featured projects',
+            sectionDescription: 'A few examples of my recent work.',
+            ctaLabel: 'View all projects',
+          }
+        }
+        return block
+      }),
+    },
+  })
+
+  await payload.update({
+    collection: 'pages',
+    id: aboutPage.id,
+    locale: 'en',
+    context: enCtx,
+    data: { title: 'About' },
+  })
+
+  await payload.update({
+    collection: 'pages',
+    id: projectsPage.id,
+    locale: 'en',
+    context: enCtx,
+    data: { title: 'Projects' },
+  })
+
+  await payload.update({
+    collection: 'pages',
+    id: contactPage.id,
+    locale: 'en',
+    context: enCtx,
+    data: { title: 'Contact' },
+  })
+
+  // Posts: `title` + `content` are localized → seed full English bodies.
+  await payload.update({
+    collection: 'posts',
+    id: post1.id,
+    locale: 'en',
+    context: enCtx,
+    data: {
+      title: 'How AI Is Changing the Developer Job in 2025',
+      content: buildArticleContent([
+        {
+          type: 'p',
+          text: 'Artificial intelligence is fundamentally changing the way we write code. Tools like Claude Code, GitHub Copilot, and Cursor have become an inseparable part of many developers’ daily work. But does that mean our jobs are at risk? Quite the opposite.',
+        },
+        { type: 'h2', text: 'AI as a superpower, not a replacement' },
+        {
+          type: 'p',
+          text: 'AI assistants don’t replace developers — they amplify them. Routine tasks that once took hours (boilerplate, unit tests, documentation) now take minutes. That frees you up to focus on what really matters: architecture, solving business problems, and creative thinking.',
+        },
+        { type: 'h2', text: 'Practical uses in everyday work' },
+        { type: 'p', text: 'In my daily work, AI helps me in several ways:' },
+        {
+          type: 'pBold',
+          bold: 'Faster prototyping',
+          rest: ' — an MVP that used to take a week of work now comes together in a few days. AI generates the scaffolding, and I focus on the business logic.',
+        },
+        {
+          type: 'pBold',
+          bold: 'Better code review',
+          rest: ' — AI analyzes code for potential bugs, security issues, and best practices. It’s like having an extra, tireless reviewer.',
+        },
+        {
+          type: 'pBold',
+          bold: 'Learning new technologies',
+          rest: ' — AI explains concepts, shows examples, and answers questions. Getting into a new stack is faster than ever.',
+        },
+        { type: 'h2', text: 'What’s next?' },
+        {
+          type: 'p',
+          text: 'The future belongs to developers who can collaborate effectively with AI. It’s not a question of whether to use these tools — it’s a question of how to use them wisely. Understanding their capabilities and limitations is the key to success in 2025 and beyond.',
+        },
+      ]),
+    },
+  })
+
+  await payload.update({
+    collection: 'posts',
+    id: post2.id,
+    locale: 'en',
+    context: enCtx,
+    data: {
+      title: 'Automating Workflows with LLMs — A Practical Guide',
+      content: buildArticleContent([
+        {
+          type: 'p',
+          text: 'Large Language Models (LLMs) are not just chatbots. They are powerful tools for automating business processes that can save hundreds of hours of work every month. In this article I’ll share concrete examples and practical tips.',
+        },
+        { type: 'h2', text: 'Where do LLMs work best?' },
+        {
+          type: 'p',
+          text: 'Not every process is a good fit for LLM automation. You’ll get the best results on tasks that involve:',
+        },
+        { type: 'p', text: '• Processing and analyzing text (emails, documents, reports)' },
+        { type: 'p', text: '• Categorizing and tagging data' },
+        { type: 'p', text: '• Generating content from templates' },
+        { type: 'p', text: '• Extracting information from unstructured sources' },
+        { type: 'h2', text: 'Case study: automating lead handling' },
+        {
+          type: 'p',
+          text: 'One of my clients received dozens of inquiries a day through their contact form. The sales team spent hours sorting them and answering the same repetitive questions.',
+        },
+        {
+          type: 'p',
+          text: 'The solution: a webhook + Claude API that automatically categorizes inquiries, answers FAQs, and forwards hot leads to the CRM with a summary of the customer’s needs. The result? A 70% reduction in the time spent handling inquiries.',
+        },
+        { type: 'h2', text: 'How to get started?' },
+        {
+          type: 'p',
+          text: 'Start with a small pilot. Pick one process that is time-consuming and repetitive. Build a prototype, measure the impact, iterate. Don’t try to automate everything at once — that’s a recipe for failure.',
+        },
+        {
+          type: 'p',
+          text: 'Need help integrating LLMs into your company? Get in touch — I’ll gladly help you design and ship a solution tailored to your needs.',
+        },
+      ]),
+    },
+  })
+
+  // Programs: localized fields = title, heroHeadline, heroDescription,
+  // locationName, locationAddress, duration, ctaLabel. (layout blocks shared.)
+  await payload.update({
+    collection: 'program',
+    id: course.id,
+    locale: 'en',
+    context: enCtx,
+    data: {
+      title: 'AI in Your Product: From Concept to Deployment',
+      heroHeadline: 'Build an AI product from scratch',
+      heroDescription:
+        'A comprehensive online course showing how to design, build, and ship a product powered by artificial intelligence. A hands-on approach, real projects, and individual support.',
+      duration: '6 weeks',
+      ctaLabel: 'Enroll in the course',
+    },
+  })
+
+  await payload.update({
+    collection: 'program',
+    id: workshop.id,
+    locale: 'en',
+    context: enCtx,
+    data: {
+      title: 'Hands-On Workshop: Integrating LLMs into Your App',
+      heroHeadline: 'One day, practical skills',
+      heroDescription:
+        'An intensive workshop for developers who want to learn how to integrate LLMs into existing applications. Bring your own project and leave with a working integration.',
+      locationName: 'Concordia Design',
+      locationAddress: '7 Wyspa Słodowa St.\n50-266 Wrocław, Poland',
+      ctaLabel: 'Reserve your spot',
+    },
+  })
+
+  await payload.update({
+    collection: 'program',
+    id: event.id,
+    locale: 'en',
+    context: enCtx,
+    data: {
+      title: 'WrocDevs AI Meetup: The Future of Programming with AI',
+      heroHeadline: 'Join the community',
+      heroDescription:
+        'An evening of talks, discussions, and networking for everyone interested in AI in software development. Free entry, pizza, and drinks!',
+      locationName: 'Mleczarnia',
+      locationAddress: '5 Włodkowica St.\n50-072 Wrocław, Poland',
+      ctaLabel: 'RSVP',
+    },
+  })
+
+  // Projects: `title` (localized+required) and `description` (localized) →
+  // include the title in the EN update (proper noun, same text) so EN-locale
+  // validation passes, plus the English description.
+  await payload.update({
+    collection: 'projects',
+    id: projectVidetion.id,
+    locale: 'en',
+    context: enCtx,
+    data: {
+      title: 'Videtion',
+      description: createRichText(
+        'AI-powered video creation SaaS platform. Automate your video content production with intelligent templates, voiceover generation, and seamless publishing to YouTube and social media platforms.',
+      ),
+    },
+  })
+
+  await payload.update({
+    collection: 'projects',
+    id: projectScrap.id,
+    locale: 'en',
+    context: enCtx,
+    data: {
+      title: 'ScrapBlogPosts',
+      description: createRichText(
+        'Intelligent blog post scraping tool for content research and analysis. Extract, analyze, and organize content from multiple sources with AI-powered summarization and categorization.',
+      ),
+    },
+  })
+
+  await payload.update({
+    collection: 'projects',
+    id: projectWrocDevs.id,
+    locale: 'en',
+    context: enCtx,
+    data: {
+      title: 'WrocDevs',
+      description: createRichText(
+        'Community website for Wrocław developer meetups. Modern event management, speaker profiles, and community engagement features built for the local tech community.',
+      ),
+    },
+  })
+
+  // Globals: Header/Footer nav `label` is a localized field. To seed EN labels
+  // WITHOUT wiping the PL labels, we must reuse the existing navItem array `id`s
+  // (and keep all non-localized link props identical) so Payload writes only the
+  // `en` label slot on the same rows instead of recreating them.
+  const headerEnLabels = ['Home', 'About', 'Blog', 'Projects', 'Courses', 'Workshops', 'Events', 'Contact']
+  await payload.updateGlobal({
+    slug: 'header',
+    locale: 'en',
+    context: enCtx,
+    data: {
+      navItems: (headerGlobal.navItems || []).map((item, index) => ({
+        ...item,
+        link: {
+          ...item.link,
+          label: headerEnLabels[index] ?? item.link?.label,
+        },
+      })),
+    },
+  })
+
+  const footerEnLabels = ['Home', 'About', 'Projects', 'Contact', 'Privacy Policy']
+  await payload.updateGlobal({
+    slug: 'footer',
+    locale: 'en',
+    context: enCtx,
+    data: {
+      navItems: (footerGlobal.navItems || []).map((item, index) => ({
+        ...item,
+        link: {
+          ...item.link,
+          label: footerEnLabels[index] ?? item.link?.label,
+        },
+      })),
+      // newsletterTitle/Description are localized; provide EN values too
+      // (newsletter is hidden via showNewsletter:false, but kept consistent).
+      newsletterTitle: 'Subscribe to our newsletter',
+      newsletterDescription: 'Get the latest updates straight to your inbox.',
     },
   })
 
@@ -1571,6 +1868,68 @@ export const createRichText = (text: string) => ({
         version: 1,
       },
     ],
+    direction: 'ltr' as const,
+    format: '' as const,
+    indent: 0,
+    version: 1,
+  },
+})
+
+// --- Article content builders (used to seed full-length localized post bodies) ---
+
+type ArticleNode =
+  | { type: 'h2'; text: string }
+  | { type: 'p'; text: string }
+  | { type: 'pBold'; bold: string; rest: string }
+
+const textNode = (text: string, format = 0) => ({
+  type: 'text' as const,
+  detail: 0,
+  format,
+  mode: 'normal' as const,
+  style: '',
+  text,
+  version: 1,
+})
+
+// Builds a Lexical rich-text document from a flat list of headings/paragraphs.
+// Mirrors the node shape used by the Polish post bodies so PL/EN stay structurally identical.
+export const buildArticleContent = (nodes: ArticleNode[]) => ({
+  root: {
+    type: 'root',
+    children: nodes.map((node) => {
+      if (node.type === 'h2') {
+        return {
+          type: 'heading',
+          tag: 'h2',
+          children: [textNode(node.text)],
+          direction: 'ltr' as const,
+          format: '' as const,
+          indent: 0,
+          version: 1,
+        }
+      }
+      if (node.type === 'pBold') {
+        return {
+          type: 'paragraph',
+          children: [textNode(node.bold, 1), textNode(node.rest)],
+          direction: 'ltr' as const,
+          format: '' as const,
+          indent: 0,
+          textFormat: 0,
+          version: 1,
+        }
+      }
+      return {
+        type: 'paragraph',
+        children: [textNode(node.text)],
+        direction: 'ltr' as const,
+        format: '' as const,
+        indent: 0,
+        textFormat: 0,
+        version: 1,
+      }
+    }),
     direction: 'ltr' as const,
     format: '' as const,
     indent: 0,

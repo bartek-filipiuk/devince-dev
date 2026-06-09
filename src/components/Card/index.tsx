@@ -7,6 +7,8 @@ import React, { Fragment } from 'react'
 import type { Post } from '@/payload-types'
 
 import { Media } from '@/components/Media'
+import { useLocale } from '@/providers/Locale'
+import { getLocalizedPath } from '@/utilities/getLocale'
 
 export type CardPostData = Pick<Post, 'slug' | 'categories' | 'meta' | 'title' | 'heroImage'>
 
@@ -19,6 +21,7 @@ export const Card: React.FC<{
   title?: string
 }> = (props) => {
   const { card, link } = useClickableCard({})
+  const { locale, t } = useLocale()
   const { className, doc, relationTo, showCategories, title: titleFromProps } = props
 
   const { slug, categories, meta, title, heroImage } = doc || {}
@@ -28,7 +31,7 @@ export const Card: React.FC<{
   const hasCategories = categories && Array.isArray(categories) && categories.length > 0
   const titleToUse = titleFromProps || title
   const sanitizedDescription = description?.replace(/\s/g, ' ') // replace non-breaking space with white space
-  const href = `/${relationTo}/${slug}`
+  const href = getLocalizedPath(`/${relationTo}/${slug}`, locale)
 
   return (
     <article
@@ -52,7 +55,7 @@ export const Card: React.FC<{
                   if (typeof category === 'object') {
                     const { title: titleFromCategory } = category
 
-                    const categoryTitle = titleFromCategory || 'Untitled category'
+                    const categoryTitle = titleFromCategory || t('card.untitledCategory')
 
                     const isLast = index === categories.length - 1
 

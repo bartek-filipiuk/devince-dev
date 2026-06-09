@@ -1,26 +1,17 @@
 import React from 'react'
 
-const defaultLabels = {
-  plural: 'Docs',
-  singular: 'Doc',
-}
-
-const defaultCollectionLabels = {
-  posts: {
-    plural: 'Posts',
-    singular: 'Post',
-  },
-}
+import { defaultLocale, t, type Locale } from '@/i18n'
 
 export const PageRange: React.FC<{
   className?: string
-  collection?: keyof typeof defaultCollectionLabels
+  collection?: 'posts'
   collectionLabels?: {
     plural?: string
     singular?: string
   }
   currentPage?: number
   limit?: number
+  locale?: Locale
   totalDocs?: number
 }> = (props) => {
   const {
@@ -29,6 +20,7 @@ export const PageRange: React.FC<{
     collectionLabels: collectionLabelsFromProps,
     currentPage,
     limit,
+    locale = defaultLocale,
     totalDocs,
   } = props
 
@@ -38,20 +30,35 @@ export const PageRange: React.FC<{
   let indexEnd = (currentPage || 1) * (limit || 1)
   if (totalDocs && indexEnd > totalDocs) indexEnd = totalDocs
 
-  const { plural, singular } =
-    collectionLabelsFromProps ||
-    (collection ? defaultCollectionLabels[collection] : undefined) ||
-    defaultLabels ||
-    {}
+  const defaultLabels = {
+    plural: t(locale, 'pageRange.docsPlural'),
+    singular: t(locale, 'pageRange.docsSingular'),
+  }
+
+  const collectionLabels =
+    collection === 'posts'
+      ? {
+          plural: t(locale, 'pageRange.postsPlural'),
+          singular: t(locale, 'pageRange.postsSingular'),
+        }
+      : undefined
+
+  const labels = collectionLabelsFromProps || collectionLabels || defaultLabels
+  const plural = labels.plural || defaultLabels.plural
+  const singular = labels.singular || defaultLabels.singular
+
+  const range = `${indexStart}${indexStart > 0 ? ` - ${indexEnd}` : ''}`
 
   return (
     <div className={[className, 'font-semibold'].filter(Boolean).join(' ')}>
-      {(typeof totalDocs === 'undefined' || totalDocs === 0) && 'Search produced no results.'}
+      {(typeof totalDocs === 'undefined' || totalDocs === 0) && t(locale, 'pageRange.noResults')}
       {typeof totalDocs !== 'undefined' &&
         totalDocs > 0 &&
-        `Showing ${indexStart}${indexStart > 0 ? ` - ${indexEnd}` : ''} of ${totalDocs} ${
-          totalDocs > 1 ? plural : singular
-        }`}
+        t(locale, 'pageRange.showing', {
+          range,
+          total: totalDocs,
+          label: totalDocs > 1 ? plural : singular,
+        })}
     </div>
   )
 }

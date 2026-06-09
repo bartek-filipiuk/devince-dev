@@ -1,6 +1,7 @@
 import React from 'react'
 
 import type { FeaturesBlock as FeaturesProps } from '@/payload-types'
+import { defaultLocale, type Locale } from '@/i18n'
 
 import { CMSLink } from '@/components/Link'
 import { ScrollReveal } from '@/components/ScrollReveal'
@@ -70,10 +71,11 @@ const iconMap: Record<string, React.ReactNode> = {
  * - .feature-description: Feature description
  * - .feature-link: Feature link
  */
-export const FeaturesBlock: React.FC<FeaturesProps> = ({
+export const FeaturesBlock: React.FC<FeaturesProps & { locale?: Locale }> = ({
   sectionTitle,
   sectionDescription,
   features,
+  locale = defaultLocale,
 }) => {
   return (
     <section className="features-section py-20 relative">
@@ -116,6 +118,7 @@ export const FeaturesBlock: React.FC<FeaturesProps> = ({
                     url={feature.linkUrl}
                     label={feature.linkLabel}
                     appearance="inline"
+                    locale={locale}
                     className="feature-link text-primary font-medium inline-flex items-center gap-1"
                   >
                     {feature.linkLabel}

@@ -3,6 +3,9 @@ import Link from 'next/link'
 import { Media } from '@/components/Media'
 import type { Program, Media as MediaType } from '@/payload-types'
 import { Calendar, MapPin, Globe } from 'lucide-react'
+import { defaultLocale, t, type Locale } from '@/i18n'
+import { getLocalizedPath } from '@/utilities/getLocale'
+import { formatDateTime } from '@/utilities/formatDateTime'
 
 type ProgramCardData = Pick<
   Program,
@@ -12,66 +15,62 @@ type ProgramCardData = Pick<
 type Props = {
   program: ProgramCardData
   showDescription?: boolean
+  locale?: Locale
 }
 
-const formatDate = (date: string | null | undefined): string => {
-  if (!date) return ''
-  return new Date(date).toLocaleDateString('pl-PL', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
-}
-
-const getTypeBadgeLabel = (type: string): string => {
+const getTypeBadgeLabel = (type: string, locale: Locale): string => {
   switch (type) {
     case 'course':
-      return 'Kurs'
+      return t(locale, 'program.type.course')
     case 'workshop':
-      return 'Warsztat'
+      return t(locale, 'program.type.workshop')
     case 'event':
-      return 'Wydarzenie'
+      return t(locale, 'program.type.event')
     default:
       return type
   }
 }
 
-const getFormatLabel = (format: string | null | undefined): string => {
+const getFormatLabel = (format: string | null | undefined, locale: Locale): string => {
   switch (format) {
     case 'online':
-      return 'Online'
+      return t(locale, 'program.format.online')
     case 'physical':
-      return 'Stacjonarnie'
+      return t(locale, 'program.format.physical')
     case 'hybrid':
-      return 'Hybrydowo'
+      return t(locale, 'program.format.hybrid')
     default:
       return ''
   }
 }
 
-export const ProgramCard: React.FC<Props> = ({ program, showDescription = true }) => {
+export const ProgramCard: React.FC<Props> = ({
+  program,
+  showDescription = true,
+  locale = defaultLocale,
+}) => {
   const { title, slug, type, heroImage, heroDescription, startDate, format, pricing } = program
 
   const hasHeroImage = heroImage && typeof heroImage !== 'string'
 
   return (
-    <Link href={`/program/${slug}`} className="program-card">
+    <Link href={getLocalizedPath(`/program/${slug}`, locale)} className="program-card">
       <div className="program-card-image">
         {hasHeroImage ? (
           <Media resource={heroImage as MediaType} fill imgClassName="object-cover" />
         ) : (
-          <div className="program-card-no-image">Brak obrazu</div>
+          <div className="program-card-no-image">{t(locale, 'program.noImage')}</div>
         )}
         <div className="program-card-badges">
           <span className={`program-card-badge program-card-badge--${type}`}>
-            {getTypeBadgeLabel(type)}
+            {getTypeBadgeLabel(type, locale)}
           </span>
           {format && (
             <span className="program-card-badge program-card-badge--format">
               {format === 'online' && <Globe className="w-3 h-3" />}
               {format === 'physical' && <MapPin className="w-3 h-3" />}
               {format === 'hybrid' && <Globe className="w-3 h-3" />}
-              {getFormatLabel(format)}
+              {getFormatLabel(format, locale)}
             </span>
           )}
         </div>
@@ -82,12 +81,14 @@ export const ProgramCard: React.FC<Props> = ({ program, showDescription = true }
           {startDate && (
             <span className="program-card-meta-item">
               <Calendar className="w-4 h-4" />
-              {formatDate(startDate)}
+              {formatDateTime(startDate, locale)}
             </span>
           )}
           {pricing && (
             <span className="program-card-meta-item">
-              {pricing === 'free' ? 'Bezpłatnie' : 'Płatne'}
+              {pricing === 'free'
+                ? t(locale, 'program.pricing.free')
+                : t(locale, 'program.pricing.paid')}
             </span>
           )}
         </div>
