@@ -49,3 +49,35 @@ Prod ma schemat „ręcznie połatany", brak ledgera migracji, enum locale = **`
 - Migracje: `src/migrations/`, `scripts/migrate.mjs`, `scripts/reconcile-prod-migrations.ts`
 - courses: `src/app/courses-app/**`, `src/middleware.ts`, `src/collections/{Program,Lessons}/index.ts`, `src/utilities/courseMeta.ts`, `scripts/import-course.ts`
 - Security audit kursów (wcześniej): `.security-audit/` (gitignored)
+
+---
+
+## /loop NA NOC — autonomiczny build apps.* (design + działanie)
+Użytkownik PRE-AUTORYZOWAŁ ten autonomiczny build per decyzje niżej. **Deploy + niepewny punkt (tsx/runner w kontenerze) + cokolwiek na prodzie = NA RANO, NIE w nocy.** Wklej poniższe jako `/loop` (bez interwału → self-paced; agent sam planuje wakeupy i wznawia do ukończenia):
+
+```
+Buduj apps.devince.dev (Projekt 2) end-to-end, autonomicznie, LOKALNIE. Wznawiaj od miejsca przerwania: sprawdź `git log`, pliki `docs/superpowers/{specs,plans}/2026-06-10-apps-subdomain-*`, i listę tasków. Najpierw przeczytaj `docs/HANDOFF.md` (wzorzec courses.* = Twój szablon).
+
+Decyzje (PRE-ZATWIERDZONE — NIE pytaj, NIE rób interaktywnego approval):
+- Kolekcja `Products` (downloadable): title, slug, opis (richText), cena (`priceCents`+`currency`) lub `stripePriceId`, `downloadFiles` (PRYWATNE — osobna upload-kolekcja jak `course-assets`, NIE w public/), `_status` published, SEO.
+- One-time Stripe: Checkout Session (lub Payment Link z `metadata.productId`) → webhook `checkout.session.completed` (verify signature raw body + idempotencja przez `stripe-events`).
+- BEZ KONTA. Po zakupie webhook tworzy **podpisany, wygasający grant pobrania** (kolekcja `DownloadGrants`: token=HMAC, productId, email, expiresAt, maxUses, uses) i Brevo wysyła mail z linkiem `apps.devince.dev/download/<token>`. Route `/api/apps/download/[token]` waliduje (podpis+expiry+limit) i STREAMUJE plik z prywatnego storage. Zero publicznych URL-i do plików.
+- Subdomena `apps.*` → wzorzec DOKŁADNIE jak courses: middleware host-rewrite `apps.*`→realny segment `src/app/apps-app/` z własnym root layoutem; TEN SAM design (reużyj/zaadaptuj `src/app/courses-app/course-theme.css`). Strony: storefront (lista produktów + paginacja), produkt (opis + „Kup" → Checkout), sukces/„sprawdź mail".
+- Schemat WYŁĄCZNIE przez migracje (`push:false` już jest): każda zmiana modelu = `DATABASE_URI=...payload_ref pnpm payload migrate:create <name>` + commit. NIE przywracaj push:true.
+
+Proces (pomiń interaktywne bramki — user pre-autoryzował):
+1. Brak spec? → napisz `docs/superpowers/specs/2026-06-10-apps-subdomain-design.md` (wg decyzji + wzorca `2026-06-10-courses-subdomain-design.md`), self-review (placeholdery/spójność).
+2. Brak planu? → użyj `superpowers:writing-plans` → `docs/superpowers/plans/2026-06-10-apps-subdomain.md` (bite-sized; TDD dla logiki: token sign/verify, grant-use; build+smoke dla stron/route). Wzoruj na planie courses.
+3. `superpowers:subagent-driven-development` — świeży subagent per task, weryfikacja, commit per task. Reużyj: Stripe webhook + Brevo helper + prywatne uploady/streaming (`course-assets`) + wzorzec subdomena+theme z courses.
+4. Weryfikacja lokalna każdego taska: `pnpm test:int`, `pnpm build`, smoke na host `apps.devince.dev` (storefront 200, produkt 200, `/api/apps/download/<bad>` → 401/403, ważny token → plik). Zrób fixture produktu (jak `kurs-testowy-sylabus` dla courses) do smoke; dev DB jest na migracjach.
+5. Branch `feat/apps-subdomain` od `main`. Po ukończeniu: push + PR z runbookiem deploya (analogicznym do courses — migracje/reconcile). NIE deployuj.
+
+TWARDE GRANICE (NA RANO, NIE w nocy):
+- NIE deployuj, NIE pushuj na `main`, NIE ruszaj prod (SSH/Coolify/reconcile/migracje na prodzie).
+- NIE weryfikuj/naprawiaj tsx-w-kontenerze (to osobny morning blocker dla courses).
+- Bash: NIE kończ komend przez `pkill`/`kill` (exit 144 zabija shell; zostaw dev-server lub zabij osobną komendą).
+
+Gdy apps.* w pełni zbudowane + lokalnie zielone + PR otwarty → ZAKOŃCZ loop (nie planuj kolejnego wakeupu). Jeśli twardy blocker nierozwiązywalny lokalnie → dopisz notatkę do `docs/HANDOFF.md` (sekcja „apps — blocker") i zakończ.
+```
+
+**Na rano (operator + ja):** (1) weryfikacja tsx/runner migracji w kontenerze standalone → ewentualnie skompilować runner / `pnpm payload migrate`; (2) deploy courses.* wg runbooku (backup → reconcile-prod → Coolify start cmd → deploy → import); (3) potem deploy apps.* analogicznie.
