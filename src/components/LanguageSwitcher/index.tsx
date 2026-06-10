@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Globe } from 'lucide-react'
 import { locales, localeLabels, defaultLocale, isValidLocale, type Locale } from '@/i18n'
@@ -36,6 +35,13 @@ function getLocalizedPath(pathname: string, targetLocale: Locale): string {
   return `/${targetLocale}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`
 }
 
+// Switching language uses a plain <a> (full navigation), NOT next/link.
+// Header/Footer + LocaleProvider live in the shared root layout, which is NOT
+// re-rendered on client-side navigation — so a soft <Link> would change the URL
+// and page body but leave the chrome (menu/footer) in the old language until a
+// manual reload. A full navigation re-runs the layout, so everything switches at
+// once. Language switching is infrequent, so the full reload is acceptable.
+
 export function LanguageSwitcher() {
   const pathname = usePathname()
   // Detect locale directly from URL path for accurate client-side detection
@@ -47,10 +53,14 @@ export function LanguageSwitcher() {
 
   return (
     <Button variant="ghost" size="sm" asChild className="hover:bg-transparent hover:text-primary">
-      <Link href={otherPath} className="flex items-center gap-1.5">
+      <a
+        href={otherPath}
+        className="flex items-center gap-1.5"
+        aria-label={`Switch language to ${localeLabels[otherLocale]}`}
+      >
         <Globe className="h-4 w-4" />
         <span className="uppercase text-xs font-medium">{otherLocale}</span>
-      </Link>
+      </a>
     </Button>
   )
 }
@@ -62,15 +72,10 @@ export function LanguageSwitcherFull() {
   return (
     <div className="flex items-center gap-1">
       {locales.map((loc) => (
-        <Button
-          key={loc}
-          variant={loc === locale ? 'secondary' : 'ghost'}
-          size="sm"
-          asChild
-        >
-          <Link href={getLocalizedPath(pathname, loc)}>
+        <Button key={loc} variant={loc === locale ? 'secondary' : 'ghost'} size="sm" asChild>
+          <a href={getLocalizedPath(pathname, loc)} aria-label={localeLabels[loc]}>
             <span className="uppercase text-xs">{loc}</span>
-          </Link>
+          </a>
         </Button>
       ))}
     </div>
