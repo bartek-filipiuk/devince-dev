@@ -265,7 +265,13 @@ export const Program: CollectionConfig<'program'> = {
               type: 'array',
               labels: { singular: 'Faza', plural: 'Fazy' },
               fields: [
-                { name: 'id', type: 'text', required: true, admin: { description: 'np. A, B, C' } },
+                {
+                  name: 'letter',
+                  type: 'text',
+                  required: true,
+                  label: 'Litera fazy',
+                  admin: { description: 'np. A, B, C' },
+                },
                 { name: 'name', type: 'text', required: true },
                 { name: 'hint', type: 'textarea' },
               ],

@@ -77,14 +77,14 @@ export function SyllabusHero({
           <aside className="spine-card" aria-label="Przegląd faz">
             <div className="sc-h">
               {meta.phases} faz · oś{' '}
-              {phases.map((p) => p.id).join(' → ')}
+              {phases.map((p) => p.letter).join(' → ')}
             </div>
             <div className="spine">
               {phases.map((p) => {
-                const count = stageCounts.get(p.id) ?? 0
+                const count = stageCounts.get(p.letter) ?? 0
                 return (
-                  <div className="row" key={p.id}>
-                    <div className="dot">{p.id}</div>
+                  <div className="row" key={p.letter}>
+                    <div className="dot">{p.letter}</div>
                     <div className="nm">{p.name}</div>
                     <div className="ct">{count} et.</div>
                   </div>

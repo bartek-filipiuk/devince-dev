@@ -354,7 +354,7 @@ async function main() {
       collection: 'program',
       id: programId,
       data: {
-        phases: pipeline.phases.map((p) => ({ id: p.id, name: p.name, hint: p.hint })),
+        phases: pipeline.phases.map((p) => ({ letter: p.id, name: p.name, hint: p.hint })),
         outcomes: SYLLABUS_OUTCOMES,
         audience: SYLLABUS_AUDIENCE.map((item) => ({ item })),
         requirements: SYLLABUS_REQUIREMENTS.map((item) => ({ item })),

@@ -3,7 +3,7 @@ type Lesson = {
   hardGate?: boolean | null
   estTimeMin?: { min?: number | null; max?: number | null } | null
 }
-type Phase = { id?: string | null }
+type Phase = { letter?: string | null }
 
 export function courseMeta(phases: Phase[] = [], lessons: Lesson[] = []) {
   const timeMin = lessons.reduce((a, l) => a + (l.estTimeMin?.min ?? 0), 0)

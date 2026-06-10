@@ -505,9 +505,10 @@ export interface Program {
         /**
          * np. A, B, C
          */
-        id: string;
+        letter: string;
         name: string;
         hint?: string | null;
+        id?: string | null;
       }[]
     | null;
   outcomes?:
@@ -1880,9 +1881,10 @@ export interface ProgramSelect<T extends boolean = true> {
   phases?:
     | T
     | {
-        id?: T;
+        letter?: T;
         name?: T;
         hint?: T;
+        id?: T;
       };
   outcomes?:
     | T

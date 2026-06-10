@@ -60,7 +60,7 @@ export function LessonView({
   const prev = idx > 0 ? sorted[idx - 1] : null
   const next = idx >= 0 && idx < sorted.length - 1 ? sorted[idx + 1] : null
 
-  const phase = phases.find((p) => p.id === lesson.phaseId) ?? null
+  const phase = phases.find((p) => p.letter === lesson.phaseId) ?? null
 
   // Dependencies: only resolved (populated) lessons can be linked by slug.
   const deps = (lesson.dependencies ?? []).filter(
@@ -74,7 +74,7 @@ export function LessonView({
   // Sidebar: every phase with its lessons (by nr), current one highlighted.
   const sidebarPhases = phases.map((p) => ({
     phase: p,
-    rows: sorted.filter((l) => l.phaseId === p.id),
+    rows: sorted.filter((l) => l.phaseId === p.letter),
   }))
 
   return (
@@ -94,9 +94,9 @@ export function LessonView({
           </div>
           <nav className="navlist" aria-label="Etapy kursu">
             {sidebarPhases.map(({ phase: p, rows }) => (
-              <div className="navphase" key={p.id}>
+              <div className="navphase" key={p.letter}>
                 <div className="navphase__h">
-                  <span className="lp">{p.id}</span>
+                  <span className="lp">{p.letter}</span>
                   <span className="nm">{p.name}</span>
                   <span className="ct">{rows.length} et.</span>
                 </div>
@@ -132,7 +132,7 @@ export function LessonView({
             <>
               <span className="sep">/</span>
               <span>
-                Faza {phase.id} · {phase.name}
+                Faza {phase.letter} · {phase.name}
               </span>
             </>
           ) : null}

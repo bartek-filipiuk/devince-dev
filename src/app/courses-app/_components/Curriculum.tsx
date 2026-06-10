@@ -41,16 +41,16 @@ export function Curriculum({
       <div id="curriculum">
         {phases.map((phase) => {
           const rows = lessons
-            .filter((l) => l.phaseId === phase.id)
+            .filter((l) => l.phaseId === phase.letter)
             .sort((a, b) => (a.nr ?? 0) - (b.nr ?? 0))
 
           return (
-            <div className="phase-block" key={phase.id}>
+            <div className="phase-block" key={phase.letter}>
               <div className="phase-block__head">
-                <div className="pl">{phase.id}</div>
+                <div className="pl">{phase.letter}</div>
                 <div className="pm">
                   <h3>
-                    Faza {phase.id} · {phase.name}
+                    Faza {phase.letter} · {phase.name}
                   </h3>
                   {phase.hint ? <p>{phase.hint}</p> : null}
                 </div>
