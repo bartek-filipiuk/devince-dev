@@ -195,6 +195,52 @@ a { color: inherit; text-decoration: none; }
   background: var(--accent); color: var(--on-accent); box-shadow: var(--shadow-2); }
 .ph-video .play .icon { width: 22px; height: 22px; margin-left: 3px; }
 
+/* ============================================================ STOREFRONT */
+.store-head { margin-bottom: 30px; }
+
+.store-empty {
+  margin-top: 24px; font-family: var(--font-mono); font-size: 14px;
+  color: var(--text-dim); padding: 28px 20px; border-radius: var(--r-card);
+  border: 1px dashed var(--line-soft); background: var(--surface-1);
+}
+
+/* responsive course grid — mirrors the handoff .outcomes grid */
+.store-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px; margin-top: 8px;
+}
+
+/* course card — ported from the handoff .oc card visual language */
+.course-card {
+  display: flex; flex-direction: column; gap: 0;
+  padding: 20px; border-radius: var(--r-card);
+  background: var(--surface-1); border: 1px solid var(--line-soft);
+  transition: background .16s ease, border-color .16s ease, transform .12s ease, box-shadow .16s ease;
+}
+.course-card:hover {
+  background: var(--surface-2); border-color: var(--line);
+  transform: translateY(-2px); box-shadow: var(--shadow-2);
+}
+.course-card__title { margin: 12px 0 6px; font-size: 16.5px; font-weight: 640; letter-spacing: -0.015em; }
+.course-card__desc {
+  margin: 0; font-size: 13.5px; color: var(--text-mut); line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.course-card__meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px;
+  margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-soft);
+  font-size: 11.5px; color: var(--text-dim);
+}
+.course-card__paid { color: var(--accent); }
+
+/* pagination */
+.pagination {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  margin-top: 40px;
+}
+.pagination .btn[aria-disabled="true"] { opacity: 0.4; pointer-events: none; }
+.pagination__count { font-size: 13px; color: var(--text-mut); }
+
 @media (max-width: 720px) {
   .nav { gap: 10px; }
   .nav__links { display: none; }
