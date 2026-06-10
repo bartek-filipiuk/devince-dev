@@ -11,6 +11,9 @@ const EXCLUDED_PREFIXES = [
   '/favicon',
   '/robots.txt',
   '/sitemap',
+  // Courses subdomain renders an isolated, locale-neutral (PL-only) route
+  // tree at /courses-app. It must NEVER be touched by the [locale] rewrite.
+  '/courses-app',
   // Course-platform routes are locale-neutral and live OUTSIDE the [locale]
   // segment. They must NOT be rewritten into /[locale]/... (that 404s).
   '/learn',
@@ -23,8 +26,34 @@ const EXCLUDED_PREFIXES = [
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   if (EXCLUDED_PREFIXES.some((p) => pathname.startsWith(p)) || PUBLIC_FILE.test(pathname)) {
+    // courses.* host accessing /courses-app directly (already-rewritten path):
+    // let it through. Direct access on the MAIN host is handled below.
+    if (pathname.startsWith('/courses-app')) {
+      const host = (request.headers.get('host') ?? '').split(':')[0]
+      if (host.startsWith('courses.')) {
+        return NextResponse.next()
+      }
+      // Block direct access on the main host -> bounce to the courses subdomain.
+      const stripped = pathname.replace(/^\/courses-app/, '') || '/'
+      return NextResponse.redirect(new URL(stripped, 'https://courses.devince.dev'))
+    }
     return NextResponse.next()
   }
+
+  // Host-based isolation for the courses subdomain. courses.* renders a
+  // dedicated, locale-neutral design rewritten into the real /courses-app
+  // segment. This MUST run before the [locale] logic so it bypasses it.
+  const host = (request.headers.get('host') ?? '').split(':')[0]
+  const isCourses = host.startsWith('courses.')
+  if (isCourses) {
+    if (!pathname.startsWith('/courses-app')) {
+      const url = request.nextUrl.clone()
+      url.pathname = `/courses-app${pathname === '/' ? '' : pathname}`
+      return NextResponse.rewrite(url)
+    }
+    return NextResponse.next()
+  }
+
   const seg = pathname.split('/')[1] ?? ''
   // /pl/... -> redirect to canonical prefix-less.
   // Use nextUrl.clone() + a normalised same-origin pathname so a crafted
