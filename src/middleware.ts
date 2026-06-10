@@ -23,6 +23,12 @@ const EXCLUDED_PREFIXES = [
   '/forgot-password',
 ]
 
+// Locale-neutral course-platform page paths that, on the courses subdomain, must
+// rewrite into the isolated /courses-app tree (so they render the course-themed
+// pages, not the main (frontend) ones). Truly-shared infra (/api, /_next, /admin,
+// /next preview, sitemaps) is intentionally NOT here — it stays shared.
+const COURSE_PAGE_PREFIXES = ['/login', '/account', '/learn', '/set-password', '/forgot-password']
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   if (EXCLUDED_PREFIXES.some((p) => pathname.startsWith(p)) || PUBLIC_FILE.test(pathname)) {
@@ -36,6 +42,15 @@ export function middleware(request: NextRequest) {
       // Block direct access on the main host -> bounce to the courses subdomain.
       const stripped = pathname.replace(/^\/courses-app/, '') || '/'
       return NextResponse.redirect(new URL(stripped, 'https://courses.devince.dev'))
+    }
+    // On the courses subdomain, the locale-neutral course PAGE paths must rewrite
+    // into the isolated /courses-app tree so they render the course-themed pages
+    // (not the main (frontend) versions). On the main host they pass through.
+    const host = (request.headers.get('host') ?? '').split(':')[0]
+    if (host.startsWith('courses.') && COURSE_PAGE_PREFIXES.some((p) => pathname.startsWith(p))) {
+      const url = request.nextUrl.clone()
+      url.pathname = `/courses-app${pathname}`
+      return NextResponse.rewrite(url)
     }
     return NextResponse.next()
   }
