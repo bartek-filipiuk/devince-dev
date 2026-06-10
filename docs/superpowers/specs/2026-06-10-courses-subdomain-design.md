@@ -88,7 +88,7 @@ Rozszerzenia (lokalizacja: courses v1 PL-only → bez `localized` na nowych pola
 1. **`/` — storefront** (`(courses)/page.tsx`, force-dynamic): `payload.find` Program `where { type: course, pricing: paid, _status: published }`, paginacja (`limit`, `?page=`). Karty w stylu Sylabus (`.oc`/card: tytuł, eyebrow, krótki opis, meta liczbowe — liczba faz/etapów/szac. czas z lekcji, cena). Karta linkuje do `/<slug>`. Stan pusty + komponent paginacji (mono, w themie).
 2. **`/<course-slug>` — sylabus** (`(courses)/[slug]/page.tsx`, force-dynamic): odwzorowanie `Sylabus.html` data-driven:
    - hero: **domyślnie wariant A „spine"** (editorial split z kartą faz). Wariant B („rail") i przełącznik A/B = **opcjonalne, poza v1** (implementujemy tylko A). `meta` liczbowe (9 faz / 23 etapy / szac. czas / liczba hard-gate — liczone z danych), CTA „Zacznij" → pierwsza lekcja gated.
-   - outcomes (z `Program.outcomes`), curriculum (Program.phases → Lessons po `phaseId`/`nr`, badge'e z `category`/`hardGate`, czas z `estTimeMin`, link do lekcji), infocards (audience/requirements), cta-band.
+   - outcomes (z `Program.outcomes`), curriculum (Program.phases → Lessons po `phaseId`/`nr`, badge'e z `hardGate`/`hybrid`/`kind`, czas z `estTimeMin`, link do lekcji), infocards (audience/requirements), cta-band.
    - SEO: `generateMeta` w themie courses.
 3. **`/<course-slug>/learn/<lesson-slug>` — lekcja** (gated, `enrolledOrAdmin`): odwzorowanie `Lekcja.html` (lhead/badges, lvideo z `youtubeEmbedUrl`, sekcje why/what/dod, deplist z `dependencies`, pager prev/next po `nr`, sidebar z listą etapów fazy). SSR guard jak istniejące `/learn` (sesja + purchase).
 4. **`/login`, `/account`** w themie `(courses)` (reużyć logikę z `(frontend)`, przestylować do course-theme).
@@ -114,7 +114,7 @@ Rozszerzenia (lokalizacja: courses v1 PL-only → bez `localized` na nowych pola
 ## 12. Workstreamy i zależności
 - **F0 — Migracje** (prerekwizyt wszystkiego): push:false + baseline + reconcile-prod + runner startowy. Najpierw.
 - **C1 — Subdomena+theme**: middleware host-rewrite, grupa `(courses)` + layout + `course-theme.css` + theme toggle.
-- **C2 — Model danych**: pola Program(phases/outcomes/audience/requirements) + Lessons(nr/phaseId/category/hardGate/estTimeMin/why/what/dod/skills/deps) → migracja → generate:types. (zależy F0)
+- **C2 — Model danych**: pola Program(phases/outcomes/audience/requirements) + Lessons(nr/phaseId/hardGate/hybrid/kind/estTimeMin/why/what/dod/skills/deps) → migracja → generate:types. (zależy F0)
 - **C3 — Storefront**: lista + paginacja (zależy C1).
 - **C4 — Sylabus page**: data-driven `Sylabus.html` (zależy C1+C2).
 - **C5 — Lekcja page**: `Lekcja.html` gated (zależy C1+C2).
