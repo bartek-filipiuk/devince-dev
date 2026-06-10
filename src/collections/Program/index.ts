@@ -258,6 +258,51 @@ export const Program: CollectionConfig<'program'> = {
           ],
         },
         {
+          label: 'Sylabus',
+          fields: [
+            {
+              name: 'phases',
+              type: 'array',
+              labels: { singular: 'Faza', plural: 'Fazy' },
+              fields: [
+                { name: 'id', type: 'text', required: true, admin: { description: 'np. A, B, C' } },
+                { name: 'name', type: 'text', required: true },
+                { name: 'hint', type: 'textarea' },
+              ],
+            },
+            {
+              name: 'outcomes',
+              type: 'array',
+              labels: { singular: 'Efekt', plural: 'Efekty' },
+              fields: [
+                { name: 'title', type: 'text', required: true },
+                { name: 'body', type: 'textarea' },
+              ],
+            },
+            {
+              name: 'audience',
+              type: 'array',
+              labels: { singular: 'Dla kogo', plural: 'Dla kogo' },
+              fields: [{ name: 'item', type: 'text', required: true }],
+            },
+            {
+              name: 'requirements',
+              type: 'array',
+              labels: { singular: 'Wymaganie', plural: 'Czego potrzebujesz' },
+              fields: [{ name: 'item', type: 'text', required: true }],
+            },
+            {
+              name: 'level',
+              type: 'select',
+              options: [
+                { label: 'Początkujący', value: 'beginner' },
+                { label: 'Średniozaawansowany', value: 'intermediate' },
+                { label: 'Zaawansowany', value: 'advanced' },
+              ],
+            },
+          ],
+        },
+        {
           name: 'meta',
           label: 'SEO',
           fields: [

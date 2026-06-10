@@ -500,6 +500,36 @@ export interface Program {
         | FormBlock
       )[]
     | null;
+  phases?:
+    | {
+        /**
+         * np. A, B, C
+         */
+        id: string;
+        name: string;
+        hint?: string | null;
+      }[]
+    | null;
+  outcomes?:
+    | {
+        title: string;
+        body?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  audience?:
+    | {
+        item: string;
+        id?: string | null;
+      }[]
+    | null;
+  requirements?:
+    | {
+        item: string;
+        id?: string | null;
+      }[]
+    | null;
+  level?: ('beginner' | 'intermediate' | 'advanced') | null;
   meta?: {
     title?: string | null;
     /**
@@ -1083,6 +1113,25 @@ export interface Lesson {
   program: number | Program;
   phase?: string | null;
   order?: number | null;
+  nr?: number | null;
+  phaseId?: string | null;
+  hardGate?: boolean | null;
+  hybrid?: boolean | null;
+  kind?: ('normal' | 'decision') | null;
+  estTimeMin?: {
+    min?: number | null;
+    max?: number | null;
+  };
+  why?: string | null;
+  what?: string | null;
+  dod?: string | null;
+  skills?:
+    | {
+        skill: string;
+        id?: string | null;
+      }[]
+    | null;
+  dependencies?: (number | Lesson)[] | null;
   type?: ('text' | 'embed' | 'video' | 'download') | null;
   content?: {
     root: {
@@ -1828,6 +1877,33 @@ export interface ProgramSelect<T extends boolean = true> {
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
       };
+  phases?:
+    | T
+    | {
+        id?: T;
+        name?: T;
+        hint?: T;
+      };
+  outcomes?:
+    | T
+    | {
+        title?: T;
+        body?: T;
+        id?: T;
+      };
+  audience?:
+    | T
+    | {
+        item?: T;
+        id?: T;
+      };
+  requirements?:
+    | T
+    | {
+        item?: T;
+        id?: T;
+      };
+  level?: T;
   meta?:
     | T
     | {
@@ -1851,6 +1927,27 @@ export interface LessonsSelect<T extends boolean = true> {
   program?: T;
   phase?: T;
   order?: T;
+  nr?: T;
+  phaseId?: T;
+  hardGate?: T;
+  hybrid?: T;
+  kind?: T;
+  estTimeMin?:
+    | T
+    | {
+        min?: T;
+        max?: T;
+      };
+  why?: T;
+  what?: T;
+  dod?: T;
+  skills?:
+    | T
+    | {
+        skill?: T;
+        id?: T;
+      };
+  dependencies?: T;
   type?: T;
   content?: T;
   youtubeEmbedUrl?: T;
