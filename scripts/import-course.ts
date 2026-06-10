@@ -43,6 +43,14 @@ const COURSE_PROGRAM_SLUG = process.env.COURSE_PROGRAM_SLUG ?? 'od-pomyslu-do-wd
 const CURRICULUM_DIR = path.join(COURSE_SRC, 'curriculum')
 const EXPLORER_HTML = path.join(COURSE_SRC, 'dist', 'explorer.html')
 
+// Structured syllabus metadata (C6.2). pipeline.json carries the canonical
+// per-stage fields; pipeline-data.js (the browser bundle) additionally carries
+// per-phase `name`/`hint`. Both live in the handoff folder checked into the repo.
+const HANDOFF_DIR = path.join(process.cwd(), 'COurses-handoff', 'courses', 'project')
+const PIPELINE_JSON = process.env.PIPELINE_JSON ?? path.join(HANDOFF_DIR, 'pipeline.json')
+const PIPELINE_DATA_JS =
+  process.env.PIPELINE_DATA_JS ?? path.join(HANDOFF_DIR, 'course', 'pipeline-data.js')
+
 // --- Lexical code-block sanitization -----------------------------------------
 
 /**
@@ -165,6 +173,107 @@ function deriveTitle(markdown: string, base: string): string {
   return base.replace(/[-_]/g, ' ').replace(/^\w/, (c) => c.toUpperCase())
 }
 
+// --- Pipeline (syllabus) metadata --------------------------------------------
+
+type PipelineStage = {
+  nr: number
+  slug: string
+  nazwa: string
+  faza: string
+  why?: string
+  what?: string
+  dod_summary?: string
+  skille?: string[]
+  required_predecessors?: number[]
+  hard_gate?: boolean
+  hybrid?: boolean
+  type?: string
+  est_time_min?: [number, number]
+}
+
+type PipelineJson = {
+  title?: string
+  phases: Array<{ id: string; etapy: number[] }>
+  stages: PipelineStage[]
+}
+
+/** Per-phase display copy lives only in the browser bundle (pipeline-data.js). */
+type PhaseMeta = { id: string; name: string; hint?: string }
+
+/**
+ * Read `pipeline.json` (canonical per-stage data) and merge the per-phase
+ * `name`/`hint` from `pipeline-data.js` (the `window.COURSE = {...}` bundle).
+ * Returns null when pipeline.json is missing so the caller can skip C6.2 while
+ * still importing the curriculum lessons (graceful degradation).
+ */
+function loadPipeline(): { stages: PipelineStage[]; phases: PhaseMeta[] } | null {
+  if (!fs.existsSync(PIPELINE_JSON)) {
+    console.warn(`  pipeline.json not found at ${PIPELINE_JSON} — skipping syllabus metadata.`)
+    return null
+  }
+
+  const pipeline = JSON.parse(fs.readFileSync(PIPELINE_JSON, 'utf8')) as PipelineJson
+
+  // Phase name/hint come from pipeline-data.js. Parse the inline JSON object
+  // out of `window.COURSE = {...};` rather than executing the file.
+  const phaseCopy = new Map<string, { name: string; hint?: string }>()
+  if (fs.existsSync(PIPELINE_DATA_JS)) {
+    const js = fs.readFileSync(PIPELINE_DATA_JS, 'utf8')
+    const m = js.match(/window\.COURSE\s*=\s*(\{[\s\S]*\})\s*;?\s*$/)
+    if (m) {
+      try {
+        const data = JSON.parse(m[1]) as { phases?: PhaseMeta[] }
+        for (const p of data.phases ?? []) phaseCopy.set(p.id, { name: p.name, hint: p.hint })
+      } catch (err) {
+        console.warn(
+          `  could not parse pipeline-data.js (${err instanceof Error ? err.message : err}) — using phase ids as names.`,
+        )
+      }
+    }
+  } else {
+    console.warn(`  pipeline-data.js not found at ${PIPELINE_DATA_JS} — using phase ids as names.`)
+  }
+
+  const phases: PhaseMeta[] = pipeline.phases.map((p) => {
+    const copy = phaseCopy.get(p.id)
+    return { id: p.id, name: copy?.name ?? `Faza ${p.id}`, hint: copy?.hint }
+  })
+
+  return { stages: pipeline.stages, phases }
+}
+
+/** Outcomes/audience/requirements derived from Sylabus.html „Czego się nauczysz". */
+const SYLLABUS_OUTCOMES = [
+  {
+    title: 'Ramować, nie zgadywać',
+    body: 'Zamieniać luźny pomysł w ostry problem, zakres MVP i mierzalne „gotowe", zanim napiszesz linijkę kodu.',
+  },
+  {
+    title: 'Stawiać guardraile',
+    body: 'CLAUDE.md, CI, lint i hooki jako automatyczną siatkę bezpieczeństwa — twarde bramki, których nie da się pominąć.',
+  },
+  {
+    title: 'TDD na Claude Code',
+    body: 'Pętla red → green → refactor: testy przed implementacją trzymają model w wąskim, weryfikowalnym torze.',
+  },
+  {
+    title: 'Wydawać świadomie',
+    body: 'Self-review, pełny zielony zestaw, przegląd bezpieczeństwa i bramka wydania z planem rollbacku.',
+  },
+]
+
+const SYLLABUS_AUDIENCE = [
+  'Devów, którzy już używają Claude Code i chcą powtarzalnego procesu zamiast ad-hoc promptów.',
+  'Solo founderów i indie hackerów dowożących MVP w pojedynkę.',
+  'Małych zespołów, które chcą wspólnego, bezpiecznego flow.',
+]
+
+const SYLLABUS_REQUIREMENTS = [
+  'Działającego Claude Code i podstaw pracy z terminalem oraz gitem.',
+  'Znajomości jednego stacku na tyle, by czytać własne diffy.',
+  'Realnego pomysłu na apkę — przejdziesz przez niego cały pipeline.',
+]
+
 // --- Main --------------------------------------------------------------------
 
 type Counts = { created: number; updated: number; skipped: number }
@@ -233,6 +342,64 @@ async function main() {
   // `type: 'download'` lessons referencing them via `downloadFile`. Deferred to
   // avoid fabricating assets that do not exist.
 
+  // --- Phase 3: syllabus metadata (C6.2) -------------------------------------
+  console.log('\n--- Phase 3: syllabus metadata (pipeline.json) ---')
+  const stageCounts: Counts = { created: 0, updated: 0, skipped: 0 }
+  let phaseCount = 0
+  const pipeline = loadPipeline()
+
+  if (pipeline) {
+    // (a) Program-level syllabus fields: phases + outcomes/audience/requirements.
+    await payload.update({
+      collection: 'program',
+      id: programId,
+      data: {
+        phases: pipeline.phases.map((p) => ({ id: p.id, name: p.name, hint: p.hint })),
+        outcomes: SYLLABUS_OUTCOMES,
+        audience: SYLLABUS_AUDIENCE.map((item) => ({ item })),
+        requirements: SYLLABUS_REQUIREMENTS.map((item) => ({ item })),
+      } as never,
+      overrideAccess: true,
+      // The Program afterChange hook calls next/cache revalidatePath, which
+      // throws outside a Next request context. The hook guards on this flag.
+      context: { disableRevalidate: true },
+    })
+    phaseCount = pipeline.phases.length
+    console.log(`  program: set ${phaseCount} phases + ${SYLLABUS_OUTCOMES.length} outcomes`)
+
+    // (b) Stage lessons: upsert one lesson per stage (matched by program+slug).
+    //     First pass writes scalar metadata; a second pass resolves predecessor
+    //     `nr` -> lesson id for the `dependencies` relationship (needs all ids).
+    const slugToId = new Map<number, number | string>()
+
+    for (const stage of pipeline.stages) {
+      const id = await upsertStageLesson(payload, stageCounts, programId, stage)
+      slugToId.set(stage.nr, id)
+    }
+
+    // Resolve dependencies now that every stage lesson exists.
+    let depUpdates = 0
+    for (const stage of pipeline.stages) {
+      const preds = stage.required_predecessors ?? []
+      if (preds.length === 0) continue
+      const depIds = preds.map((nr) => slugToId.get(nr)).filter((v): v is number | string => v != null)
+      if (depIds.length === 0) continue
+      await payload.update({
+        collection: 'lessons',
+        id: slugToId.get(stage.nr)!,
+        data: { dependencies: depIds } as never,
+        overrideAccess: true,
+        context: { disableRevalidate: true },
+      })
+      depUpdates++
+    }
+    console.log(
+      `  stages: created=${stageCounts.created} updated=${stageCounts.updated}, dependency links set on ${depUpdates}`,
+    )
+  } else {
+    console.log('  pipeline.json unavailable — syllabus metadata skipped.')
+  }
+
   // --- Summary ---------------------------------------------------------------
   console.log('\n=== Summary ===')
   console.log(`Program:              ${COURSE_PROGRAM_SLUG} (id ${programId})`)
@@ -241,6 +408,9 @@ async function main() {
   )
   console.log(
     `Asset lessons:        created=${assetCounts.created} updated=${assetCounts.updated} skipped=${assetCounts.skipped}`,
+  )
+  console.log(
+    `Syllabus metadata:    phases=${phaseCount} stages(created=${stageCounts.created} updated=${stageCounts.updated})`,
   )
 
   const total = await payload.count({
@@ -345,6 +515,74 @@ async function upsertLesson(
     })
     counts.created++
   }
+}
+
+/**
+ * Upsert a single syllabus stage as a `lessons` doc (idempotent by program+slug).
+ * Writes scalar metadata only; `dependencies` are resolved in a second pass by
+ * the caller once every stage lesson has an id. Returns the lesson id.
+ */
+async function upsertStageLesson(
+  payload: Payload,
+  counts: Counts,
+  programId: number | string,
+  stage: PipelineStage,
+): Promise<number | string> {
+  const slug = slugify(stage.slug)
+
+  const existing = await payload.find({
+    collection: 'lessons',
+    where: { and: [{ program: { equals: programId } }, { slug: { equals: slug } }] },
+    limit: 1,
+    overrideAccess: true,
+    depth: 0,
+  })
+
+  const estTimeMin =
+    Array.isArray(stage.est_time_min) && stage.est_time_min.length === 2
+      ? { min: stage.est_time_min[0], max: stage.est_time_min[1] }
+      : undefined
+
+  const data: Record<string, unknown> = {
+    title: stage.nazwa,
+    program: programId,
+    slug,
+    generateSlug: false,
+    _status: 'published',
+    nr: stage.nr,
+    order: stage.nr,
+    phase: stage.faza,
+    phaseId: stage.faza,
+    hardGate: Boolean(stage.hard_gate),
+    hybrid: Boolean(stage.hybrid),
+    kind: stage.type === 'decision' ? 'decision' : 'normal',
+    estTimeMin,
+    why: stage.why,
+    what: stage.what,
+    dod: stage.dod_summary,
+    skills: (stage.skille ?? []).map((skill) => ({ skill })),
+  }
+
+  if (existing.docs[0]) {
+    const updated = await payload.update({
+      collection: 'lessons',
+      id: existing.docs[0].id,
+      data: data as never,
+      overrideAccess: true,
+      context: { disableRevalidate: true },
+    })
+    counts.updated++
+    return updated.id
+  }
+
+  const created = await payload.create({
+    collection: 'lessons',
+    data: data as never,
+    overrideAccess: true,
+    context: { disableRevalidate: true },
+  })
+  counts.created++
+  return created.id
 }
 
 /**
