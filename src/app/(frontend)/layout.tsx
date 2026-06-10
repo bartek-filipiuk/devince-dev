@@ -52,7 +52,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             }}
           />
 
-          <Header />
+          <Header locale={lang} />
           <main className="pt-16">{children}</main>
           <Footer locale={lang} />
         </Providers>

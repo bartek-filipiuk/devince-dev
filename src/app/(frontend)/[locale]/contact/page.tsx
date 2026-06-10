@@ -26,7 +26,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 export default async function ContactPage({ params: paramsPromise }: Args) {
   const { locale: localeParam } = await paramsPromise
   const locale = getLocaleFromParams(localeParam)
-  const siteSettings = (await getCachedGlobal('site-settings', 1)()) as SiteSetting
+  const siteSettings = (await getCachedGlobal('site-settings', locale, 1)()) as SiteSetting
 
   return (
     <div className="container py-20">

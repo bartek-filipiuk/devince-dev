@@ -14,8 +14,8 @@ import { defaultLocale, t, type Locale } from '@/i18n'
 import { getLocalizedPath } from '@/utilities/getLocale'
 
 export async function Footer({ locale = defaultLocale }: { locale?: Locale }) {
-  const footerData = (await getCachedGlobal('footer', 1)()) as Footer
-  const siteSettings = (await getCachedGlobal('site-settings', 1)()) as SiteSetting
+  const footerData = (await getCachedGlobal('footer', locale, 1)()) as Footer
+  const siteSettings = (await getCachedGlobal('site-settings', locale, 1)()) as SiteSetting
 
   const navItems = footerData?.navItems || []
   const showSocialLinks = footerData?.showSocialLinks ?? true
