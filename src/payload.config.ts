@@ -4,12 +4,15 @@ import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
+import { AppAssets } from './collections/AppAssets'
 import { Categories } from './collections/Categories'
 import { CourseAssets } from './collections/CourseAssets'
+import { DownloadGrants } from './collections/DownloadGrants'
 import { Media } from './collections/Media'
 import { Lessons } from './collections/Lessons'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
+import { Products } from './collections/Products'
 import { Program } from './collections/Program'
 import { Projects } from './collections/Projects'
 import { StripeEvents } from './collections/StripeEvents'
@@ -90,11 +93,14 @@ export default buildConfig({
     Program,
     Lessons,
     Projects,
+    Products,
     Media,
     CourseAssets,
+    AppAssets,
     Categories,
     Users,
     StripeEvents,
+    DownloadGrants,
   ],
   cors: [getServerSideURL(), process.env.NEXT_PUBLIC_COURSES_URL].filter(Boolean) as string[],
   globals: [Header, Footer, SiteSettings],
