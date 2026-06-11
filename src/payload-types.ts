@@ -72,11 +72,14 @@ export interface Config {
     program: Program;
     lessons: Lesson;
     projects: Project;
+    products: Product;
     media: Media;
     'course-assets': CourseAsset;
+    'app-assets': AppAsset;
     categories: Category;
     users: User;
     'stripe-events': StripeEvent;
+    'download-grants': DownloadGrant;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -99,11 +102,14 @@ export interface Config {
     program: ProgramSelect<false> | ProgramSelect<true>;
     lessons: LessonsSelect<false> | LessonsSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'course-assets': CourseAssetsSelect<false> | CourseAssetsSelect<true>;
+    'app-assets': AppAssetsSelect<false> | AppAssetsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'stripe-events': StripeEventsSelect<false> | StripeEventsSelect<true>;
+    'download-grants': DownloadGrantsSelect<false> | DownloadGrantsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -1240,12 +1246,101 @@ export interface Project {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: number;
+  title: string;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  coverImage?: (number | null) | Media;
+  /**
+   * Cena w groszach (np. 4900 = 49,00 zł)
+   */
+  priceCents: number;
+  currency: 'pln' | 'eur' | 'usd';
+  /**
+   * Opcjonalnie: istniejący Stripe Price. Gdy puste, Checkout używa price_data z priceCents.
+   */
+  stripePriceId?: string | null;
+  /**
+   * Prywatne pliki dostarczane po zakupie.
+   */
+  downloadFiles?: (number | AppAsset)[] | null;
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    description?: string | null;
+  };
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "app-assets".
+ */
+export interface AppAsset {
+  id: number;
+  alt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "stripe-events".
  */
 export interface StripeEvent {
   id: number;
   eventId: string;
   type?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "download-grants".
+ */
+export interface DownloadGrant {
+  id: number;
+  token: string;
+  product: number | Product;
+  email: string;
+  expiresAt: string;
+  maxUses: number;
+  uses: number;
+  stripeSessionId?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1460,12 +1555,20 @@ export interface PayloadLockedDocument {
         value: number | Project;
       } | null)
     | ({
+        relationTo: 'products';
+        value: number | Product;
+      } | null)
+    | ({
         relationTo: 'media';
         value: number | Media;
       } | null)
     | ({
         relationTo: 'course-assets';
         value: number | CourseAsset;
+      } | null)
+    | ({
+        relationTo: 'app-assets';
+        value: number | AppAsset;
       } | null)
     | ({
         relationTo: 'categories';
@@ -1478,6 +1581,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'stripe-events';
         value: number | StripeEvent;
+      } | null)
+    | ({
+        relationTo: 'download-grants';
+        value: number | DownloadGrant;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1993,6 +2100,32 @@ export interface ProjectsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products_select".
+ */
+export interface ProductsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  coverImage?: T;
+  priceCents?: T;
+  currency?: T;
+  stripePriceId?: T;
+  downloadFiles?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+      };
+  generateSlug?: T;
+  slug?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
@@ -2105,6 +2238,24 @@ export interface CourseAssetsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "app-assets_select".
+ */
+export interface AppAssetsSelect<T extends boolean = true> {
+  alt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories_select".
  */
 export interface CategoriesSelect<T extends boolean = true> {
@@ -2155,6 +2306,21 @@ export interface UsersSelect<T extends boolean = true> {
 export interface StripeEventsSelect<T extends boolean = true> {
   eventId?: T;
   type?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "download-grants_select".
+ */
+export interface DownloadGrantsSelect<T extends boolean = true> {
+  token?: T;
+  product?: T;
+  email?: T;
+  expiresAt?: T;
+  maxUses?: T;
+  uses?: T;
+  stripeSessionId?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2640,6 +2806,10 @@ export interface TaskSchedulePublish {
       | ({
           relationTo: 'projects';
           value: number | Project;
+        } | null)
+      | ({
+          relationTo: 'products';
+          value: number | Product;
         } | null);
     global?: string | null;
     user?: (number | null) | User;

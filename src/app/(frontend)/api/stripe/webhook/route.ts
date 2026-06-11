@@ -3,7 +3,8 @@ import Stripe from 'stripe'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { addProgramToPurchases } from '@/utilities/purchases'
-import { sendCourseAccessEmail } from '@/utilities/brevo'
+import { sendCourseAccessEmail, sendDownloadLinkEmail } from '@/utilities/brevo'
+import { fulfillAppPurchase } from '@/utilities/appsFulfillment'
 
 // Lazy-init: constructing Stripe at module scope throws if STRIPE_SECRET_KEY is
 // unset, which would crash Next.js's build-time "collect page data" step. Defer
@@ -59,6 +60,9 @@ export async function POST(req: NextRequest) {
     // program id. Without it we cannot map the purchase to a course and grant
     // access — fulfillment is skipped (event is still recorded as processed).
     const programIdRaw = session.metadata?.programId
+    // For app (digital download) purchases, `metadata.productId` is set by
+    // /api/apps/checkout. Takes a different fulfillment path from courses.
+    const productIdRaw = session.metadata?.productId
 
     if (email && programIdRaw) {
       // Program ids are NUMBERS in this project (Postgres). Coerce the string
@@ -116,6 +120,37 @@ export async function POST(req: NextRequest) {
           `[stripe webhook] access email failed for ${email} (program ${programId}); grant succeeded, continuing:`,
           err,
         )
+      }
+    }
+
+    // App (digital download) fulfillment — only runs when productId is set and
+    // programId is absent (programId wins if both present, matching the course
+    // branch above; that would indicate a misconfigured Stripe session).
+    if (email && productIdRaw && !programIdRaw) {
+      const productId = Number.isNaN(Number(productIdRaw)) ? productIdRaw : Number(productIdRaw)
+      const result = await fulfillAppPurchase(payload, { productId, email, sessionId: session.id })
+      if (result.created && result.token) {
+        // Best-effort email, same policy as course access mails: a Brevo failure
+        // must NOT fail the webhook — the grant exists; admin can resend.
+        try {
+          const product = await payload.findByID({
+            collection: 'products',
+            id: productId,
+            depth: 0,
+            overrideAccess: true,
+          })
+          const base = process.env.NEXT_PUBLIC_APPS_URL ?? 'https://apps.devince.dev'
+          await sendDownloadLinkEmail({
+            to: email,
+            link: `${base}/download/${result.token}`,
+            productTitle: (product as { title?: string } | null)?.title ?? 'Twój zakup',
+          })
+        } catch (err) {
+          console.error(
+            `[stripe webhook] download email failed for ${email} (product ${productId}); grant exists, continuing:`,
+            err,
+          )
+        }
       }
     }
   }
