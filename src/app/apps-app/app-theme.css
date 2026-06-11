@@ -496,3 +496,17 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
   font-family: var(--font-mono); font-size: 12px; color: var(--accent);
 }
 .auth-course-cta .icon { width: 14px; height: 14px; }
+
+/* ============================================================ PRODUCT PAGE */
+.product-hero { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(28px, 5vw, 64px); align-items: center; padding: clamp(48px, 7vw, 84px) 0 clamp(40px, 5vw, 56px); }
+.product-hero__content { display: flex; flex-direction: column; gap: 0; }
+.product-hero__cover { }
+.product-desc { margin-top: 18px; font-size: 16px; line-height: 1.62; color: var(--text-mut); }
+.product-buy { margin-top: 28px; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.product-price { font-family: var(--font-mono); font-size: 28px; font-weight: 680; letter-spacing: -0.02em; color: var(--text); margin: 0; }
+.product-note { font-size: 13px; color: var(--text-dim); margin: 0; }
+
+@media (max-width: 720px) {
+  .product-hero { grid-template-columns: 1fr; }
+  .product-hero__cover { order: -1; }
+}
