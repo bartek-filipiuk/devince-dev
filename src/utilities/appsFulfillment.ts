@@ -25,18 +25,31 @@ export async function fulfillAppPurchase(
   if (!secret) throw new Error('DOWNLOAD_TOKEN_SECRET is not set')
 
   const token = createDownloadToken(secret)
-  await payload.create({
-    collection: 'download-grants',
-    data: {
-      token,
-      product: args.productId,
-      email: args.email,
-      expiresAt: new Date(Date.now() + GRANT_TTL_MS).toISOString(),
-      maxUses: GRANT_MAX_USES,
-      uses: 0,
-      stripeSessionId: args.sessionId,
-    } as never,
-    overrideAccess: true,
-  })
+  try {
+    await payload.create({
+      collection: 'download-grants',
+      data: {
+        token,
+        product: args.productId,
+        email: args.email,
+        expiresAt: new Date(Date.now() + GRANT_TTL_MS).toISOString(),
+        maxUses: GRANT_MAX_USES,
+        uses: 0,
+        stripeSessionId: args.sessionId,
+      } as never,
+      overrideAccess: true,
+    })
+  } catch (err) {
+    // Check whether a concurrent delivery already created the grant (unique
+    // constraint violation). If so, treat as idempotent; otherwise rethrow.
+    const race = await payload.find({
+      collection: 'download-grants',
+      where: { stripeSessionId: { equals: args.sessionId } },
+      limit: 1,
+      overrideAccess: true,
+    })
+    if (race.docs.length) return { created: false }
+    throw err
+  }
   return { created: true, token }
 }

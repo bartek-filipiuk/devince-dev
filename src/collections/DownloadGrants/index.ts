@@ -20,7 +20,9 @@ export const DownloadGrants: CollectionConfig = {
     { name: 'expiresAt', type: 'date', required: true },
     { name: 'maxUses', type: 'number', required: true, defaultValue: 5 },
     { name: 'uses', type: 'number', required: true, defaultValue: 0 },
-    // Audit + fulfillment idempotency: one grant per Checkout Session.
-    { name: 'stripeSessionId', type: 'text', index: true },
+    // Fulfillment idempotency is enforced by this unique constraint; the
+    // find-then-create in fulfillAppPurchase is the fast path, the constraint
+    // is the backstop that closes the TOCTOU race on concurrent deliveries.
+    { name: 'stripeSessionId', type: 'text', unique: true },
   ],
 }

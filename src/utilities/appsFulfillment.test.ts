@@ -60,4 +60,37 @@ describe('fulfillAppPurchase', () => {
       fulfillAppPurchase(makePayload() as never, { productId: 7, email: 'a@b.pl', sessionId: 'cs_1' }),
     ).rejects.toThrow()
   })
+
+  it('returns {created:false} when create throws a unique-violation but re-find finds the existing grant', async () => {
+    const uniqueError = new Error('unique constraint violation')
+    const payload = {
+      // first find: no existing grant (fast-path miss)
+      find: vi
+        .fn()
+        .mockResolvedValueOnce({ docs: [] })
+        // second find (race recovery): grant now exists
+        .mockResolvedValueOnce({ docs: [grantRow] }),
+      create: vi.fn().mockRejectedValue(uniqueError),
+    }
+    const res = await fulfillAppPurchase(payload as never, {
+      productId: 7,
+      email: 'a@b.pl',
+      sessionId: 'cs_race',
+    })
+    expect(res).toEqual({ created: false })
+    expect(payload.create).toHaveBeenCalledOnce()
+    expect(payload.find).toHaveBeenCalledTimes(2)
+  })
+
+  it('rethrows the original error when create throws but re-find still returns nothing', async () => {
+    const originalError = new Error('unexpected db error')
+    const payload = {
+      find: vi.fn().mockResolvedValue({ docs: [] }),
+      create: vi.fn().mockRejectedValue(originalError),
+    }
+    await expect(
+      fulfillAppPurchase(payload as never, { productId: 7, email: 'a@b.pl', sessionId: 'cs_err' }),
+    ).rejects.toThrow(originalError)
+    expect(payload.find).toHaveBeenCalledTimes(2)
+  })
 })
