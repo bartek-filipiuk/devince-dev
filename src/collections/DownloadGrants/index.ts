@@ -14,7 +14,7 @@ export const DownloadGrants: CollectionConfig = {
   access: { read: adminOnly, create: adminOnly, update: adminOnly, delete: adminOnly },
   admin: { useAsTitle: 'email', hidden: false, defaultColumns: ['email', 'product', 'expiresAt', 'uses'] },
   fields: [
-    { name: 'token', type: 'text', required: true, unique: true, index: true },
+    { name: 'token', type: 'text', required: true, unique: true },
     { name: 'product', type: 'relationship', relationTo: 'products', required: true },
     { name: 'email', type: 'text', required: true, index: true },
     { name: 'expiresAt', type: 'date', required: true },

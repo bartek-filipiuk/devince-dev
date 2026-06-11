@@ -3,6 +3,7 @@ import { slugField } from 'payload'
 
 import { adminOnly } from '../../access/adminOnly'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
+import { populatePublishedAt } from '../../hooks/populatePublishedAt'
 
 import {
   MetaDescriptionField,
@@ -12,6 +13,15 @@ import {
   PreviewField,
 } from '@payloadcms/plugin-seo/fields'
 
+/**
+ * Purchasable digital products served from apps.devince.dev.
+ *
+ * Read access is published-or-authenticated by design (public storefront).
+ * All writes are admin-only.
+ * `downloadFiles` relationship IDs are exposed at depth 0 — this is harmless
+ * because the `app-assets` collection enforces admin-only read and file access;
+ * the only delivery path is the grant-gated /api/apps/download/[token] route.
+ */
 export const Products: CollectionConfig = {
   slug: 'products',
   access: {
@@ -77,15 +87,16 @@ export const Products: CollectionConfig = {
               descriptionPath: 'meta.description',
               imagePath: 'meta.image',
             }),
+            // hasGenerateFn disabled: generateURL in seoPlugin builds main-domain URLs, wrong for apps.devince.dev
             MetaTitleField({
-              hasGenerateFn: true,
+              hasGenerateFn: false,
             }),
             MetaImageField({
               relationTo: 'media',
             }),
             MetaDescriptionField({}),
             PreviewField({
-              hasGenerateFn: true,
+              hasGenerateFn: false,
               titlePath: 'meta.title',
               descriptionPath: 'meta.description',
             }),
@@ -94,7 +105,20 @@ export const Products: CollectionConfig = {
       ],
     },
     slugField(),
+    {
+      name: 'publishedAt',
+      type: 'date',
+      admin: {
+        date: {
+          pickerAppearance: 'dayAndTime',
+        },
+        position: 'sidebar',
+      },
+    },
   ],
+  hooks: {
+    beforeChange: [populatePublishedAt],
+  },
   versions: {
     drafts: {
       autosave: {

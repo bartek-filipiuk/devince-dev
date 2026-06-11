@@ -1293,6 +1293,7 @@ export interface Product {
    */
   generateSlug?: boolean | null;
   slug: string;
+  publishedAt?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -2118,6 +2119,7 @@ export interface ProductsSelect<T extends boolean = true> {
       };
   generateSlug?: T;
   slug?: T;
+  publishedAt?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

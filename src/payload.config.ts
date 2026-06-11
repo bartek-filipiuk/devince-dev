@@ -102,7 +102,7 @@ export default buildConfig({
     StripeEvents,
     DownloadGrants,
   ],
-  cors: [getServerSideURL(), process.env.NEXT_PUBLIC_COURSES_URL].filter(Boolean) as string[],
+  cors: [getServerSideURL(), process.env.NEXT_PUBLIC_COURSES_URL, process.env.NEXT_PUBLIC_APPS_URL].filter(Boolean) as string[],
   globals: [Header, Footer, SiteSettings],
   plugins,
   secret: process.env.PAYLOAD_SECRET,
