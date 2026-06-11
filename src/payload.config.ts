@@ -81,7 +81,8 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },
-    push: true, // Enable automatic schema push for all environments
+    push: false, // Use Payload migrations for deterministic deploys (no auto schema push)
+    migrationDir: path.resolve(dirname, 'migrations'),
   }),
   collections: [
     Pages,

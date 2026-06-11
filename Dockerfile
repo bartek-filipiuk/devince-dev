@@ -63,11 +63,16 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy full node_modules for Payload migrations at runtime
+# Copy full node_modules for Payload migrations at runtime.
+# NOTE: the deps stage installs WITH devDependencies (no --prod), so `tsx` is
+# present — the Payload CLI loads the TS config through tsx (see payload/bin.js).
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nextjs:nodejs /app/src ./src
 COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
+# Ops scripts must ship with the image: reconcile-prod-migrations (one-off via
+# `docker exec`) and migrate.mjs (fallback runner if the Payload CLI misbehaves).
+COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 
 USER nextjs
 
@@ -75,6 +80,13 @@ EXPOSE 3000
 
 ENV PORT 3000
 
-# Run migrations then start the server
-# Note: push:true in payload.config.ts handles schema sync via drizzle-kit
-CMD npx payload migrate --config ./src/payload.config.ts || echo "Migration skipped"; HOSTNAME="0.0.0.0" node server.js
+# Deterministic config resolution for the Payload CLI (no tsconfig guessing).
+ENV PAYLOAD_CONFIG_PATH=/app/src/payload.config.ts
+
+# Run pending migrations, then start the server. FAIL-FAST by design: a failed
+# migration MUST NOT let the server boot on a wrong schema (that caused a prod
+# incident under the old push:true flow). If the container crash-loops here,
+# fix the migration / run reconcile — do not soften this to `|| true`.
+# First-deploy prerequisite on a hand-patched DB: run
+# scripts/reconcile-prod-migrations.ts ONCE before this CMD can succeed.
+CMD npx payload migrate && HOSTNAME="0.0.0.0" node server.js
