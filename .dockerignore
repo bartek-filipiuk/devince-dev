@@ -1,0 +1,32 @@
+# Build context hygiene: keep the image build lean and deterministic.
+# The builder stage gets node_modules from the deps stage — never from the host.
+node_modules
+.next
+.git
+.github
+
+# Secrets must come from build args / runtime env, never the context.
+.env
+.env.*
+
+# Local data and private uploads (mounted as volumes in prod).
+private-media
+private-media-apps
+# public/media is a prod volume (583MB locally) — only the seed images ship in
+# the image (Dockerfile copies public/media/seed -> ./seed-images).
+public/media
+!public/media/seed
+
+# Dev/test artifacts irrelevant to the image.
+tests
+test-results
+playwright-report
+.security-audit
+.claude
+
+# Repo bulk that the build does not need.
+COurses-handoff
+COurses-handoff.zip
+content
+docs
+*.md
