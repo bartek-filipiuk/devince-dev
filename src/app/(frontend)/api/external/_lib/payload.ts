@@ -79,11 +79,11 @@ export function isErrorResponse<T>(value: T | ErrorResponse): value is ErrorResp
  */
 export async function resolveDocId(
   payload: Payload,
-  collection: 'posts' | 'projects' | 'program' | 'pages',
+  collection: 'posts' | 'projects' | 'program' | 'pages' | 'products',
   idOrSlug: string,
   locale: 'pl' | 'en',
 ): Promise<number | ErrorResponse> {
-  const labels: Record<string, string> = { posts: 'Post', projects: 'Project', program: 'Program', pages: 'Page' }
+  const labels: Record<string, string> = { posts: 'Post', projects: 'Project', program: 'Program', pages: 'Page', products: 'Product' }
   const label = labels[collection] ?? collection
 
   if (/^\d+$/.test(idOrSlug)) {
