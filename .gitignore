@@ -28,6 +28,8 @@ public/media/*
 !public/media/seed/
 # Private (gated) course downloads — stored outside public/, never committed
 private-media/
+# Private (gated) app downloads — stored outside public/, never committed
+private-media-apps/
 
 # Generated files
 public/robots.txt

@@ -1,4 +1,9 @@
-# HANDOFF — devince.dev (stan na 2026-06-10)
+# HANDOFF — devince.dev (stan na 2026-06-11, rano)
+
+> **NOCNY BUILD WYKONANY:** `apps.devince.dev` zbudowane end-to-end, lokalnie zielone, **PR #16 otwarty** (stacked na PR #15 — merguj #15 najpierw, #16 auto-przetarguje się na main). Branch: `feat/apps-subdomain` (20 commitów). Weryfikacja: test:int 57/57, build OK, pełny smoke (zakup→grant→mail-link→download BYTES-OK, izolacja courses/main nietknięta, statyki OK na 3 hostach). 2× security review bez Critical/Important. Szczegóły + runbook deploya: opis PR #16.
+> **Uwaga middleware:** nocny fix `d9f9752` przebudował kolejność routingu hostów (tokeny pobrań z kropką wpadały w PUBLIC_FILE regex) — courses/main zweryfikowane, ale przy review #16 spojrzeć na `src/middleware.ts`.
+> **Nowe env na prod (apps):** `DOWNLOAD_TOKEN_SECRET`, `NEXT_PUBLIC_APPS_URL`, opc. `BREVO_DOWNLOAD_TEMPLATE_ID`. DNS `apps.devince.dev` do dodania. Volume `private-media-apps/`.
+> **Plan na rano (bez zmian):** (1) blocker tsx/runner migracji w kontenerze → (2) deploy courses.* wg runbooku niżej → (3) merge #15 → #16 → deploy apps.*.
 
 > Czytasz to po `/clear`. Cel: wskoczyć od razu i działać, bez rozkminiania „co dalej".
 

@@ -33,6 +33,27 @@ export async function sendTransactionalEmail(args: {
   return res.json()
 }
 
+export async function sendDownloadLinkEmail(args: {
+  to: string
+  link: string
+  productTitle: string
+}): Promise<void> {
+  const templateId = process.env.BREVO_DOWNLOAD_TEMPLATE_ID
+  if (templateId) {
+    await sendTransactionalEmail({
+      to: args.to,
+      templateId: Number(templateId),
+      params: { LINK: args.link, PRODUCT: args.productTitle },
+    })
+    return
+  }
+  await sendTransactionalEmail({
+    to: args.to,
+    subject: `Twój zakup: ${args.productTitle} — link do pobrania`,
+    htmlContent: `<p>Dziękujemy za zakup <strong>${args.productTitle}</strong>.</p><p><a href="${args.link}">Pobierz pliki</a></p><p>Link wygaśnie po 7 dniach i ma limit pobrań. Jeśli wygaśnie — odpisz na tego maila.</p>`,
+  })
+}
+
 export async function sendCourseAccessEmail(args: {
   to: string
   token: string
