@@ -16,7 +16,15 @@ export async function sendTransactionalEmail(args: {
 }): Promise<unknown> {
   const apiKey = process.env.BREVO_API_KEY
   if (!apiKey) throw new Error('BREVO_API_KEY not set')
-  const body: Record<string, unknown> = { to: [{ email: args.to }] }
+  // Brevo's transactional API REQUIRES a sender (400 "sender is missing"
+  // otherwise). The email must be a verified sender on the Brevo account.
+  const body: Record<string, unknown> = {
+    sender: {
+      email: process.env.BREVO_SENDER_EMAIL ?? 'bartek@devince.dev',
+      name: process.env.BREVO_SENDER_NAME ?? 'Devince',
+    },
+    to: [{ email: args.to }],
+  }
   if (args.templateId) {
     body.templateId = args.templateId
     body.params = args.params
