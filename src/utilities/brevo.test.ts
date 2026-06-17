@@ -15,6 +15,9 @@ describe('sendTransactionalEmail', () => {
     const [url, opts] = fetchMock.mock.calls[0]
     expect(url).toContain('api.brevo.com/v3/smtp/email')
     expect((opts.headers as any)['api-key']).toBe('k')
+    // Brevo requires a sender; without it the API returns 400 "sender is missing".
+    const body = JSON.parse(opts.body as string)
+    expect(body.sender?.email).toBeTruthy()
   })
   it('throws on non-ok', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500, text: async () => 'err' }))
