@@ -74,6 +74,15 @@ COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
 # `docker exec`) and migrate.mjs (fallback runner if the Payload CLI misbehaves).
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 
+# Private upload dirs: course-assets -> /app/private-media, app-assets ->
+# /app/private-media-apps. They MUST exist and be owned by the runtime user so
+# Payload can write uploads (the user can't mkdir under /app, which is root).
+# Mount Coolify persistent volumes on these paths so files survive redeploys —
+# when a volume mounts onto an image dir that already exists with this owner,
+# Docker initializes the volume with that ownership (writable).
+RUN mkdir -p /app/private-media /app/private-media-apps \
+  && chown nextjs:nodejs /app/private-media /app/private-media-apps
+
 USER nextjs
 
 EXPOSE 3000
