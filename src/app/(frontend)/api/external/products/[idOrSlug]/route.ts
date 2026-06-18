@@ -172,14 +172,25 @@ export async function DELETE(
 
     // Remove dependent purchase-fulfillment grants first — they are meaningless
     // once the product is gone and a referencing row would otherwise block the
-    // delete (or dangle).
+    // delete (or dangle). overrideAccess: trusted token call, no user session —
+    // download-grants is adminOnly, so without this the Local API rejects it.
     const removedGrants = await payload.delete({
       collection: 'download-grants',
       where: { product: { equals: productId } },
+      overrideAccess: true,
     })
+    // Bulk delete resolves even when individual rows fail, reporting them in
+    // `.errors`. If any grant failed to delete, abort BEFORE removing the product
+    // — orphaning a grant (which carries the Art. 38 withdrawalConsentAt record)
+    // at a now-deleted product is worse than leaving the product in place.
+    if (Array.isArray(removedGrants?.errors) && removedGrants.errors.length > 0) {
+      throw new Error(
+        `Failed to remove ${removedGrants.errors.length} download-grant(s) for product ${productId}; aborting delete`,
+      )
+    }
     const grantsRemoved = Array.isArray(removedGrants?.docs) ? removedGrants.docs.length : 0
 
-    await payload.delete({ collection: 'products', id: productId })
+    await payload.delete({ collection: 'products', id: productId, overrideAccess: true })
 
     return createSuccessResponse({ id: productId, deleted: true, grantsRemoved }, 200)
   } catch (error) {
