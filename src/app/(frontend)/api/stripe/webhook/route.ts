@@ -128,7 +128,25 @@ export async function POST(req: NextRequest) {
     // branch above; that would indicate a misconfigured Stripe session).
     if (email && productIdRaw && !programIdRaw) {
       const productId = Number.isNaN(Number(productIdRaw)) ? productIdRaw : Number(productIdRaw)
-      const result = await fulfillAppPurchase(payload, { productId, email, sessionId: session.id })
+      // Art. 38 pkt 13 consent timestamp, server-stamped at checkout creation.
+      // Absent for legacy sessions predating the consent gate — fulfillment
+      // stores undefined and the email omits the confirmation line.
+      const withdrawalConsentAt = session.metadata?.withdrawalConsentAt || undefined
+      // The legal gate lives at /api/apps/checkout (consent !== true → 400), so
+      // every session WE create carries this. A download session reaching here
+      // without it was created outside our flow (e.g. hand-made in the Stripe
+      // dashboard) — flag it: that purchase has NO durable-medium consent record.
+      if (!withdrawalConsentAt) {
+        console.warn(
+          `[stripe webhook] app purchase (product ${productIdRaw}, session ${session.id}) has no withdrawalConsentAt — created outside /api/apps/checkout; no Art. 38 pkt 13 consent recorded`,
+        )
+      }
+      const result = await fulfillAppPurchase(payload, {
+        productId,
+        email,
+        sessionId: session.id,
+        withdrawalConsentAt,
+      })
       if (result.created && result.token) {
         // Best-effort email, same policy as course access mails: a Brevo failure
         // must NOT fail the webhook — the grant exists; admin can resend.
@@ -140,10 +158,13 @@ export async function POST(req: NextRequest) {
             overrideAccess: true,
           })
           const base = process.env.NEXT_PUBLIC_APPS_URL ?? 'https://apps.devince.dev'
+          const emailLocale = session.metadata?.locale === 'en' ? 'en' : 'pl'
           await sendDownloadLinkEmail({
             to: email,
             link: `${base}/download/${result.token}`,
             productTitle: (product as { title?: string } | null)?.title ?? 'Twój zakup',
+            locale: emailLocale,
+            withdrawalConsentAt,
           })
         } catch (err) {
           console.error(

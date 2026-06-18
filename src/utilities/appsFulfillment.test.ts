@@ -44,6 +44,23 @@ describe('fulfillAppPurchase', () => {
     expect(typeof data.token).toBe('string')
     expect(new Date(data.expiresAt).getTime()).toBeGreaterThan(Date.now())
   })
+  it('persists withdrawalConsentAt on the grant when provided', async () => {
+    const payload = makePayload()
+    await fulfillAppPurchase(payload as never, {
+      productId: 7,
+      email: 'a@b.pl',
+      sessionId: 'cs_consent',
+      withdrawalConsentAt: '2026-06-18T10:00:00.000Z',
+    })
+    const data = payload.create.mock.calls[0][0].data
+    expect(data.withdrawalConsentAt).toBe('2026-06-18T10:00:00.000Z')
+  })
+  it('leaves withdrawalConsentAt undefined for legacy sessions without consent', async () => {
+    const payload = makePayload()
+    await fulfillAppPurchase(payload as never, { productId: 7, email: 'a@b.pl', sessionId: 'cs_legacy' })
+    const data = payload.create.mock.calls[0][0].data
+    expect(data.withdrawalConsentAt).toBeUndefined()
+  })
   it('is idempotent per stripeSessionId (existing grant => no create)', async () => {
     const payload = makePayload([grantRow])
     const res = await fulfillAppPurchase(payload as never, {

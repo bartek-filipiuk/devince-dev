@@ -519,6 +519,11 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
 .product-price { font-family: var(--font-mono); font-size: 28px; font-weight: 680; letter-spacing: -0.02em; color: var(--text); margin: 0; }
 .product-note { font-size: 13px; color: var(--text-dim); margin: 0; }
 
+/* Art. 38 pkt 13 consent gate — separate checkbox above the buy button. */
+.consent-check { display: flex; align-items: flex-start; gap: 10px; max-width: 46ch; margin-bottom: 14px; font-size: 13px; line-height: 1.5; color: var(--text-dim); cursor: pointer; }
+.consent-check input { margin-top: 2px; flex: none; width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
 @media (max-width: 720px) {
   .product-hero { grid-template-columns: 1fr; }
   .product-hero__cover { order: -1; }

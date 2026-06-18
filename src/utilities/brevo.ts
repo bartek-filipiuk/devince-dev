@@ -41,24 +41,87 @@ export async function sendTransactionalEmail(args: {
   return res.json()
 }
 
+/**
+ * Minimal HTML-escape for values interpolated into the fallback email body.
+ * Product titles are admin-entered (low risk), but a title like `C++ "Guide"`
+ * would otherwise produce malformed HTML — escape for correctness + defence.
+ */
+function esc(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+/**
+ * Format the consent timestamp for the durable-medium confirmation. Always in
+ * Europe/Warsaw (the seller's jurisdiction) so the recorded date is unambiguous
+ * regardless of the buyer's timezone. Falls back to the raw ISO string if the
+ * timestamp can't be parsed.
+ */
+function formatConsentDate(locale: 'pl' | 'en', iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  return new Intl.DateTimeFormat(locale === 'en' ? 'en-GB' : 'pl-PL', {
+    dateStyle: 'long',
+    timeStyle: 'short',
+    timeZone: 'Europe/Warsaw',
+  }).format(d)
+}
+
+/**
+ * Art. 38 pkt 13 durable-medium confirmation block. Echoes back the consent the
+ * buyer gave at checkout (express consent to immediate delivery + acknowledged
+ * loss of the right of withdrawal) with the recorded date — this email IS the
+ * confirmation on a durable medium that the statute requires.
+ */
+function buildConsentLine(locale: 'pl' | 'en', iso: string): string {
+  const when = formatConsentDate(locale, iso)
+  if (locale === 'en') {
+    return `<hr/><p style="font-size:13px;color:#555"><strong>Confirmation of consent (Art. 38(13) of the Consumer Rights Act):</strong> on ${when} you gave express consent to begin delivery of the digital content immediately and acknowledged that, upon performance (making the file available), you lose the right of withdrawal. This message constitutes confirmation of that consent on a durable medium.</p>`
+  }
+  return `<hr/><p style="font-size:13px;color:#555"><strong>Potwierdzenie zgody (art. 38 pkt 13 ustawy o prawach konsumenta):</strong> w dniu ${when} wyrazili Państwo wyraźną zgodę na natychmiastowe rozpoczęcie dostarczania treści cyfrowej i przyjęli do wiadomości, że z chwilą wykonania umowy (udostępnienia pliku) tracą Państwo prawo odstąpienia od umowy. Niniejsza wiadomość stanowi potwierdzenie tej zgody na trwałym nośniku.</p>`
+}
+
 export async function sendDownloadLinkEmail(args: {
   to: string
   link: string
   productTitle: string
+  locale?: 'pl' | 'en'
+  // ISO timestamp of the buyer's Art. 38 pkt 13 consent. When present, the email
+  // carries the durable-medium confirmation block. Absent for legacy purchases
+  // made before the consent gate existed.
+  withdrawalConsentAt?: string
 }): Promise<void> {
+  const locale = args.locale === 'en' ? 'en' : 'pl'
+  const consentLine = args.withdrawalConsentAt ? buildConsentLine(locale, args.withdrawalConsentAt) : ''
+
   const templateId = process.env.BREVO_DOWNLOAD_TEMPLATE_ID
   if (templateId) {
     await sendTransactionalEmail({
       to: args.to,
       templateId: Number(templateId),
-      params: { LINK: args.link, PRODUCT: args.productTitle },
+      params: { LINK: args.link, PRODUCT: args.productTitle, CONSENT: consentLine, LOCALE: locale },
     })
     return
   }
+
+  const copy =
+    locale === 'en'
+      ? {
+          subject: `Your purchase: ${args.productTitle} — download link`,
+          body: `<p>Thank you for purchasing <strong>${esc(args.productTitle)}</strong>.</p><p><a href="${esc(args.link)}">Download files</a></p><p>The link expires after 7 days and has a download limit. If it expires — just reply to this email.</p>`,
+        }
+      : {
+          subject: `Twój zakup: ${args.productTitle} — link do pobrania`,
+          body: `<p>Dziękujemy za zakup <strong>${esc(args.productTitle)}</strong>.</p><p><a href="${esc(args.link)}">Pobierz pliki</a></p><p>Link wygaśnie po 7 dniach i ma limit pobrań. Jeśli wygaśnie — odpisz na tego maila.</p>`,
+        }
+
   await sendTransactionalEmail({
     to: args.to,
-    subject: `Twój zakup: ${args.productTitle} — link do pobrania`,
-    htmlContent: `<p>Dziękujemy za zakup <strong>${args.productTitle}</strong>.</p><p><a href="${args.link}">Pobierz pliki</a></p><p>Link wygaśnie po 7 dniach i ma limit pobrań. Jeśli wygaśnie — odpisz na tego maila.</p>`,
+    subject: copy.subject,
+    htmlContent: copy.body + consentLine,
   })
 }
 

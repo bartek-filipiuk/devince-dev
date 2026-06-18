@@ -11,7 +11,16 @@ const GRANT_MAX_USES = 5
  */
 export async function fulfillAppPurchase(
   payload: Payload,
-  args: { productId: number | string; email: string; sessionId: string },
+  args: {
+    productId: number | string
+    email: string
+    sessionId: string
+    // ISO timestamp of the buyer's Art. 38 pkt 13 consent, captured at checkout
+    // and carried in the Stripe session metadata. Stored on the grant so the
+    // download email (durable medium) can confirm it. Undefined for legacy
+    // sessions created before the consent gate existed.
+    withdrawalConsentAt?: string
+  },
 ): Promise<{ created: boolean; token?: string }> {
   const existing = await payload.find({
     collection: 'download-grants',
@@ -36,6 +45,7 @@ export async function fulfillAppPurchase(
         maxUses: GRANT_MAX_USES,
         uses: 0,
         stripeSessionId: args.sessionId,
+        withdrawalConsentAt: args.withdrawalConsentAt,
       } as never,
       overrideAccess: true,
     })
