@@ -60,29 +60,32 @@ export interface CreateProgramRequest extends BaseRequest {
   level?: 'beginner' | 'intermediate' | 'advanced'
 }
 
-export interface UpdateLessonRequest {
-  title?: unknown
-  phase?: unknown
-  order?: unknown
-  nr?: unknown
-  phaseId?: unknown
-  hardGate?: unknown
-  hybrid?: unknown
-  kind?: unknown
+export interface CreateLessonRequest {
+  title?: string
+  program?: number | string // id or slug; required on create, not applicable on update
+  phase?: string
+  order?: number
+  nr?: number
+  phaseId?: string
+  hardGate?: boolean
+  hybrid?: boolean
+  kind?: 'normal' | 'decision'
   estTimeMin?: { min?: number; max?: number }
-  why?: unknown
-  what?: unknown
-  dod?: unknown
-  skills?: unknown // string[]
-  dependencies?: unknown // number[] of lesson ids
-  type?: unknown
-  content?: unknown
+  why?: string
+  what?: string
+  dod?: string
+  skills?: string[]
+  dependencies?: number[] // lesson ids
+  type?: 'text' | 'embed' | 'video' | 'download'
+  content?: string | Record<string, unknown>
   contentFormat?: string
-  youtubeEmbedUrl?: unknown
-  slug?: unknown
-  publishedAt?: unknown
-  _status?: unknown
+  youtubeEmbedUrl?: string
+  slug?: string
+  publishedAt?: string
+  _status?: 'draft' | 'published'
 }
+
+export type UpdateLessonRequest = Partial<CreateLessonRequest>
 
 export interface DocSummary {
   id: number
