@@ -6,12 +6,16 @@ import configPromise from '@payload-config'
 import type { Media } from '@/payload-types'
 import { formatPrice } from '@/utilities/formatPrice'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
+import { getLocale } from '@/utilities/getLocale.server'
+import { getLocalizedPath } from '@/utilities/getLocale'
+import { t } from '@/i18n'
 import { Pagination } from '../courses-app/_components/Pagination'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title: 'Sklep',
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale()
+  return { title: t(locale, 'apps.store.meta') }
 }
 
 const PER_PAGE = 12
@@ -27,6 +31,7 @@ export default async function AppsStorefront({
 }) {
   const { page: pageParam } = await searchParams
   const page = Math.max(1, Number.parseInt(pageParam ?? '1', 10) || 1)
+  const locale = await getLocale()
 
   const payload = await getPayload({ config: configPromise })
 
@@ -38,15 +43,16 @@ export default async function AppsStorefront({
     depth: 1,
     overrideAccess: false,
     sort: '-createdAt',
+    locale,
   })
 
   return (
     <section className="shell" style={{ padding: '64px 0' }}>
       <header className="store-head">
         <span className="eyebrow">
-          <i>sklep</i>
+          <i>{t(locale, 'apps.store.eyebrow')}</i>
         </span>
-        <h1 className="section-title">Aplikacje i pliki</h1>
+        <h1 className="section-title">{t(locale, 'apps.store.title')}</h1>
         <p
           style={{
             margin: '10px 0 0',
@@ -55,12 +61,12 @@ export default async function AppsStorefront({
             maxWidth: '52ch',
           }}
         >
-          Gotowe narzędzia, szablony i pliki do pobrania — kup raz, korzystaj bez limitu.
+          {t(locale, 'apps.store.lead')}
         </p>
       </header>
 
       {res.docs.length === 0 ? (
-        <p className="store-empty">Wkrótce — pracujemy nad pierwszymi produktami.</p>
+        <p className="store-empty">{t(locale, 'apps.store.empty')}</p>
       ) : (
         <div className="store-grid">
           {res.docs.map((product) => {
@@ -71,7 +77,11 @@ export default async function AppsStorefront({
             const coverUrl = cover ? getMediaUrl(cover.url) : null
 
             return (
-              <Link key={product.id} className="course-card" href={`/${product.slug}`}>
+              <Link
+                key={product.id}
+                className="course-card"
+                href={getLocalizedPath(`/${product.slug}`, locale)}
+              >
                 {coverUrl ? (
                   <img
                     src={coverUrl}

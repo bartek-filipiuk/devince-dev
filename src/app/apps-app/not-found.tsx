@@ -1,6 +1,12 @@
 import Link from 'next/link'
 
-export default function NotFound() {
+import { getLocale } from '@/utilities/getLocale.server'
+import { getLocalizedPath } from '@/utilities/getLocale'
+import { t } from '@/i18n'
+
+export default async function NotFound() {
+  const locale = await getLocale()
+
   return (
     <section className="shell" style={{ padding: 'clamp(64px, 10vw, 120px) 0' }}>
       <div
@@ -13,7 +19,7 @@ export default function NotFound() {
         }}
       >
         <span className="eyebrow">
-          <i>błąd</i>
+          <i>{t(locale, 'apps.notFound.eyebrow')}</i>
         </span>
         <h1
           style={{
@@ -24,13 +30,13 @@ export default function NotFound() {
             marginBottom: '12px',
           }}
         >
-          404 — nie ma takiej strony.
+          {t(locale, 'apps.notFound.title')}
         </h1>
         <p style={{ margin: '0 0 24px', fontSize: '15px', color: 'var(--text-mut)', lineHeight: 1.6 }}>
-          Strona, której szukasz, nie istnieje lub została przeniesiona.
+          {t(locale, 'apps.notFound.body')}
         </p>
-        <Link className="btn btn--primary" href="/">
-          Wróć do sklepu
+        <Link className="btn btn--primary" href={getLocalizedPath('/', locale)}>
+          {t(locale, 'apps.notFound.cta')}
         </Link>
       </div>
     </section>

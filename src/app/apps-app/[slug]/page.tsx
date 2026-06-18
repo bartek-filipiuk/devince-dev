@@ -4,14 +4,17 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
 import type { Media, Product } from '@/payload-types'
+import type { Locale } from '@/i18n'
 import { formatPrice } from '@/utilities/formatPrice'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
+import { getLocale } from '@/utilities/getLocale.server'
+import { t } from '@/i18n'
 import RichText from '@/components/RichText'
 import { BuyButton } from '../_components/BuyButton'
 
 export const dynamic = 'force-dynamic'
 
-async function getProduct(slug: string): Promise<Product | null> {
+async function getProduct(slug: string, locale: Locale): Promise<Product | null> {
   const payload = await getPayload({ config: configPromise })
 
   const res = await payload.find({
@@ -22,6 +25,7 @@ async function getProduct(slug: string): Promise<Product | null> {
     limit: 1,
     overrideAccess: false,
     depth: 1,
+    locale,
   })
 
   return (res.docs[0] as Product) ?? null
@@ -33,8 +37,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const product = await getProduct(slug)
-  if (!product) return { title: 'Produkt nie znaleziony · Devince' }
+  const locale = await getLocale()
+  const product = await getProduct(slug, locale)
+  if (!product) return { title: t(locale, 'apps.product.metaNotFound') }
 
   const title = product.meta?.title ?? `${product.title} · Devince`
   const description = product.meta?.description ?? undefined
@@ -48,7 +53,8 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const product = await getProduct(slug)
+  const locale = await getLocale()
+  const product = await getProduct(slug, locale)
   if (!product) notFound()
 
   const cover =
@@ -67,7 +73,7 @@ export default async function ProductPage({
           <div className="product-hero">
             <div className="product-hero__content">
               <span className="eyebrow">
-                <i>produkt</i>
+                <i>{t(locale, 'apps.product.eyebrow')}</i>
               </span>
               <h1>{product.title}</h1>
 
@@ -85,10 +91,14 @@ export default async function ProductPage({
                 <p className="product-price">
                   {formatPrice(product.priceCents, product.currency)}
                 </p>
-                <BuyButton slug={product.slug} disabled={files.length === 0} />
-                <p className="product-note">
-                  Po zakupie wyślemy link do pobrania na Twój e-mail.
-                </p>
+                <BuyButton
+                  slug={product.slug}
+                  label={t(locale, 'apps.product.buy')}
+                  processingLabel={t(locale, 'apps.product.processing')}
+                  errorLabel={t(locale, 'apps.product.error')}
+                  disabled={files.length === 0}
+                />
+                <p className="product-note">{t(locale, 'apps.product.note')}</p>
               </div>
             </div>
 
