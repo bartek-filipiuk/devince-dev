@@ -135,6 +135,9 @@ importers:
       '@types/escape-html':
         specifier: ^1.0.2
         version: 1.0.4
+      '@types/mdast':
+        specifier: ^4.0.4
+        version: 4.0.4
       '@types/node':
         specifier: 22.5.4
         version: 22.5.4
@@ -147,6 +150,9 @@ importers:
       '@types/react-dom':
         specifier: 19.2.1
         version: 19.2.1(@types/react@19.2.1)
+      '@types/unist':
+        specifier: ^3.0.3
+        version: 3.0.3
       '@vitejs/plugin-react':
         specifier: 4.5.2
         version: 4.5.2(vite@7.2.7(@types/node@22.5.4)(jiti@1.21.7)(sass@1.77.4)(tsx@4.21.0))
