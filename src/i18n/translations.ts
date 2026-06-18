@@ -258,6 +258,14 @@ const translations = {
     'courses.pagination.next': 'Następna',
     'courses.pagination.label': 'Paginacja kursów',
 
+    // Checkout success ("check your email")
+    'courses.success.meta': 'Dziękujemy',
+    'courses.success.eyebrow': 'zakup potwierdzony',
+    'courses.success.title': 'Dziękujemy za zakup!',
+    'courses.success.body':
+      'Sprawdź mail — wysłaliśmy link, żeby ustawić hasło i wejść do kursu. Zajrzyj też do folderu spam.',
+    'courses.success.back': 'Wróć do kursów',
+
     // Storefront
     'courses.store.eyebrow': 'Kursy',
     'courses.store.title': 'Płatne kursy',
@@ -602,6 +610,14 @@ const translations = {
     'courses.pagination.prev': 'Previous',
     'courses.pagination.next': 'Next',
     'courses.pagination.label': 'Course pagination',
+
+    // Checkout success ("check your email")
+    'courses.success.meta': 'Thank you',
+    'courses.success.eyebrow': 'purchase confirmed',
+    'courses.success.title': 'Thank you for your purchase!',
+    'courses.success.body':
+      'Check your email — we sent a link to set your password and enter the course. Check your spam folder too.',
+    'courses.success.back': 'Back to courses',
 
     // Storefront
     'courses.store.eyebrow': 'Courses',
