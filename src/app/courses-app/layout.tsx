@@ -35,6 +35,14 @@ export default async function CoursesRootLayout({ children }: { children: ReactN
         <script dangerouslySetInnerHTML={{ __html: NO_FOUC }} />
       </head>
       <body>
+        {/* NDQS "Cyber Gold" ambience — fixed, behind everything (dark only;
+            hidden in light mode via CSS). Pure decoration, aria-hidden. */}
+        <div className="aurora-bg" aria-hidden="true">
+          <div className="aurora-orb purple" />
+          <div className="aurora-orb gold" />
+          <div className="aurora-orb blue" />
+        </div>
+        <div className="noise-overlay" aria-hidden="true" />
         <a className="skip-link" href="#main">
           {t(locale, 'courses.skip')}
         </a>

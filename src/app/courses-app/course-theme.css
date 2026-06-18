@@ -10,30 +10,34 @@
   --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
 
-  --bg:        oklch(0.165 0.008 255);
-  --bg-grad-a: oklch(0.185 0.012 262);
-  --bg-grad-b: oklch(0.150 0.008 250);
-  --surface-1: oklch(0.205 0.010 258);
-  --surface-2: oklch(0.235 0.012 258);
-  --surface-3: oklch(0.275 0.014 258);
-  --line:      oklch(0.320 0.014 258);
-  --line-soft: oklch(0.270 0.012 258);
+  /* NDQS "Cyber Gold" — premium dark glassmorphism. Near-black base, gold
+     accent, glassy white-alpha surfaces (read as glass over the aurora). */
+  --bg:        #05050A;
+  --bg-grad-a: #0a0a12;
+  --bg-grad-b: #040409;
+  --surface-1: rgba(255, 255, 255, 0.035);
+  --surface-2: rgba(255, 255, 255, 0.06);
+  --surface-3: rgba(255, 255, 255, 0.09);
+  --line:      rgba(255, 255, 255, 0.12);
+  --line-soft: rgba(255, 255, 255, 0.08);
 
-  --text:      oklch(0.965 0.004 258);
-  --text-mut:  oklch(0.740 0.012 258);
-  --text-dim:  oklch(0.560 0.012 258);
+  --text:      #F8FAFC;
+  --text-mut:  #94A3B8;
+  --text-dim:  #64748B;
 
-  --accent:        oklch(0.745 0.135 258);
-  --accent-soft:   oklch(0.745 0.135 258 / 0.14);
-  --accent-line:   oklch(0.745 0.135 258 / 0.42);
-  --gate:          oklch(0.770 0.135 62);
-  --gate-soft:     oklch(0.770 0.135 62 / 0.14);
-  --hybrid:        oklch(0.760 0.110 168);
-  --hybrid-soft:   oklch(0.760 0.110 168 / 0.14);
-  --decision:      oklch(0.745 0.135 292);
-  --decision-soft: oklch(0.745 0.135 292 / 0.14);
-  --done:          oklch(0.760 0.110 168);
-  --on-accent: oklch(0.165 0.01 258);
+  --accent:        #E5B55C;
+  --accent-soft:   rgba(229, 181, 92, 0.14);
+  --accent-line:   rgba(229, 181, 92, 0.42);
+  --gate:          #F59E0B;
+  --gate-soft:     rgba(245, 158, 11, 0.14);
+  --hybrid:        #10B981;
+  --hybrid-soft:   rgba(16, 185, 129, 0.14);
+  --decision:      #A78BFA;
+  --decision-soft: rgba(167, 139, 250, 0.14);
+  --done:          #10B981;
+  --on-accent: #05050A;
+  --glow-gold:       0 0 28px rgba(229, 181, 92, 0.45);
+  --shadow-glass:    0 8px 32px rgba(0, 0, 0, 0.36);
 
   --r-card: 6px;
   --r-chip: 3px;
@@ -63,9 +67,11 @@
   --text-mut:  oklch(0.470 0.012 262);
   --text-dim:  oklch(0.620 0.012 262);
 
-  --accent:        oklch(0.560 0.150 258);
-  --accent-soft:   oklch(0.560 0.150 258 / 0.10);
-  --accent-line:   oklch(0.560 0.150 258 / 0.34);
+  /* Light mode keeps a deeper gold so accent text stays legible on light bg
+     (NDQS itself is dark-only; courses-app defaults to dark). */
+  --accent:        oklch(0.560 0.110 74);
+  --accent-soft:   oklch(0.560 0.110 74 / 0.12);
+  --accent-line:   oklch(0.560 0.110 74 / 0.36);
   --gate:          oklch(0.580 0.150 58);
   --gate-soft:     oklch(0.580 0.150 58 / 0.12);
   --hybrid:        oklch(0.520 0.120 168);
@@ -506,3 +512,57 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
   font-family: var(--font-mono); font-size: 12px; color: var(--accent);
 }
 .auth-course-cta .icon { width: 14px; height: 14px; }
+
+/* ============================================================
+   NDQS "CYBER GOLD" SIGNATURE EFFECTS (dark only)
+   Additive layer adapted from courses-platform/frontend globals.css.
+   Aurora orbs + film grain behind everything; glass blur + gold glow on
+   surfaces. Structure/classes untouched — these only restyle. Light mode
+   opts out (orbs/grain hidden) since NDQS is a dark aesthetic.
+   ============================================================ */
+
+/* Aurora — 3 drifting blurred orbs, furthest back */
+.aurora-bg { position: fixed; inset: 0; z-index: -3; overflow: hidden; pointer-events: none; background: var(--bg); }
+.aurora-orb { position: absolute; border-radius: 9999px; filter: blur(120px); will-change: transform; }
+.aurora-orb.purple { top: -40%; left: -20%; width: 60%; height: 60%; background: rgba(124, 58, 237, 0.16); animation: aurora-drift 22s ease-in-out infinite alternate; }
+.aurora-orb.gold   { bottom: -30%; right: -15%; width: 50%; height: 50%; background: rgba(229, 181, 92, 0.10); animation: aurora-drift 28s ease-in-out infinite alternate-reverse; animation-delay: -10s; }
+.aurora-orb.blue   { top: 25%; left: 40%; width: 35%; height: 35%; background: rgba(59, 130, 246, 0.06); animation: aurora-drift 25s ease-in-out infinite alternate; animation-delay: -5s; }
+@keyframes aurora-drift {
+  0%   { transform: translate(0, 0) rotate(0deg) scale(1); }
+  50%  { transform: translate(4%, -3%) rotate(6deg) scale(1.05); }
+  100% { transform: translate(-3%, 2%) rotate(-4deg) scale(0.97); }
+}
+
+/* Film grain overlay — subtle texture above aurora, below content */
+.noise-overlay {
+  position: fixed; inset: 0; pointer-events: none; z-index: -2; opacity: 0.035;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* Light mode: drop the dark-only ambience */
+:root.light .aurora-bg, :root.light .noise-overlay { display: none; }
+
+/* Glass: turn the white-alpha surface panels into frosted glass over the aurora */
+.nav, .course-card, .oc, .spine-card, .infocard, .cta-band, .auth-card,
+.phase-block, .pg, .deprow, .lbar, .dod, .meta .m, .lvideo__frame {
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+}
+:root.light .nav, :root.light .course-card, :root.light .oc, :root.light .spine-card,
+:root.light .infocard, :root.light .cta-band, :root.light .auth-card, :root.light .phase-block,
+:root.light .pg, :root.light .deprow, :root.light .lbar, :root.light .dod, :root.light .meta .m {
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+
+/* Gold glow signature on primary actions + active states */
+.btn--primary { box-shadow: 0 0 0 1px rgba(229, 181, 92, 0.18); }
+.btn--primary:hover { box-shadow: var(--glow-gold); }
+.course-card:hover { box-shadow: var(--shadow-2), 0 0 0 1px var(--accent-line); }
+.cta-band { box-shadow: var(--shadow-glass); }
+.cta-band::before, .cta-band::after { color: var(--accent); }
+.eyebrow::before { box-shadow: 0 0 8px var(--accent-line); }
+.navitem[aria-current="true"] { box-shadow: inset 2px 0 0 var(--accent), 0 0 16px rgba(229, 181, 92, 0.12); }
+.ph-video .play { box-shadow: var(--shadow-2), var(--glow-gold); }
+
+/* Mark (logo) gold cell glows a touch */
+.mark i:nth-child(1) { box-shadow: 0 0 8px var(--accent-line); }
