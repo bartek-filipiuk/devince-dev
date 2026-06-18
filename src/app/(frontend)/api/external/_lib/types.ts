@@ -44,6 +44,9 @@ export interface CreateProgramRequest extends BaseRequest {
   duration?: string
   ctaLabel?: string
   ctaUrl?: string
+  // Paid-course price (in smallest currency unit, e.g. grosz/cent).
+  priceCents?: number
+  currency?: 'pln' | 'eur' | 'usd'
   // Paid-course checkout: the Stripe Payment Link the syllabus "Kup" button
   // points to (metadata.programId = this program's id) + optional price id.
   stripePaymentLink?: string
