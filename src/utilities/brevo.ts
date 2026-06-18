@@ -42,6 +42,19 @@ export async function sendTransactionalEmail(args: {
 }
 
 /**
+ * Minimal HTML-escape for values interpolated into the fallback email body.
+ * Product titles are admin-entered (low risk), but a title like `C++ "Guide"`
+ * would otherwise produce malformed HTML — escape for correctness + defence.
+ */
+function esc(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+/**
  * Format the consent timestamp for the durable-medium confirmation. Always in
  * Europe/Warsaw (the seller's jurisdiction) so the recorded date is unambiguous
  * regardless of the buyer's timezone. Falls back to the raw ISO string if the
@@ -98,11 +111,11 @@ export async function sendDownloadLinkEmail(args: {
     locale === 'en'
       ? {
           subject: `Your purchase: ${args.productTitle} — download link`,
-          body: `<p>Thank you for purchasing <strong>${args.productTitle}</strong>.</p><p><a href="${args.link}">Download files</a></p><p>The link expires after 7 days and has a download limit. If it expires — just reply to this email.</p>`,
+          body: `<p>Thank you for purchasing <strong>${esc(args.productTitle)}</strong>.</p><p><a href="${esc(args.link)}">Download files</a></p><p>The link expires after 7 days and has a download limit. If it expires — just reply to this email.</p>`,
         }
       : {
           subject: `Twój zakup: ${args.productTitle} — link do pobrania`,
-          body: `<p>Dziękujemy za zakup <strong>${args.productTitle}</strong>.</p><p><a href="${args.link}">Pobierz pliki</a></p><p>Link wygaśnie po 7 dniach i ma limit pobrań. Jeśli wygaśnie — odpisz na tego maila.</p>`,
+          body: `<p>Dziękujemy za zakup <strong>${esc(args.productTitle)}</strong>.</p><p><a href="${esc(args.link)}">Pobierz pliki</a></p><p>Link wygaśnie po 7 dniach i ma limit pobrań. Jeśli wygaśnie — odpisz na tego maila.</p>`,
         }
 
   await sendTransactionalEmail({

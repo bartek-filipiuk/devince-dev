@@ -71,6 +71,10 @@ export async function POST(req: NextRequest) {
     ],
     metadata: {
       productId: String(product.id),
+      // Audit marker visible in the Stripe dashboard. NOT re-validated at
+      // fulfillment — `withdrawalConsentAt` is the load-bearing field (its
+      // presence == consent given). Kept because Stripe is itself a durable
+      // record of the transaction + the consent moment.
       withdrawalConsent: 'true',
       withdrawalConsentAt,
       locale: emailLocale,

@@ -132,6 +132,15 @@ export async function POST(req: NextRequest) {
       // Absent for legacy sessions predating the consent gate — fulfillment
       // stores undefined and the email omits the confirmation line.
       const withdrawalConsentAt = session.metadata?.withdrawalConsentAt || undefined
+      // The legal gate lives at /api/apps/checkout (consent !== true → 400), so
+      // every session WE create carries this. A download session reaching here
+      // without it was created outside our flow (e.g. hand-made in the Stripe
+      // dashboard) — flag it: that purchase has NO durable-medium consent record.
+      if (!withdrawalConsentAt) {
+        console.warn(
+          `[stripe webhook] app purchase (product ${productIdRaw}, session ${session.id}) has no withdrawalConsentAt — created outside /api/apps/checkout; no Art. 38 pkt 13 consent recorded`,
+        )
+      }
       const result = await fulfillAppPurchase(payload, {
         productId,
         email,
