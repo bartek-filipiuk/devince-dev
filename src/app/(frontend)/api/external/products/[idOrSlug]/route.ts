@@ -117,11 +117,16 @@ export async function PATCH(
       return createErrorResponse('VALIDATION_ERROR', 'No updatable fields provided')
     }
 
+    // Always write to the main document (draft: false) so `_status` actually
+    // toggles publish state. Passing draft:true here would save a draft version
+    // BESIDE the still-published one — i.e. `_status:'draft'` would NOT
+    // unpublish, leaving the product live + purchasable. `_status` in `data`
+    // governs whether the saved main doc is published or unpublished.
     const product = await payload.update({
       collection: 'products',
       id: productId,
       data: data as never,
-      draft: data._status === 'draft',
+      draft: false,
     })
 
     return createSuccessResponse(
@@ -140,5 +145,55 @@ export async function PATCH(
     )
   } catch (error) {
     return handleRouteError('Update product', error)
+  }
+}
+
+/**
+ * DELETE /api/external/products/:idOrSlug — hard-delete a product. Removes the
+ * product's download-grants first (relationship rows would otherwise dangle at
+ * a deleted product / block the delete via FK). Does NOT delete the linked
+ * app-asset files — those are a separate collection and may be shared.
+ * Bearer EXTERNAL_API_TOKEN.
+ */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ idOrSlug: string }> },
+) {
+  const authError = validateAuth(request)
+  if (authError) return authError
+
+  try {
+    const { idOrSlug } = await params
+    const payload = await getPayloadClient()
+
+    // products' main fields are not localized; pass 'pl' to satisfy the helper.
+    const productId = await resolveDocId(payload, 'products', idOrSlug, 'pl')
+    if (isErrorResponse(productId)) return productId
+
+    // Remove dependent purchase-fulfillment grants first — they are meaningless
+    // once the product is gone and a referencing row would otherwise block the
+    // delete (or dangle). overrideAccess: trusted token call, no user session —
+    // download-grants is adminOnly, so without this the Local API rejects it.
+    const removedGrants = await payload.delete({
+      collection: 'download-grants',
+      where: { product: { equals: productId } },
+      overrideAccess: true,
+    })
+    // Bulk delete resolves even when individual rows fail, reporting them in
+    // `.errors`. If any grant failed to delete, abort BEFORE removing the product
+    // — orphaning a grant (which carries the Art. 38 withdrawalConsentAt record)
+    // at a now-deleted product is worse than leaving the product in place.
+    if (Array.isArray(removedGrants?.errors) && removedGrants.errors.length > 0) {
+      throw new Error(
+        `Failed to remove ${removedGrants.errors.length} download-grant(s) for product ${productId}; aborting delete`,
+      )
+    }
+    const grantsRemoved = Array.isArray(removedGrants?.docs) ? removedGrants.docs.length : 0
+
+    await payload.delete({ collection: 'products', id: productId, overrideAccess: true })
+
+    return createSuccessResponse({ id: productId, deleted: true, grantsRemoved }, 200)
+  } catch (error) {
+    return handleRouteError('Delete product', error)
   }
 }
