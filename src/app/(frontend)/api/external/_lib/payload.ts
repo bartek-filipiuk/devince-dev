@@ -86,10 +86,17 @@ export async function resolveDocId(
   const labels: Record<string, string> = { posts: 'Post', projects: 'Project', program: 'Program', pages: 'Page', products: 'Product' }
   const label = labels[collection] ?? collection
 
+  // overrideAccess + draft: the external API is gated by EXTERNAL_API_TOKEN
+  // (a trusted admin caller), and the create/PATCH writes already use
+  // overrideAccess: true. Without it this lookup runs under the
+  // `authenticatedOrPublished` read access with no session, so a DRAFT doc is
+  // invisible (404) — you could create a draft program but then never attach
+  // lessons to it, publish it, or update it. draft: true resolves the latest
+  // (incl. draft) version.
   if (/^\d+$/.test(idOrSlug)) {
     const id = parseInt(idOrSlug, 10)
     try {
-      await payload.findByID({ collection, id, depth: 0, locale })
+      await payload.findByID({ collection, id, depth: 0, locale, overrideAccess: true, draft: true })
     } catch (error) {
       if ((error as { status?: number }).status === 404) {
         return createErrorResponse('NOT_FOUND', `${label} not found: ${idOrSlug}`)
@@ -105,6 +112,8 @@ export async function resolveDocId(
     limit: 1,
     depth: 0,
     locale,
+    overrideAccess: true,
+    draft: true,
   })
 
   if (found.docs.length === 0) {
