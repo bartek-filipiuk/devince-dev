@@ -174,6 +174,21 @@ export async function POST(req: NextRequest) {
         }
       }
     }
+
+    // NDQS quest-course bridge — only runs when ndqsCourseId is set and NEITHER
+    // programId NOR productId is present (mutually exclusive with the course and
+    // app branches above). Best-effort, same policy as those: a failure is logged,
+    // the stripe-events row + 200 still happen below — never throw, never retry.
+    const ndqsCourseId = session.metadata?.ndqsCourseId
+    if (email && ndqsCourseId && !programIdRaw && !productIdRaw) {
+      const { enrollNdqsByEmail } = await import('@/utilities/ndqsEnroll')
+      const r = await enrollNdqsByEmail({ email, courseId: ndqsCourseId })
+      if (!r.ok) {
+        console.error(
+          `[stripe webhook] NDQS enroll failed (course ${ndqsCourseId}, ${email}) status=${r.status}; event recorded, recover by re-POSTing enroll-by-email`,
+        )
+      }
+    }
   }
 
   // Record the event last so the unique-indexed row is the durable idempotency marker.
