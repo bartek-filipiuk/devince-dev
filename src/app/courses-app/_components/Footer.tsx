@@ -9,7 +9,7 @@ export function CoursesFooter({ locale }: { locale: Locale }) {
     <footer className="foot">
       <div className="shell">
         <span>{t(locale, 'courses.footer.tagline')}</span>
-        <span className="mono">9 faz · 23 etapy · 4 hard-gate</span>
+        <span className="mono">{t(locale, 'courses.footer.stats')}</span>
       </div>
     </footer>
   )

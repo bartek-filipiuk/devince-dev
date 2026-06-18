@@ -108,7 +108,7 @@ export default async function AppsStorefront({
         </div>
       )}
 
-      <Pagination page={res.page ?? page} totalPages={res.totalPages ?? 1} />
+      <Pagination page={res.page ?? page} totalPages={res.totalPages ?? 1} locale={locale} />
     </section>
   )
 }
