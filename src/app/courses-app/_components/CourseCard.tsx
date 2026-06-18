@@ -19,23 +19,31 @@ type CardMeta = {
 export function CourseCard({
   program,
   meta,
+  enrolled,
   locale,
 }: {
   program: Program
   meta: CardMeta
+  enrolled: boolean
   locale: Locale
 }) {
   const time = formatTime(meta.timeMin, meta.timeMax)
+  const syllabusHref = getLocalizedPath(`/${program.slug}`, locale)
+  // Paid + not enrolled + has a Stripe link → external buy affordance,
+  // a sibling of the title link (a buy <a> cannot be nested inside a <Link>).
+  const paidLocked = program.pricing === 'paid' && !enrolled && !!program.stripePaymentLink
 
   return (
-    <Link className="course-card" href={getLocalizedPath(`/${program.slug}`, locale)}>
-      <span className="eyebrow">
-        <i>{t(locale, 'courses.auth.courseEyebrow')}</i>
-      </span>
-      <h3 className="course-card__title">{program.title}</h3>
-      {program.heroDescription ? (
-        <p className="course-card__desc">{program.heroDescription}</p>
-      ) : null}
+    <div className="course-card">
+      <Link className="course-card__head" href={syllabusHref}>
+        <span className="eyebrow">
+          <i>{t(locale, 'courses.auth.courseEyebrow')}</i>
+        </span>
+        <h3 className="course-card__title">{program.title}</h3>
+        {program.heroDescription ? (
+          <p className="course-card__desc">{program.heroDescription}</p>
+        ) : null}
+      </Link>
       <div className="course-card__meta mono">
         <span>
           {meta.phases} {t(locale, 'courses.store.phases')}
@@ -46,7 +54,25 @@ export function CourseCard({
         {time ? <span>{time}</span> : null}
         <span className="course-card__paid">{t(locale, 'courses.store.paid')}</span>
       </div>
-    </Link>
+      <div className="course-card__foot">
+        {paidLocked ? (
+          <a
+            className="btn btn--primary"
+            href={program.stripePaymentLink!}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t(locale, 'courses.syllabus.buy')}
+          </a>
+        ) : (
+          <Link className="btn" href={syllabusHref}>
+            {enrolled
+              ? t(locale, 'courses.syllabus.continue')
+              : t(locale, 'courses.store.details')}
+          </Link>
+        )}
+      </div>
+    </div>
   )
 }
 

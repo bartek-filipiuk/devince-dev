@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
@@ -81,6 +82,15 @@ export default async function SyllabusPage({
   const phases = program.phases ?? []
   const meta = courseMeta(phases, lessons)
 
+  // Enrollment: admins + anyone who has this program in their purchases.
+  // Drives the CTA — non-enrolled visitors of a paid course see a buy button.
+  const payload = await getPayload({ config: configPromise })
+  const { user } = await payload.auth({ headers: await headers() })
+  const enrolled =
+    !!user &&
+    ((user.roles ?? []).includes('admin') ||
+      (user.purchases ?? []).some((p) => (typeof p === 'object' && p ? p.id : p) === program.id))
+
   // First lesson = lowest nr (lessons are already sorted by nr).
   const firstLessonSlug = lessons[0]?.slug ?? null
 
@@ -99,6 +109,7 @@ export default async function SyllabusPage({
         phases={phases}
         stageCounts={stageCounts}
         firstLessonSlug={firstLessonSlug}
+        enrolled={enrolled}
         locale={locale}
       />
 
@@ -113,7 +124,12 @@ export default async function SyllabusPage({
             requirements={program.requirements ?? []}
             locale={locale}
           />
-          <CtaBand program={program} firstLessonSlug={firstLessonSlug} locale={locale} />
+          <CtaBand
+            program={program}
+            firstLessonSlug={firstLessonSlug}
+            enrolled={enrolled}
+            locale={locale}
+          />
         </section>
       </div>
     </>

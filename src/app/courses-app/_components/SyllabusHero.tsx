@@ -31,6 +31,7 @@ export function SyllabusHero({
   phases,
   stageCounts,
   firstLessonSlug,
+  enrolled,
   locale,
 }: {
   program: Program
@@ -39,6 +40,7 @@ export function SyllabusHero({
   /** phaseId → number of lessons (etapy) in that phase */
   stageCounts: Map<string, number>
   firstLessonSlug: string | null
+  enrolled: boolean
   locale: Locale
 }) {
   const headline = program.heroHeadline || program.title
@@ -46,6 +48,8 @@ export function SyllabusHero({
     firstLessonSlug ? `/${program.slug}/learn/${firstLessonSlug}` : `/${program.slug}`,
     locale,
   )
+  // Paid + not enrolled + has a Stripe link → show the external buy CTA.
+  const paidLocked = program.pricing === 'paid' && !enrolled && !!program.stripePaymentLink
   const time = `${fmtHours(meta.timeMin)}–${fmtHours(meta.timeMax)}`
 
   const chips: Array<{ value: string; label: string; gate?: boolean }> = [
@@ -74,10 +78,25 @@ export function SyllabusHero({
             </div>
 
             <div className="cta">
-              <Link className="btn btn--primary btn--lg" href={startHref}>
-                <span className="icon" data-i="play" aria-hidden="true" />
-                <span>{program.ctaLabel || t(locale, 'courses.syllabus.cta')}</span>
-              </Link>
+              {paidLocked ? (
+                <a
+                  className="btn btn--primary btn--lg"
+                  href={program.stripePaymentLink!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t(locale, 'courses.syllabus.buy')}
+                </a>
+              ) : (
+                <Link className="btn btn--primary btn--lg" href={startHref}>
+                  <span className="icon" data-i="play" aria-hidden="true" />
+                  <span>
+                    {enrolled
+                      ? t(locale, 'courses.syllabus.continue')
+                      : program.ctaLabel || t(locale, 'courses.syllabus.cta')}
+                  </span>
+                </Link>
+              )}
             </div>
           </div>
 

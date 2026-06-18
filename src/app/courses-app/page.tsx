@@ -1,5 +1,6 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { headers } from 'next/headers'
 
 import { courseMeta } from '@/utilities/courseMeta'
 import { getLocale } from '@/utilities/getLocale.server'
@@ -28,6 +29,13 @@ export default async function CoursesStorefront({
   const locale = await getLocale()
 
   const payload = await getPayload({ config: configPromise })
+
+  // Fetch the viewer once so each card can decide buy vs details.
+  const { user } = await payload.auth({ headers: await headers() })
+  const isAdmin = !!user && (user.roles ?? []).includes('admin')
+  const purchasedIds = new Set(
+    (user?.purchases ?? []).map((p) => (typeof p === 'object' && p ? p.id : p)),
+  )
 
   const res = await payload.find({
     collection: 'program',
@@ -81,7 +89,16 @@ export default async function CoursesStorefront({
               typeof courseMeta
             >[1]
             const meta = courseMeta(program.phases ?? [], lessons)
-            return <CourseCard key={program.id} program={program} meta={meta} locale={locale} />
+            const enrolled = isAdmin || purchasedIds.has(program.id)
+            return (
+              <CourseCard
+                key={program.id}
+                program={program}
+                meta={meta}
+                enrolled={enrolled}
+                locale={locale}
+              />
+            )
           })}
         </div>
       )}

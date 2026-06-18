@@ -266,6 +266,7 @@ const translations = {
     'courses.store.paid': 'Płatny',
     'courses.store.phases': 'faz',
     'courses.store.stages': 'etapów',
+    'courses.store.details': 'Szczegóły',
 
     // Syllabus
     'courses.syllabus.metaNotFound': 'Kurs nie znaleziony · Devince',
@@ -292,6 +293,8 @@ const translations = {
     'courses.syllabus.ctaBandTitle': 'Gotowy, żeby zacząć?',
     'courses.syllabus.ctaBandBody':
       'Przejdź cały pipeline od pomysłu do wdrożenia — krok po kroku, z twardymi bramkami, które pilnują jakości.',
+    'courses.syllabus.buy': 'Kup dostęp',
+    'courses.syllabus.continue': 'Kontynuuj',
 
     // Badges
     'courses.badge.gate': 'hard-gate',
@@ -608,6 +611,7 @@ const translations = {
     'courses.store.paid': 'Paid',
     'courses.store.phases': 'phases',
     'courses.store.stages': 'stages',
+    'courses.store.details': 'Details',
 
     // Syllabus
     'courses.syllabus.metaNotFound': 'Course not found · Devince',
@@ -634,6 +638,8 @@ const translations = {
     'courses.syllabus.ctaBandTitle': 'Ready to begin?',
     'courses.syllabus.ctaBandBody':
       'Go through the entire pipeline from idea to deployment — step by step, with hard gates that keep quality in check.',
+    'courses.syllabus.buy': 'Buy access',
+    'courses.syllabus.continue': 'Continue',
 
     // Badges
     'courses.badge.gate': 'hard-gate',
