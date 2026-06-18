@@ -182,3 +182,36 @@ describe('PATCH /api/external/programs/[idOrSlug]', () => {
     expect(data).not.toHaveProperty('currency')
   })
 })
+
+// ── DELETE /api/external/programs/[idOrSlug] ───────────────────────────────
+
+describe('DELETE /api/external/programs/[idOrSlug]', () => {
+  beforeEach(() => {
+    process.env.EXTERNAL_API_TOKEN = TOKEN
+    vi.clearAllMocks()
+  })
+
+  it('DELETE removes the program', async () => {
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    const del = vi.fn().mockResolvedValue({ id: 16 })
+    const findByID = vi.fn().mockResolvedValue({ id: 16 })
+    vi.mocked(getPayloadClient).mockResolvedValue({ delete: del, findByID } as never)
+
+    const { DELETE } = await import('./[idOrSlug]/route.js')
+
+    const authedReq = makeAuthedReq('DELETE', 'http://localhost/api/external/programs/16', {})
+    const res = await DELETE(authedReq, { params: Promise.resolve({ idOrSlug: '16' }) })
+    expect(del).toHaveBeenCalledWith(expect.objectContaining({ collection: 'program', id: 16, overrideAccess: true }))
+    expect(res.status).toBe(200)
+  })
+
+  it('DELETE without token is 401', async () => {
+    const { DELETE } = await import('./[idOrSlug]/route.js')
+
+    const unauthedReq = new NextRequest('http://localhost/api/external/programs/16', {
+      method: 'DELETE',
+    })
+    const res = await DELETE(unauthedReq, { params: Promise.resolve({ idOrSlug: '16' }) })
+    expect(res.status).toBe(401)
+  })
+})

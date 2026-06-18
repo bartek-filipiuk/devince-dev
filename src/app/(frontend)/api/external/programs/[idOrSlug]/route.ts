@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { validateAuth } from '../../_lib/auth.js'
 import { createErrorResponse, createSuccessResponse, handleRouteError } from '../../_lib/errors.js'
 import {
@@ -125,5 +125,30 @@ export async function PATCH(
     return createSuccessResponse(toDocSummary(program))
   } catch (error) {
     return handleRouteError('Update program', error)
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ idOrSlug: string }> },
+) {
+  const authError = validateAuth(request)
+  if (authError) return authError
+
+  try {
+    const { idOrSlug } = await params
+    const locale = parseLocale(request)
+    if (isErrorResponse(locale)) return locale
+
+    const payload = await getPayloadClient()
+
+    const programId = await resolveDocId(payload, 'program', idOrSlug, locale)
+    if (isErrorResponse(programId)) return programId
+
+    await payload.delete({ collection: 'program', id: programId, overrideAccess: true })
+
+    return NextResponse.json({ deleted: true, id: programId })
+  } catch (error) {
+    return handleRouteError('Delete program', error)
   }
 }
