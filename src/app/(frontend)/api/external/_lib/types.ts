@@ -60,6 +60,30 @@ export interface CreateProgramRequest extends BaseRequest {
   level?: 'beginner' | 'intermediate' | 'advanced'
 }
 
+export interface UpdateLessonRequest {
+  title?: unknown
+  phase?: unknown
+  order?: unknown
+  nr?: unknown
+  phaseId?: unknown
+  hardGate?: unknown
+  hybrid?: unknown
+  kind?: unknown
+  estTimeMin?: { min?: number; max?: number }
+  why?: unknown
+  what?: unknown
+  dod?: unknown
+  skills?: unknown // string[]
+  dependencies?: unknown // number[] of lesson ids
+  type?: unknown
+  content?: unknown
+  contentFormat?: string
+  youtubeEmbedUrl?: unknown
+  slug?: unknown
+  publishedAt?: unknown
+  _status?: unknown
+}
+
 export interface DocSummary {
   id: number
   title: string
