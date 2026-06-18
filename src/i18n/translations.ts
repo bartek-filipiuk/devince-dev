@@ -356,6 +356,22 @@ const translations = {
     'courses.auth.empty': 'Nie masz jeszcze żadnych kursów.',
     'courses.auth.courseEyebrow': 'Kurs',
     'courses.auth.openSyllabus': 'Otwórz sylabus',
+    // Set password (post-purchase activation)
+    'courses.auth.setPasswordTitle': 'Ustaw hasło',
+    'courses.auth.confirmPassword': 'Powtórz hasło',
+    'courses.auth.startCourse': 'Rozpocznij kurs',
+    'courses.auth.activating': 'Aktywowanie…',
+    'courses.auth.passwordMismatch': 'Hasła nie są identyczne.',
+    'courses.auth.invalidToken': 'Link aktywacyjny wygasł lub jest nieprawidłowy.',
+    'courses.auth.missingToken': 'Nieprawidłowy lub brakujący link aktywacyjny.',
+    'courses.auth.sendNewLink': 'Wyślij nowy link',
+    'courses.auth.genericError': 'Coś poszło nie tak. Spróbuj ponownie.',
+    // Forgot password
+    'courses.auth.forgotPasswordTitle': 'Resetuj hasło',
+    'courses.auth.sendLink': 'Wyślij link',
+    'courses.auth.sending': 'Wysyłanie…',
+    'courses.auth.resetSent': 'Jeśli konto istnieje, wyślemy link do zresetowania hasła.',
+    'courses.auth.backToLogin': 'Wróć do logowania',
 
     // Not found
     'courses.notFound.title': 'Kurs nie znaleziony · Devince',
@@ -715,6 +731,22 @@ const translations = {
     'courses.auth.empty': 'You do not have any courses yet.',
     'courses.auth.courseEyebrow': 'Course',
     'courses.auth.openSyllabus': 'Open syllabus',
+    // Set password (post-purchase activation)
+    'courses.auth.setPasswordTitle': 'Set your password',
+    'courses.auth.confirmPassword': 'Confirm password',
+    'courses.auth.startCourse': 'Start the course',
+    'courses.auth.activating': 'Activating…',
+    'courses.auth.passwordMismatch': 'Passwords do not match.',
+    'courses.auth.invalidToken': 'This activation link has expired or is invalid.',
+    'courses.auth.missingToken': 'Invalid or missing activation link.',
+    'courses.auth.sendNewLink': 'Send a new link',
+    'courses.auth.genericError': 'Something went wrong. Please try again.',
+    // Forgot password
+    'courses.auth.forgotPasswordTitle': 'Reset your password',
+    'courses.auth.sendLink': 'Send link',
+    'courses.auth.sending': 'Sending…',
+    'courses.auth.resetSent': 'If an account exists, we will send a password reset link.',
+    'courses.auth.backToLogin': 'Back to sign in',
 
     // Not found
     'courses.notFound.title': 'Course not found · Devince',
