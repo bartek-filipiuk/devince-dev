@@ -304,6 +304,12 @@ const translations = {
     'courses.syllabus.buy': 'Kup dostęp',
     'courses.syllabus.continue': 'Kontynuuj',
 
+    // Checkout (consent gate)
+    'courses.checkout.consent':
+      'Wyrażam zgodę na rozpoczęcie dostępu do treści cyfrowych przed upływem terminu odstąpienia i przyjmuję do wiadomości utratę prawa do odstąpienia (art. 38 pkt 13).',
+    'courses.checkout.processing': 'Przekierowuję…',
+    'courses.checkout.error': 'Nie udało się rozpocząć płatności. Spróbuj ponownie.',
+
     // Badges
     'courses.badge.gate': 'hard-gate',
     'courses.badge.hybrid': 'hybrid · IRL',
@@ -656,6 +662,12 @@ const translations = {
       'Go through the entire pipeline from idea to deployment — step by step, with hard gates that keep quality in check.',
     'courses.syllabus.buy': 'Buy access',
     'courses.syllabus.continue': 'Continue',
+
+    // Checkout (consent gate)
+    'courses.checkout.consent':
+      'I consent to early access to the digital content before the withdrawal period expires and acknowledge that I lose my right of withdrawal (Art. 38(13)).',
+    'courses.checkout.processing': 'Redirecting…',
+    'courses.checkout.error': 'Could not start the payment. Please try again.',
 
     // Badges
     'courses.badge.gate': 'hard-gate',

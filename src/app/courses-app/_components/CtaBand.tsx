@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Program } from '@/payload-types'
 import { t, type Locale } from '@/i18n'
 import { getLocalizedPath } from '@/utilities/getLocale'
+import { CourseCheckoutButton } from './CourseCheckoutButton'
 
 /**
  * Closing `.cta-band` (handoff) driving the learner into the course: course
@@ -23,8 +24,11 @@ export function CtaBand({
     firstLessonSlug ? `/${program.slug}/learn/${firstLessonSlug}` : `/${program.slug}`,
     locale,
   )
-  // Paid + not enrolled + has a Stripe link → show the external buy CTA.
-  const paidLocked = program.pricing === 'paid' && !enrolled && !!program.stripePaymentLink
+  // Paid + not enrolled + purchasable → show the consent checkout CTA.
+  const paidLocked =
+    program.pricing === 'paid' &&
+    !enrolled &&
+    (!!program.stripePriceId || typeof program.priceCents === 'number')
 
   return (
     <div className="cta-band">
@@ -32,14 +36,14 @@ export function CtaBand({
       <p>{t(locale, 'courses.syllabus.ctaBandBody')}</p>
       <div className="cta">
         {paidLocked ? (
-          <a
-            className="btn btn--primary btn--lg"
-            href={program.stripePaymentLink!}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {t(locale, 'courses.syllabus.buy')}
-          </a>
+          <CourseCheckoutButton
+            slug={program.slug}
+            locale={locale}
+            label={t(locale, 'courses.syllabus.buy')}
+            consentLabel={t(locale, 'courses.checkout.consent')}
+            processingLabel={t(locale, 'courses.checkout.processing')}
+            errorLabel={t(locale, 'courses.checkout.error')}
+          />
         ) : (
           <Link className="btn btn--primary btn--lg" href={href}>
             <span className="icon" data-i="play" aria-hidden="true" />

@@ -3,6 +3,7 @@ import type { Program } from '@/payload-types'
 import { t, type Locale } from '@/i18n'
 import { getLocalizedPath } from '@/utilities/getLocale'
 import { formatPrice } from '@/utilities/formatPrice'
+import { CourseCheckoutButton } from './CourseCheckoutButton'
 
 /** Formats a minute count as „{min} min" (<60) or „~{h} h" (rounded hours). */
 function fmtHours(min: number): string {
@@ -49,8 +50,11 @@ export function SyllabusHero({
     firstLessonSlug ? `/${program.slug}/learn/${firstLessonSlug}` : `/${program.slug}`,
     locale,
   )
-  // Paid + not enrolled + has a Stripe link → show the external buy CTA.
-  const paidLocked = program.pricing === 'paid' && !enrolled && !!program.stripePaymentLink
+  // Paid + not enrolled + purchasable → show the consent checkout CTA.
+  const paidLocked =
+    program.pricing === 'paid' &&
+    !enrolled &&
+    (!!program.stripePriceId || typeof program.priceCents === 'number')
   const time = `${fmtHours(meta.timeMin)}–${fmtHours(meta.timeMax)}`
 
   const chips: Array<{ value: string; label: string; gate?: boolean }> = [
@@ -85,14 +89,14 @@ export function SyllabusHero({
                 </span>
               ) : null}
               {paidLocked ? (
-                <a
-                  className="btn btn--primary btn--lg"
-                  href={program.stripePaymentLink!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {t(locale, 'courses.syllabus.buy')}
-                </a>
+                <CourseCheckoutButton
+                  slug={program.slug}
+                  locale={locale}
+                  label={t(locale, 'courses.syllabus.buy')}
+                  consentLabel={t(locale, 'courses.checkout.consent')}
+                  processingLabel={t(locale, 'courses.checkout.processing')}
+                  errorLabel={t(locale, 'courses.checkout.error')}
+                />
               ) : (
                 <Link className="btn btn--primary btn--lg" href={startHref}>
                   <span className="icon" data-i="play" aria-hidden="true" />
