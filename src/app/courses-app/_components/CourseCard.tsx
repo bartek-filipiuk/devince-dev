@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Program } from '@/payload-types'
 import { t, type Locale } from '@/i18n'
 import { getLocalizedPath } from '@/utilities/getLocale'
+import { formatPrice } from '@/utilities/formatPrice'
 
 type CardMeta = {
   phases: number
@@ -53,6 +54,11 @@ export function CourseCard({
         </span>
         {time ? <span>{time}</span> : null}
         <span className="course-card__paid">{t(locale, 'courses.store.paid')}</span>
+        {program.pricing === 'paid' && typeof program.priceCents === 'number' ? (
+          <span className="course-card__price">
+            {formatPrice(program.priceCents, program.currency ?? 'pln')}
+          </span>
+        ) : null}
       </div>
       <div className="course-card__foot">
         {paidLocked ? (

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Program } from '@/payload-types'
 import { t, type Locale } from '@/i18n'
 import { getLocalizedPath } from '@/utilities/getLocale'
+import { formatPrice } from '@/utilities/formatPrice'
 
 /** Formats a minute count as „{min} min" (<60) or „~{h} h" (rounded hours). */
 function fmtHours(min: number): string {
@@ -78,6 +79,11 @@ export function SyllabusHero({
             </div>
 
             <div className="cta">
+              {program.pricing === 'paid' && typeof program.priceCents === 'number' ? (
+                <span className="hero__price">
+                  {formatPrice(program.priceCents, program.currency ?? 'pln')}
+                </span>
+              ) : null}
               {paidLocked ? (
                 <a
                   className="btn btn--primary btn--lg"
