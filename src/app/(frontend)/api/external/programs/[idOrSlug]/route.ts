@@ -94,6 +94,19 @@ export async function PATCH(
       data.onlineLink = body.onlineLink
     }
 
+    // Sylabus tab. audience/requirements: string[] -> [{ item }].
+    if (body.phases !== undefined) data.phases = body.phases
+    if (body.outcomes !== undefined) data.outcomes = body.outcomes
+    if (body.audience !== undefined) {
+      data.audience = Array.isArray(body.audience) ? body.audience.map((item) => ({ item })) : body.audience
+    }
+    if (body.requirements !== undefined) {
+      data.requirements = Array.isArray(body.requirements)
+        ? body.requirements.map((item) => ({ item }))
+        : body.requirements
+    }
+    if (body.level !== undefined) data.level = body.level
+
     const program = await payload.update({
       collection: 'program',
       id: programId,

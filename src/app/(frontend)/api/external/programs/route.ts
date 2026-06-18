@@ -81,6 +81,14 @@ export async function POST(request: NextRequest) {
       ...(body.ctaUrl && { ctaUrl: body.ctaUrl }),
       ...(body.meta && { meta: body.meta }),
       ...(body.publishedAt && { publishedAt: body.publishedAt }),
+      // Sylabus tab. audience/requirements: string[] -> [{ item }].
+      ...(Array.isArray(body.phases) && { phases: body.phases }),
+      ...(Array.isArray(body.outcomes) && { outcomes: body.outcomes }),
+      ...(Array.isArray(body.audience) && { audience: body.audience.map((item) => ({ item })) }),
+      ...(Array.isArray(body.requirements) && {
+        requirements: body.requirements.map((item) => ({ item })),
+      }),
+      ...(body.level && { level: body.level }),
     }
 
     const program = await payload.create({

@@ -44,6 +44,13 @@ export interface CreateProgramRequest extends BaseRequest {
   duration?: string
   ctaLabel?: string
   ctaUrl?: string
+  // Sylabus tab (course syllabus). audience/requirements accept string[] (mapped
+  // to the {item} sub-field) for convenience.
+  phases?: { letter?: string; name: string; hint?: string }[]
+  outcomes?: { title: string; body?: string }[]
+  audience?: string[]
+  requirements?: string[]
+  level?: 'beginner' | 'intermediate' | 'advanced'
 }
 
 export interface DocSummary {
