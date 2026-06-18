@@ -93,9 +93,11 @@ export default async function ProductPage({
                 </p>
                 <BuyButton
                   slug={product.slug}
+                  locale={locale}
                   label={t(locale, 'apps.product.buy')}
                   processingLabel={t(locale, 'apps.product.processing')}
                   errorLabel={t(locale, 'apps.product.error')}
+                  consentLabel={t(locale, 'apps.product.consent')}
                   disabled={files.length === 0}
                 />
                 <p className="product-note">{t(locale, 'apps.product.note')}</p>

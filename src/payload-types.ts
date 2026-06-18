@@ -1340,6 +1340,7 @@ export interface DownloadGrant {
   expiresAt: string;
   maxUses: number;
   uses: number;
+  withdrawalConsentAt?: string | null;
   stripeSessionId?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -2320,6 +2321,7 @@ export interface DownloadGrantsSelect<T extends boolean = true> {
   expiresAt?: T;
   maxUses?: T;
   uses?: T;
+  withdrawalConsentAt?: T;
   stripeSessionId?: T;
   updatedAt?: T;
   createdAt?: T;

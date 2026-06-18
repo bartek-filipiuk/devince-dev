@@ -11,11 +11,13 @@
  * withdrawal/refund rule, (b) VAT/OSS price presentation, (c) final wording of the
  * 19.06.2026 withdrawal-function clause. Do NOT treat as legal advice.
  *
- * Operational TODO surfaced by the research (NOT yet implemented):
- * - The Art. 38 pkt 13 loss-of-withdrawal-right for the downloadable product
- *   requires a SEPARATE unchecked checkbox at checkout (express consent to
- *   immediate delivery + acknowledgement of losing withdrawal) + a durable-medium
- *   (email) confirmation. The current apps checkout does not yet collect it.
+ * Art. 38 pkt 13 loss-of-withdrawal-right for the downloadable product is
+ * IMPLEMENTED: the apps checkout has a separate unchecked consent checkbox
+ * (apps.product.consent) that gates the buy button; /api/apps/checkout enforces
+ * it server-side; the consent timestamp is stored on the DownloadGrant
+ * (withdrawalConsentAt) and echoed back in the download email as the
+ * durable-medium confirmation (see sendDownloadLinkEmail). Wording here in §6.2
+ * must stay consistent with that checkbox + email copy.
  */
 
 import type { Locale } from '@/i18n'

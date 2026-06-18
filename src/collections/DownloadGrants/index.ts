@@ -20,6 +20,12 @@ export const DownloadGrants: CollectionConfig = {
     { name: 'expiresAt', type: 'date', required: true },
     { name: 'maxUses', type: 'number', required: true, defaultValue: 5 },
     { name: 'uses', type: 'number', required: true, defaultValue: 0 },
+    // Art. 38 pkt 13 ustawy o prawach konsumenta: timestamp of the buyer's
+    // express consent (given at checkout via a separate checkbox) to begin
+    // delivery immediately AND acknowledge losing the right of withdrawal.
+    // Set from the Stripe session metadata in fulfillAppPurchase. The
+    // durable-medium confirmation (the download email) echoes this date.
+    { name: 'withdrawalConsentAt', type: 'date' },
     // Fulfillment idempotency is enforced by this unique constraint; the
     // find-then-create in fulfillAppPurchase is the fast path, the constraint
     // is the backstop that closes the TOCTOU race on concurrent deliveries.

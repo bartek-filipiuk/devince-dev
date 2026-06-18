@@ -21,12 +21,29 @@ const APPS_URL = () => process.env.NEXT_PUBLIC_APPS_URL ?? 'https://apps.devince
 
 export async function POST(req: NextRequest) {
   let slug: unknown
+  let consent: unknown
+  let locale: unknown
   try {
-    ;({ slug } = await req.json())
+    ;({ slug, consent, locale } = await req.json())
   } catch {
     return NextResponse.json({ error: 'invalid body' }, { status: 400 })
   }
   if (typeof slug !== 'string' || !slug) return NextResponse.json({ error: 'invalid body' }, { status: 400 })
+  // Drives only the language of the download/confirmation email — not a trust
+  // boundary, so a bad value harmlessly falls back to 'pl'.
+  const emailLocale = locale === 'en' ? 'en' : 'pl'
+
+  // Art. 38 pkt 13 ustawy o prawach konsumenta: a digital download is supplied
+  // immediately, so the buyer must give express prior consent to begin delivery
+  // AND acknowledge losing the right of withdrawal. The checkout UI gates the
+  // button on a separate checkbox, but THIS server-side check is the actual
+  // legal gate — a scripted request without consent must never reach Stripe.
+  if (consent !== true) {
+    return NextResponse.json({ error: 'consent required' }, { status: 400 })
+  }
+  // Server-stamped, never trusting a client-supplied time. This is the moment
+  // consent was recorded; it flows to the grant + the durable-medium email.
+  const withdrawalConsentAt = new Date().toISOString()
 
   const payload = await getPayload({ config: configPromise })
   // overrideAccess: false + no user => only published products are findable.
@@ -52,7 +69,12 @@ export async function POST(req: NextRequest) {
         stripePriceId: product.stripePriceId,
       }),
     ],
-    metadata: { productId: String(product.id) },
+    metadata: {
+      productId: String(product.id),
+      withdrawalConsent: 'true',
+      withdrawalConsentAt,
+      locale: emailLocale,
+    },
     success_url: `${APPS_URL()}/success`,
     cancel_url: `${APPS_URL()}/${product.slug}`,
   })

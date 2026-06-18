@@ -209,6 +209,8 @@ const translations = {
     'apps.product.processing': 'Przekierowuję…',
     'apps.product.error': 'Nie udało się rozpocząć płatności. Spróbuj ponownie.',
     'apps.product.note': 'Po zakupie wyślemy link do pobrania na Twój e-mail.',
+    'apps.product.consent':
+      'Wyrażam zgodę na natychmiastowe rozpoczęcie dostarczania treści cyfrowej (pobranie pliku) i przyjmuję do wiadomości, że z chwilą wykonania umowy (udostępnienia pliku) tracę prawo odstąpienia od umowy.',
 
     // Success page
     'apps.success.meta': 'Dziękujemy',
@@ -549,6 +551,8 @@ const translations = {
     'apps.product.processing': 'Redirecting…',
     'apps.product.error': 'Could not start the payment. Please try again.',
     'apps.product.note': 'After purchase we will send a download link to your email.',
+    'apps.product.consent':
+      'I consent to the immediate start of delivery of the digital content (file download) and acknowledge that, once the contract is performed (the file is made available), I lose the right of withdrawal.',
 
     // Success page
     'apps.success.meta': 'Thank you',

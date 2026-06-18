@@ -4,6 +4,7 @@ import * as migration_20260610_205758_phases_letter_field from './20260610_20575
 import * as migration_20260611_010838_apps_store_model from './20260611_010838_apps_store_model';
 import * as migration_20260611_012513_grants_session_unique from './20260611_012513_grants_session_unique';
 import * as migration_20260618_044219_i18n_localized_content from './20260618_044219_i18n_localized_content';
+import * as migration_20260618_075115_add_withdrawal_consent from './20260618_075115_add_withdrawal_consent';
 
 export const migrations = [
   {
@@ -34,6 +35,11 @@ export const migrations = [
   {
     up: migration_20260618_044219_i18n_localized_content.up,
     down: migration_20260618_044219_i18n_localized_content.down,
-    name: '20260618_044219_i18n_localized_content'
+    name: '20260618_044219_i18n_localized_content',
+  },
+  {
+    up: migration_20260618_075115_add_withdrawal_consent.up,
+    down: migration_20260618_075115_add_withdrawal_consent.down,
+    name: '20260618_075115_add_withdrawal_consent'
   },
 ];

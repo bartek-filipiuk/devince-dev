@@ -30,7 +30,7 @@ describe('sendDownloadLinkEmail', () => {
     delete process.env.BREVO_DOWNLOAD_TEMPLATE_ID
   })
 
-  it('uses templateId + params when BREVO_DOWNLOAD_TEMPLATE_ID is set', async () => {
+  it('uses templateId + params (with CONSENT/LOCALE) when BREVO_DOWNLOAD_TEMPLATE_ID is set', async () => {
     process.env.BREVO_DOWNLOAD_TEMPLATE_ID = '42'
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) })
     vi.stubGlobal('fetch', fetchMock)
@@ -39,7 +39,8 @@ describe('sendDownloadLinkEmail', () => {
     const [, opts] = fetchMock.mock.calls[0]
     const body = JSON.parse(opts.body as string)
     expect(body.templateId).toBe(42)
-    expect(body.params).toEqual({ LINK: 'https://files.example.com/abc', PRODUCT: 'My Product' })
+    // No consent timestamp passed → CONSENT is empty, locale defaults to pl.
+    expect(body.params).toEqual({ LINK: 'https://files.example.com/abc', PRODUCT: 'My Product', CONSENT: '', LOCALE: 'pl' })
     expect(body.subject).toBeUndefined()
   })
 
@@ -54,5 +55,38 @@ describe('sendDownloadLinkEmail', () => {
     expect(body.htmlContent).toContain('https://files.example.com/abc')
     expect(body.htmlContent).toContain('My Product')
     expect(body.templateId).toBeUndefined()
+  })
+
+  it('emits the Polish durable-medium consent block when withdrawalConsentAt is given', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) })
+    vi.stubGlobal('fetch', fetchMock)
+    await sendDownloadLinkEmail({
+      to: 'buyer@example.com',
+      link: 'https://files.example.com/abc',
+      productTitle: 'My Product',
+      withdrawalConsentAt: '2026-06-18T10:00:00.000Z',
+    })
+    const [, opts] = fetchMock.mock.calls[0]
+    const body = JSON.parse(opts.body as string)
+    // Confirmation of consent on a durable medium (Art. 38 pkt 13).
+    expect(body.htmlContent).toContain('art. 38 pkt 13')
+    expect(body.htmlContent).toContain('trwałym nośniku')
+  })
+
+  it('localizes subject + consent block to English when locale=en', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) })
+    vi.stubGlobal('fetch', fetchMock)
+    await sendDownloadLinkEmail({
+      to: 'buyer@example.com',
+      link: 'https://files.example.com/abc',
+      productTitle: 'My Product',
+      locale: 'en',
+      withdrawalConsentAt: '2026-06-18T10:00:00.000Z',
+    })
+    const [, opts] = fetchMock.mock.calls[0]
+    const body = JSON.parse(opts.body as string)
+    expect(body.subject).toContain('download link')
+    expect(body.htmlContent).toContain('Art. 38(13)')
+    expect(body.htmlContent).toContain('durable medium')
   })
 })
