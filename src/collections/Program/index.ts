@@ -201,6 +201,35 @@ export const Program: CollectionConfig<'program'> = {
               admin: { condition: (data) => data?.pricing === 'paid' },
             },
             {
+              type: 'row',
+              fields: [
+                {
+                  name: 'priceCents',
+                  type: 'number',
+                  min: 0,
+                  admin: {
+                    description: 'Cena w najmniejszej jednostce waluty (np. 4700 = 47,00 zł). Trzymaj zgodne z Payment Link / Price w Stripe.',
+                    condition: (data) => data?.pricing === 'paid',
+                    width: '50%',
+                  },
+                },
+                {
+                  name: 'currency',
+                  type: 'select',
+                  defaultValue: 'pln',
+                  options: [
+                    { label: 'PLN', value: 'pln' },
+                    { label: 'EUR', value: 'eur' },
+                    { label: 'USD', value: 'usd' },
+                  ],
+                  admin: {
+                    condition: (data) => data?.pricing === 'paid',
+                    width: '50%',
+                  },
+                },
+              ],
+            },
+            {
               name: 'duration',
               type: 'text',
               label: 'Czas trwania (np. "8 tygodni")',

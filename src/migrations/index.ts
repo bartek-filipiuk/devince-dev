@@ -6,6 +6,7 @@ import * as migration_20260611_012513_grants_session_unique from './20260611_012
 import * as migration_20260618_044219_i18n_localized_content from './20260618_044219_i18n_localized_content';
 import * as migration_20260618_075115_add_withdrawal_consent from './20260618_075115_add_withdrawal_consent';
 import * as migration_20260618_185500_reconcile_program_v_stripe from './20260618_185500_reconcile_program_v_stripe';
+import * as migration_20260618_200715_program_price from './20260618_200715_program_price';
 
 export const migrations = [
   {
@@ -41,11 +42,16 @@ export const migrations = [
   {
     up: migration_20260618_075115_add_withdrawal_consent.up,
     down: migration_20260618_075115_add_withdrawal_consent.down,
-    name: '20260618_075115_add_withdrawal_consent'
+    name: '20260618_075115_add_withdrawal_consent',
   },
   {
     up: migration_20260618_185500_reconcile_program_v_stripe.up,
     down: migration_20260618_185500_reconcile_program_v_stripe.down,
     name: '20260618_185500_reconcile_program_v_stripe',
+  },
+  {
+    up: migration_20260618_200715_program_price.up,
+    down: migration_20260618_200715_program_price.down,
+    name: '20260618_200715_program_price'
   },
 ];
