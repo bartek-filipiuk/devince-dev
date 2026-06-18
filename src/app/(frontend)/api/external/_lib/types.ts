@@ -44,6 +44,10 @@ export interface CreateProgramRequest extends BaseRequest {
   duration?: string
   ctaLabel?: string
   ctaUrl?: string
+  // Paid-course checkout: the Stripe Payment Link the syllabus "Kup" button
+  // points to (metadata.programId = this program's id) + optional price id.
+  stripePaymentLink?: string
+  stripePriceId?: string
   // Sylabus tab (course syllabus). audience/requirements accept string[] (mapped
   // to the {item} sub-field) for convenience.
   phases?: { letter?: string; name: string; hint?: string }[]

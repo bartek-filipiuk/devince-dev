@@ -54,6 +54,8 @@ export async function PATCH(
     if (body.locationAddress !== undefined) data.locationAddress = body.locationAddress
     if (body.duration !== undefined) data.duration = body.duration
     if (body.ctaLabel !== undefined) data.ctaLabel = body.ctaLabel
+    if (body.stripePaymentLink !== undefined) data.stripePaymentLink = body.stripePaymentLink
+    if (body.stripePriceId !== undefined) data.stripePriceId = body.stripePriceId
 
     if (body.type !== undefined) {
       if (!(VALID_TYPES as readonly string[]).includes(body.type)) {
