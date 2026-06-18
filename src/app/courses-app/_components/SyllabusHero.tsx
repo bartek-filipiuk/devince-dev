@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import type { Program } from '@/payload-types'
+import { t, type Locale } from '@/i18n'
+import { getLocalizedPath } from '@/utilities/getLocale'
 
 /** Formats a minute count as „{min} min" (<60) or „~{h} h" (rounded hours). */
 function fmtHours(min: number): string {
@@ -29,6 +31,7 @@ export function SyllabusHero({
   phases,
   stageCounts,
   firstLessonSlug,
+  locale,
 }: {
   program: Program
   meta: Meta
@@ -36,16 +39,20 @@ export function SyllabusHero({
   /** phaseId → number of lessons (etapy) in that phase */
   stageCounts: Map<string, number>
   firstLessonSlug: string | null
+  locale: Locale
 }) {
   const headline = program.heroHeadline || program.title
-  const startHref = firstLessonSlug ? `/${program.slug}/learn/${firstLessonSlug}` : `/${program.slug}`
+  const startHref = getLocalizedPath(
+    firstLessonSlug ? `/${program.slug}/learn/${firstLessonSlug}` : `/${program.slug}`,
+    locale,
+  )
   const time = `${fmtHours(meta.timeMin)}–${fmtHours(meta.timeMax)}`
 
   const chips: Array<{ value: string; label: string; gate?: boolean }> = [
-    { value: `${meta.phases}`, label: 'faz' },
-    { value: `${meta.stages}`, label: 'etapy' },
-    { value: time, label: 'szac. czas' },
-    { value: `${meta.hardGates}`, label: 'hard-gate', gate: true },
+    { value: `${meta.phases}`, label: t(locale, 'courses.syllabus.metaPhases') },
+    { value: `${meta.stages}`, label: t(locale, 'courses.syllabus.metaStages') },
+    { value: time, label: t(locale, 'courses.syllabus.metaTime') },
+    { value: `${meta.hardGates}`, label: t(locale, 'courses.syllabus.metaGates'), gate: true },
   ]
 
   return (
@@ -53,7 +60,7 @@ export function SyllabusHero({
       <div className="shell">
         <div className="hero-a">
           <div>
-            <span className="eyebrow">Kurs · flow produkcyjny</span>
+            <span className="eyebrow">{t(locale, 'courses.syllabus.eyebrow')}</span>
             <h1>{headline}</h1>
             {program.heroDescription ? <p className="lead">{program.heroDescription}</p> : null}
 
@@ -69,15 +76,15 @@ export function SyllabusHero({
             <div className="cta">
               <Link className="btn btn--primary btn--lg" href={startHref}>
                 <span className="icon" data-i="play" aria-hidden="true" />
-                <span>{program.ctaLabel || 'Zacznij'}</span>
+                <span>{program.ctaLabel || t(locale, 'courses.syllabus.cta')}</span>
               </Link>
             </div>
           </div>
 
-          <aside className="spine-card" aria-label="Przegląd faz">
+          <aside className="spine-card" aria-label={t(locale, 'courses.syllabus.spineLabel')}>
             <div className="sc-h">
-              {meta.phases} faz · oś{' '}
-              {phases.map((p) => p.letter).join(' → ')}
+              {meta.phases} {t(locale, 'courses.syllabus.metaPhases')} ·{' '}
+              {t(locale, 'courses.syllabus.spineAxis')} {phases.map((p) => p.letter).join(' → ')}
             </div>
             <div className="spine">
               {phases.map((p) => {
@@ -86,7 +93,9 @@ export function SyllabusHero({
                   <div className="row" key={p.letter}>
                     <div className="dot">{p.letter}</div>
                     <div className="nm">{p.name}</div>
-                    <div className="ct">{count} et.</div>
+                    <div className="ct">
+                      {count} {t(locale, 'courses.syllabus.stageShort')}
+                    </div>
                   </div>
                 )
               })}

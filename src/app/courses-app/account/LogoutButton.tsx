@@ -3,8 +3,11 @@
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
 
+import { t, type Locale } from '@/i18n'
+import { getLocalizedPath } from '@/utilities/getLocale'
+
 /** Course-themed logout: clears the Payload session then returns to /login. */
-export function LogoutButton() {
+export function LogoutButton({ locale }: { locale: Locale }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
@@ -18,12 +21,12 @@ export function LogoutButton() {
     } catch {
       // Ignore — redirect to login regardless.
     }
-    router.push('/login')
+    router.push(getLocalizedPath('/login', locale))
   }
 
   return (
     <button className="btn btn--ghost" type="button" onClick={handleLogout} disabled={loading}>
-      {loading ? 'Wylogowywanie…' : 'Wyloguj'}
+      {loading ? t(locale, 'courses.auth.loggingOut') : t(locale, 'courses.auth.logout')}
     </button>
   )
 }

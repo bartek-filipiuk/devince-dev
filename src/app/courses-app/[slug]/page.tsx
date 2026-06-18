@@ -4,7 +4,10 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
 import type { Lesson } from '@/payload-types'
+import type { Locale } from '@/i18n'
 import { courseMeta } from '@/utilities/courseMeta'
+import { getLocale } from '@/utilities/getLocale.server'
+import { t } from '@/i18n'
 import { SyllabusHero } from '../_components/SyllabusHero'
 import { Outcomes } from '../_components/Outcomes'
 import { Curriculum } from '../_components/Curriculum'
@@ -14,7 +17,7 @@ import { CtaBand } from '../_components/CtaBand'
 export const dynamic = 'force-dynamic'
 
 /** Loads a published course program + its lessons by slug. */
-async function getCourse(slug: string) {
+async function getCourse(slug: string, locale: Locale) {
   const payload = await getPayload({ config: configPromise })
 
   const res = await payload.find({
@@ -25,6 +28,7 @@ async function getCourse(slug: string) {
     limit: 1,
     overrideAccess: true,
     depth: 0,
+    locale,
   })
 
   const program = res.docs[0]
@@ -39,6 +43,7 @@ async function getCourse(slug: string) {
     limit: 1000,
     overrideAccess: true,
     depth: 0,
+    locale,
   })
 
   return { program, lessons: lessonsRes.docs as Lesson[] }
@@ -50,8 +55,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const data = await getCourse(slug)
-  if (!data) return { title: 'Kurs nie znaleziony · Devince' }
+  const locale = await getLocale()
+  const data = await getCourse(slug, locale)
+  if (!data) return { title: t(locale, 'courses.syllabus.metaNotFound') }
 
   const { program } = data
   const title = `${program.title} · Devince`
@@ -67,7 +73,8 @@ export default async function SyllabusPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const data = await getCourse(slug)
+  const locale = await getLocale()
+  const data = await getCourse(slug, locale)
   if (!data) notFound()
 
   const { program, lessons } = data
@@ -92,16 +99,21 @@ export default async function SyllabusPage({
         phases={phases}
         stageCounts={stageCounts}
         firstLessonSlug={firstLessonSlug}
+        locale={locale}
       />
 
       <div className="shell">
-        <Outcomes outcomes={program.outcomes ?? []} />
+        <Outcomes outcomes={program.outcomes ?? []} locale={locale} />
 
-        <Curriculum slug={program.slug} phases={phases} lessons={lessons} />
+        <Curriculum slug={program.slug} phases={phases} lessons={lessons} locale={locale} />
 
         <section className="block">
-          <InfoCards audience={program.audience ?? []} requirements={program.requirements ?? []} />
-          <CtaBand program={program} firstLessonSlug={firstLessonSlug} />
+          <InfoCards
+            audience={program.audience ?? []}
+            requirements={program.requirements ?? []}
+            locale={locale}
+          />
+          <CtaBand program={program} firstLessonSlug={firstLessonSlug} locale={locale} />
         </section>
       </div>
     </>

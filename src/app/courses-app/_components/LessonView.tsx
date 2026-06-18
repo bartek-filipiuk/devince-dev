@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { Fragment } from 'react'
 import type { Lesson, Program } from '@/payload-types'
+import { t, type Locale } from '@/i18n'
+import { getLocalizedPath } from '@/utilities/getLocale'
 
 type Phase = NonNullable<Program['phases']>[number]
 
@@ -47,11 +49,13 @@ export function LessonView({
   program,
   lesson,
   allLessons,
+  locale,
 }: {
   slug: string
   program: Program
   lesson: Lesson
   allLessons: Lesson[]
+  locale: Locale
 }) {
   const phases: Phase[] = program.phases ?? []
   const sorted = [...allLessons].sort((a, b) => (a.nr ?? 0) - (b.nr ?? 0))
@@ -83,22 +87,27 @@ export function LessonView({
         <details className="navwrap" open>
           <summary>
             <span className="icon" data-i="map" aria-hidden="true" />
-            <span>Program kursu</span>
+            <span>{t(locale, 'courses.lesson.nav')}</span>
             <span className="chev">›</span>
           </summary>
           <div className="side__top">
             <div className="ttl">{program.title}</div>
             <div className="pmeta">
-              <b>{sorted.length}</b> {sorted.length === 1 ? 'etap' : 'etapów'}
+              <b>{sorted.length}</b>{' '}
+              {sorted.length === 1
+                ? t(locale, 'courses.lesson.stageSingular')
+                : t(locale, 'courses.lesson.stagePlural')}
             </div>
           </div>
-          <nav className="navlist" aria-label="Etapy kursu">
+          <nav className="navlist" aria-label={t(locale, 'courses.lesson.navStages')}>
             {sidebarPhases.map(({ phase: p, rows }) => (
               <div className="navphase" key={p.letter}>
                 <div className="navphase__h">
                   <span className="lp">{p.letter}</span>
                   <span className="nm">{p.name}</span>
-                  <span className="ct">{rows.length} et.</span>
+                  <span className="ct">
+                    {rows.length} {t(locale, 'courses.lesson.stageShort')}
+                  </span>
                 </div>
                 {rows.map((l) => {
                   const current = l.id === lesson.id
@@ -106,7 +115,7 @@ export function LessonView({
                     <Link
                       key={l.id}
                       className={`navitem${l.hardGate ? ' gate' : ''}`}
-                      href={`/${slug}/learn/${l.slug}`}
+                      href={getLocalizedPath(`/${slug}/learn/${l.slug}`, locale)}
                       aria-current={current ? 'true' : undefined}
                     >
                       <span className="st">
@@ -127,28 +136,34 @@ export function LessonView({
 
       <main className="lmain" id="lmain">
         <div className="crumb">
-          <Link href={`/${slug}`}>Sylabus</Link>
+          <Link href={getLocalizedPath(`/${slug}`, locale)}>
+            {t(locale, 'courses.lesson.syllabus')}
+          </Link>
           {phase ? (
             <>
               <span className="sep">/</span>
               <span>
-                Faza {phase.letter} · {phase.name}
+                {t(locale, 'courses.lesson.phase')} {phase.letter} · {phase.name}
               </span>
             </>
           ) : null}
           <span className="sep">/</span>
           <span>
-            Etap {pad(lesson.nr)} / {pad(sorted.length)}
+            {t(locale, 'courses.lesson.stage')} {pad(lesson.nr)} / {pad(sorted.length)}
           </span>
         </div>
 
         <header className="lhead">
           <h1>{lesson.title}</h1>
           <div className="badges">
-            {lesson.hardGate ? <span className="badge gate">hard-gate</span> : null}
-            {lesson.hybrid ? <span className="badge hybrid">hybrid · IRL</span> : null}
+            {lesson.hardGate ? (
+              <span className="badge gate">{t(locale, 'courses.badge.gate')}</span>
+            ) : null}
+            {lesson.hybrid ? (
+              <span className="badge hybrid">{t(locale, 'courses.badge.hybrid')}</span>
+            ) : null}
             {lesson.kind === 'decision' ? (
-              <span className="badge decision">decision</span>
+              <span className="badge decision">{t(locale, 'courses.badge.decision')}</span>
             ) : null}
           </div>
         </header>
@@ -168,7 +183,9 @@ export function LessonView({
               <div className="play">
                 <span className="icon" data-i="play" aria-hidden="true" />
               </div>
-              <span className="ph-label">nagranie lekcji · {lesson.title}</span>
+              <span className="ph-label">
+                {t(locale, 'courses.lesson.recording')} · {lesson.title}
+              </span>
             </div>
           )}
         </div>
@@ -181,7 +198,7 @@ export function LessonView({
                 <b>
                   {time?.min ?? 0}–{time?.max ?? 0}
                 </b>{' '}
-                min
+                {t(locale, 'courses.lesson.minutes')}
               </span>
             </span>
           </div>
@@ -189,21 +206,21 @@ export function LessonView({
 
         {lesson.why ? (
           <section className="lsec">
-            <div className="lbl">Po co</div>
+            <div className="lbl">{t(locale, 'courses.lesson.why')}</div>
             <Paragraphs text={lesson.why} lead />
           </section>
         ) : null}
 
         {lesson.what ? (
           <section className="lsec">
-            <div className="lbl">Co robisz</div>
+            <div className="lbl">{t(locale, 'courses.lesson.what')}</div>
             <Paragraphs text={lesson.what} />
           </section>
         ) : null}
 
         {lesson.dod ? (
           <section className="lsec">
-            <div className="lbl">Definition of Done</div>
+            <div className="lbl">{t(locale, 'courses.lesson.dod')}</div>
             <div className="dod">
               <span className="icon" data-i="check" aria-hidden="true" />
               <div className="dod__body">
@@ -215,7 +232,7 @@ export function LessonView({
 
         {skills.length ? (
           <section className="lsec">
-            <div className="lbl">Skille w tej lekcji</div>
+            <div className="lbl">{t(locale, 'courses.lesson.skills')}</div>
             <div className="chips">
               {skills.map((s, i) => (
                 <span className="chip" key={i}>
@@ -228,10 +245,14 @@ export function LessonView({
 
         {deps.length ? (
           <section className="lsec">
-            <div className="lbl">Zależności</div>
+            <div className="lbl">{t(locale, 'courses.lesson.deps')}</div>
             <div className="deplist">
               {deps.map((d) => (
-                <Link className="deprow" href={`/${slug}/learn/${d.slug}`} key={d.id}>
+                <Link
+                  className="deprow"
+                  href={getLocalizedPath(`/${slug}/learn/${d.slug}`, locale)}
+                  key={d.id}
+                >
                   <span className="dn">{pad(d.nr)}</span>
                   <span className="dnm">{d.title}</span>
                   <span className="go">
@@ -243,12 +264,12 @@ export function LessonView({
           </section>
         ) : null}
 
-        <nav className="pager" aria-label="Nawigacja między lekcjami">
+        <nav className="pager" aria-label={t(locale, 'courses.lesson.pagerLabel')}>
           {prev ? (
-            <Link className="pg" href={`/${slug}/learn/${prev.slug}`}>
+            <Link className="pg" href={getLocalizedPath(`/${slug}/learn/${prev.slug}`, locale)}>
               <span className="k">
                 <span className="icon" data-i="back" aria-hidden="true" />
-                Poprzedni
+                {t(locale, 'courses.lesson.prev')}
               </span>
               <span className="v">
                 {pad(prev.nr)} · {prev.title}
@@ -256,14 +277,14 @@ export function LessonView({
             </Link>
           ) : (
             <div className="pg disabled">
-              <span className="k">Początek</span>
+              <span className="k">{t(locale, 'courses.lesson.start')}</span>
               <span className="v">—</span>
             </div>
           )}
           {next ? (
-            <Link className="pg next" href={`/${slug}/learn/${next.slug}`}>
+            <Link className="pg next" href={getLocalizedPath(`/${slug}/learn/${next.slug}`, locale)}>
               <span className="k">
-                Następny
+                {t(locale, 'courses.lesson.next')}
                 <span className="icon" data-i="arrow" aria-hidden="true" />
               </span>
               <span className="v">
@@ -272,7 +293,7 @@ export function LessonView({
             </Link>
           ) : (
             <div className="pg next disabled">
-              <span className="k">Koniec</span>
+              <span className="k">{t(locale, 'courses.lesson.end')}</span>
               <span className="v">—</span>
             </div>
           )}

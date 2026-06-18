@@ -2,6 +2,8 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
 import { courseMeta } from '@/utilities/courseMeta'
+import { getLocale } from '@/utilities/getLocale.server'
+import { t } from '@/i18n'
 import { CourseCard } from './_components/CourseCard'
 import { Pagination } from './_components/Pagination'
 
@@ -23,6 +25,7 @@ export default async function CoursesStorefront({
 }) {
   const { page: pageParam } = await searchParams
   const page = Math.max(1, Number.parseInt(pageParam ?? '1', 10) || 1)
+  const locale = await getLocale()
 
   const payload = await getPayload({ config: configPromise })
 
@@ -35,6 +38,7 @@ export default async function CoursesStorefront({
     page,
     overrideAccess: false,
     depth: 0,
+    locale,
   })
 
   // One extra query for all lessons of the courses on this page, grouped by program.
@@ -48,6 +52,7 @@ export default async function CoursesStorefront({
       limit: 1000,
       overrideAccess: true,
       depth: 0,
+      locale,
     })
     for (const lesson of lessonsRes.docs) {
       const pid = typeof lesson.program === 'object' ? lesson.program?.id : lesson.program
@@ -62,13 +67,13 @@ export default async function CoursesStorefront({
     <section className="shell" style={{ padding: '64px 0' }}>
       <header className="store-head">
         <span className="eyebrow">
-          <i>Kursy</i>
+          <i>{t(locale, 'courses.store.eyebrow')}</i>
         </span>
-        <h1 className="section-title">Płatne kursy</h1>
+        <h1 className="section-title">{t(locale, 'courses.store.title')}</h1>
       </header>
 
       {res.docs.length === 0 ? (
-        <p className="store-empty">Brak dostępnych kursów.</p>
+        <p className="store-empty">{t(locale, 'courses.store.empty')}</p>
       ) : (
         <div className="store-grid">
           {res.docs.map((program) => {
@@ -76,12 +81,12 @@ export default async function CoursesStorefront({
               typeof courseMeta
             >[1]
             const meta = courseMeta(program.phases ?? [], lessons)
-            return <CourseCard key={program.id} program={program} meta={meta} />
+            return <CourseCard key={program.id} program={program} meta={meta} locale={locale} />
           })}
         </div>
       )}
 
-      <Pagination page={res.page ?? page} totalPages={res.totalPages ?? 1} />
+      <Pagination page={res.page ?? page} totalPages={res.totalPages ?? 1} locale={locale} />
     </section>
   )
 }

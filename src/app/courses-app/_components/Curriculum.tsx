@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import type { Lesson, Program } from '@/payload-types'
+import { t, type Locale } from '@/i18n'
+import { getLocalizedPath } from '@/utilities/getLocale'
 
 type Phase = NonNullable<Program['phases']>[number]
 
@@ -14,27 +16,30 @@ export function Curriculum({
   slug,
   phases,
   lessons,
+  locale,
 }: {
   slug: string
   phases: Phase[]
   lessons: Lesson[]
+  locale: Locale
 }) {
   return (
     <section className="block" id="curriculum-sec">
       <div className="block__head">
         <span className="eyebrow">
-          <i>02</i>Program
+          <i>02</i>
+          {t(locale, 'courses.syllabus.curriculumEyebrow')}
         </span>
         <h2 className="section-title">
-          {phases.length} faz · {lessons.length} etapy
+          {phases.length} {t(locale, 'courses.syllabus.metaPhases')} · {lessons.length}{' '}
+          {t(locale, 'courses.syllabus.metaStages')}
         </h2>
         <p>
-          Każdy etap to osobna lekcja: po co istnieje, co robisz, Definition of Done, skille i
-          zależności. Twarde bramki oznaczone są jako{' '}
+          {t(locale, 'courses.syllabus.curriculumNote')}{' '}
           <span className="badge gate" style={{ verticalAlign: 'middle' }}>
-            hard-gate
+            {t(locale, 'courses.badge.gate')}
           </span>{' '}
-          — są nieskippowalne.
+          {t(locale, 'courses.syllabus.curriculumNoteAfter')}
         </p>
       </div>
 
@@ -50,19 +55,22 @@ export function Curriculum({
                 <div className="pl">{phase.letter}</div>
                 <div className="pm">
                   <h3>
-                    Faza {phase.letter} · {phase.name}
+                    {t(locale, 'courses.syllabus.phase')} {phase.letter} · {phase.name}
                   </h3>
                   {phase.hint ? <p>{phase.hint}</p> : null}
                 </div>
                 <div className="pc">
-                  <b>{rows.length}</b> {rows.length === 1 ? 'etap' : 'etapy'}
+                  <b>{rows.length}</b>{' '}
+                  {rows.length === 1
+                    ? t(locale, 'courses.syllabus.stageSingular')
+                    : t(locale, 'courses.syllabus.stagePlural')}
                 </div>
               </div>
 
               {rows.map((lesson) => (
                 <Link
                   className="srow"
-                  href={`/${slug}/learn/${lesson.slug}`}
+                  href={getLocalizedPath(`/${slug}/learn/${lesson.slug}`, locale)}
                   key={lesson.id}
                 >
                   <span className="srow__nr">{String(lesson.nr ?? 0).padStart(2, '0')}</span>
@@ -76,15 +84,20 @@ export function Curriculum({
                       ) : null}
                     </span>
                     <span className="srow__badges">
-                      {lesson.hardGate ? <span className="badge gate">hard-gate</span> : null}
-                      {lesson.hybrid ? <span className="badge hybrid">hybrid · IRL</span> : null}
+                      {lesson.hardGate ? (
+                        <span className="badge gate">{t(locale, 'courses.badge.gate')}</span>
+                      ) : null}
+                      {lesson.hybrid ? (
+                        <span className="badge hybrid">{t(locale, 'courses.badge.hybrid')}</span>
+                      ) : null}
                       {lesson.kind === 'decision' ? (
-                        <span className="badge decision">decision</span>
+                        <span className="badge decision">{t(locale, 'courses.badge.decision')}</span>
                       ) : null}
                     </span>
                   </span>
                   <span className="srow__time">
-                    {lesson.estTimeMin?.min ?? 0}–{lesson.estTimeMin?.max ?? 0} min
+                    {lesson.estTimeMin?.min ?? 0}–{lesson.estTimeMin?.max ?? 0}{' '}
+                    {t(locale, 'courses.lesson.minutes')}
                   </span>
                   <span className="srow__go icon" data-i="arrow" aria-hidden="true" />
                 </Link>
