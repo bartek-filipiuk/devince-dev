@@ -32,14 +32,14 @@ export const Products: CollectionConfig = {
   },
   admin: { useAsTitle: 'title', defaultColumns: ['title', 'slug', 'priceCents', '_status'] },
   fields: [
-    { name: 'title', type: 'text', required: true },
+    { name: 'title', type: 'text', required: true, localized: true },
     {
       type: 'tabs',
       tabs: [
         {
           label: 'Produkt',
           fields: [
-            { name: 'description', type: 'richText' },
+            { name: 'description', type: 'richText', localized: true },
             { name: 'coverImage', type: 'upload', relationTo: 'media' },
             {
               type: 'row',
