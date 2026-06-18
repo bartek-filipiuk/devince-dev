@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { sendTransactionalEmail, sendDownloadLinkEmail } from './brevo'
+import { sendTransactionalEmail, sendDownloadLinkEmail, sendCourseAccessEmail } from './brevo'
 
 beforeEach(() => {
   process.env.BREVO_API_KEY = 'k'
@@ -88,5 +88,58 @@ describe('sendDownloadLinkEmail', () => {
     expect(body.subject).toContain('download link')
     expect(body.htmlContent).toContain('Art. 38(13)')
     expect(body.htmlContent).toContain('durable medium')
+  })
+})
+
+describe('sendCourseAccessEmail', () => {
+  afterEach(() => {
+    delete process.env.BREVO_COURSE_ACCESS_TEMPLATE_ID
+  })
+
+  it('includes next + consent confirmation in the course access email', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ messageId: '1' }) })
+    vi.stubGlobal('fetch', fetchMock)
+    await sendCourseAccessEmail({
+      to: 'a@b.c',
+      token: 'tok',
+      isNew: true,
+      programId: '16',
+      next: '/kurs',
+      withdrawalConsentAt: '2026-06-18T10:00:00Z',
+    })
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string)
+    const html = body.htmlContent as string
+    expect(html).toContain('set-password?token=tok')
+    expect(html).toMatch(/next=\/?(%2F)?kurs/)
+    expect(html.toLowerCase()).toContain('odstąp') // durable-medium confirmation present
+  })
+
+  it('omits next + consent block when those args are absent (back-compat)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ messageId: '1' }) })
+    vi.stubGlobal('fetch', fetchMock)
+    await sendCourseAccessEmail({ to: 'a@b.c', token: 'tok', isNew: false, programId: '16' })
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string)
+    const html = body.htmlContent as string
+    expect(html).toContain('set-password?token=tok')
+    expect(html).not.toContain('next=')
+    expect(html).not.toContain('art. 38 pkt 13')
+  })
+
+  it('passes next + consent as template params when BREVO_COURSE_ACCESS_TEMPLATE_ID is set', async () => {
+    process.env.BREVO_COURSE_ACCESS_TEMPLATE_ID = '99'
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) })
+    vi.stubGlobal('fetch', fetchMock)
+    await sendCourseAccessEmail({
+      to: 'a@b.c',
+      token: 'tok',
+      isNew: true,
+      programId: '16',
+      next: '/kurs',
+      withdrawalConsentAt: '2026-06-18T10:00:00Z',
+    })
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string)
+    expect(body.templateId).toBe(99)
+    expect(body.params.activationLink).toContain('next=/kurs')
+    expect(String(body.params.CONSENT).toLowerCase()).toContain('odstąp')
   })
 })
