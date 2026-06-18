@@ -1919,3 +1919,133 @@ article:hover .post-card-image img {
     transform: none;
   }
 }
+
+/* ============================================
+ * LEGAL DOCUMENTS (Regulamin / Polityka Prywatności)
+ * Readable long-form prose for markdown-rendered legal pages.
+ * ============================================
+ */
+.legal-prose {
+  color: hsl(var(--foreground));
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.legal-prose h1 {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin: 0 0 1.5rem;
+  color: hsl(var(--foreground));
+}
+
+.legal-prose h2 {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 2.5rem 0 0.85rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+}
+
+.legal-prose h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 1.75rem 0 0.6rem;
+  color: hsl(var(--foreground));
+}
+
+.legal-prose p {
+  margin: 0 0 1.1rem;
+}
+
+.legal-prose strong {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.legal-prose a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
+
+.legal-prose a:hover {
+  text-decoration: none;
+}
+
+.legal-prose ul,
+.legal-prose ol {
+  margin: 0 0 1.1rem;
+  padding-left: 1.5rem;
+}
+
+.legal-prose ul {
+  list-style: disc;
+}
+
+.legal-prose ol {
+  list-style: decimal;
+}
+
+.legal-prose li {
+  margin: 0.35rem 0;
+}
+
+.legal-prose li > ul,
+.legal-prose li > ol {
+  margin: 0.4rem 0 0.6rem;
+}
+
+.legal-prose hr {
+  border: 0;
+  border-top: 1px solid hsl(var(--border));
+  margin: 2rem 0;
+}
+
+/* Tables (GFM) — used by the privacy policy */
+.legal-prose .legal-table-wrap,
+.legal-prose table {
+  margin: 1.25rem 0 1.75rem;
+}
+
+.legal-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  display: block;
+  overflow-x: auto;
+}
+
+.legal-prose thead {
+  background: hsl(var(--muted));
+}
+
+.legal-prose th,
+.legal-prose td {
+  border: 1px solid hsl(var(--border));
+  padding: 0.6rem 0.85rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.legal-prose th {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.legal-prose td {
+  color: hsl(var(--muted-foreground));
+}
+
+@media (min-width: 768px) {
+  .legal-prose table {
+    display: table;
+    overflow-x: visible;
+  }
+}
