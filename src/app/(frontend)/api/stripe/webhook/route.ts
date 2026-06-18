@@ -191,6 +191,46 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Refund → NDQS access revocation. A `charge.refunded` event does NOT carry the
+  // original Checkout Session metadata, so we walk back: charge.payment_intent →
+  // find the Session for that PaymentIntent → read its ndqsCourseId + buyer email.
+  // Only NDQS quest-course purchases auto-revoke here; programId/productId refunds
+  // are out of scope. Best-effort, same policy as the fulfillment branches above:
+  // a failure is logged, the stripe-events row + 200 still happen below — never throw.
+  if (event.type === 'charge.refunded') {
+    const charge = event.data.object as Stripe.Charge
+    const paymentIntent =
+      typeof charge.payment_intent === 'string'
+        ? charge.payment_intent
+        : (charge.payment_intent?.id ?? undefined)
+    if (paymentIntent) {
+      try {
+        const sessions = await getStripe().checkout.sessions.list({
+          payment_intent: paymentIntent,
+          limit: 1,
+        })
+        const session = sessions.data[0]
+        const ndqsCourseId = session?.metadata?.ndqsCourseId
+        const email =
+          session?.customer_details?.email ?? session?.customer_email ?? undefined
+        if (ndqsCourseId && email) {
+          const { revokeNdqsByEmail } = await import('@/utilities/ndqsRevoke')
+          const r = await revokeNdqsByEmail({ email, courseId: ndqsCourseId })
+          if (!r.ok) {
+            console.error(
+              `[stripe webhook] NDQS revoke failed (course ${ndqsCourseId}, ${email}) status=${r.status}; event recorded, recover by re-POSTing revoke-enrollment`,
+            )
+          }
+        }
+      } catch (err) {
+        console.error(
+          `[stripe webhook] refund handling failed (payment_intent ${paymentIntent}); event recorded, continuing:`,
+          err,
+        )
+      }
+    }
+  }
+
   // Record the event last so the unique-indexed row is the durable idempotency marker.
   await payload.create({
     collection: 'stripe-events',
