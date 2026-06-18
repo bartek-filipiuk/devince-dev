@@ -17,7 +17,7 @@ export const Lessons: CollectionConfig = {
     defaultColumns: ['title', 'program', 'phase', 'order'],
   },
   fields: [
-    { name: 'title', type: 'text', required: true },
+    { name: 'title', type: 'text', required: true, localized: true },
     { name: 'program', type: 'relationship', relationTo: 'program', required: true },
     { name: 'phase', type: 'text', label: 'Faza' },
     { name: 'order', type: 'number', defaultValue: 0, label: 'Kolejność' },
@@ -43,9 +43,9 @@ export const Lessons: CollectionConfig = {
         { name: 'max', type: 'number' },
       ],
     },
-    { name: 'why', type: 'textarea', label: 'Po co (why)' },
-    { name: 'what', type: 'textarea', label: 'Co robisz (what)' },
-    { name: 'dod', type: 'textarea', label: 'Definition of Done' },
+    { name: 'why', type: 'textarea', label: 'Po co (why)', localized: true },
+    { name: 'what', type: 'textarea', label: 'Co robisz (what)', localized: true },
+    { name: 'dod', type: 'textarea', label: 'Definition of Done', localized: true },
     {
       name: 'skills',
       type: 'array',
@@ -70,7 +70,7 @@ export const Lessons: CollectionConfig = {
         { label: 'Do pobrania', value: 'download' },
       ],
     },
-    { name: 'content', type: 'richText' },
+    { name: 'content', type: 'richText', localized: true },
     { name: 'youtubeEmbedUrl', type: 'text', label: 'YouTube embed (pomoc, opcjonalne)' },
     {
       name: 'downloadFile',

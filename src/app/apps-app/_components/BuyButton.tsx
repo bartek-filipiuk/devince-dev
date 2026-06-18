@@ -1,7 +1,19 @@
 'use client'
 import { useState } from 'react'
 
-export function BuyButton({ slug, disabled }: { slug: string; disabled?: boolean }) {
+export function BuyButton({
+  slug,
+  label,
+  processingLabel,
+  errorLabel,
+  disabled,
+}: {
+  slug: string
+  label: string
+  processingLabel: string
+  errorLabel: string
+  disabled?: boolean
+}) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -18,7 +30,7 @@ export function BuyButton({ slug, disabled }: { slug: string; disabled?: boolean
       if (!res.ok || !data.url) throw new Error(data.error ?? 'checkout failed')
       window.location.assign(data.url)
     } catch {
-      setError('Nie udało się rozpocząć płatności. Spróbuj ponownie.')
+      setError(errorLabel)
       setBusy(false)
     }
   }
@@ -31,7 +43,7 @@ export function BuyButton({ slug, disabled }: { slug: string; disabled?: boolean
         disabled={disabled || busy}
         aria-busy={busy}
       >
-        {busy ? 'Przekierowuję…' : 'Kup teraz'}
+        {busy ? processingLabel : label}
       </button>
       {error ? (
         <p role="alert" style={{ marginTop: '10px', color: 'var(--destructive, red)', fontSize: '14px' }}>

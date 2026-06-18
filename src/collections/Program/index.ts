@@ -272,8 +272,8 @@ export const Program: CollectionConfig<'program'> = {
                   label: 'Litera fazy',
                   admin: { description: 'np. A, B, C' },
                 },
-                { name: 'name', type: 'text', required: true },
-                { name: 'hint', type: 'textarea' },
+                { name: 'name', type: 'text', required: true, localized: true },
+                { name: 'hint', type: 'textarea', localized: true },
               ],
             },
             {
@@ -281,21 +281,21 @@ export const Program: CollectionConfig<'program'> = {
               type: 'array',
               labels: { singular: 'Efekt', plural: 'Efekty' },
               fields: [
-                { name: 'title', type: 'text', required: true },
-                { name: 'body', type: 'textarea' },
+                { name: 'title', type: 'text', required: true, localized: true },
+                { name: 'body', type: 'textarea', localized: true },
               ],
             },
             {
               name: 'audience',
               type: 'array',
               labels: { singular: 'Dla kogo', plural: 'Dla kogo' },
-              fields: [{ name: 'item', type: 'text', required: true }],
+              fields: [{ name: 'item', type: 'text', required: true, localized: true }],
             },
             {
               name: 'requirements',
               type: 'array',
               labels: { singular: 'Wymaganie', plural: 'Czego potrzebujesz' },
-              fields: [{ name: 'item', type: 'text', required: true }],
+              fields: [{ name: 'item', type: 'text', required: true, localized: true }],
             },
             {
               name: 'level',

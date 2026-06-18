@@ -1,15 +1,18 @@
 import Link from 'next/link'
+import { t, type Locale } from '@/i18n'
+import { getLocalizedPath } from '@/utilities/getLocale'
 import { ThemeToggle } from './ThemeToggle'
+import { LanguageSwitch } from './LanguageSwitch'
 
 /**
  * Top navigation for the isolated apps subdomain. Mirrors the Sylabus-derived
  * nav markup (.nav / .brand / four-dot .mark / .nav__spacer / .nav__actions)
  * from courses-app. No login/account links — account-less downloadable store.
  */
-export function AppsNav() {
+export function AppsNav({ locale }: { locale: Locale }) {
   return (
     <nav className="nav">
-      <Link className="brand" href="/">
+      <Link className="brand" href={getLocalizedPath('/', locale)}>
         <span className="mark">
           <i />
           <i />
@@ -17,12 +20,13 @@ export function AppsNav() {
           <i />
         </span>
         <b>
-          Devince <span>· apps</span>
+          {t(locale, 'apps.nav.brand')} <span>{t(locale, 'apps.nav.suffix')}</span>
         </b>
       </Link>
       <div className="nav__spacer" />
       <div className="nav__actions">
-        <ThemeToggle />
+        <LanguageSwitch locale={locale} />
+        <ThemeToggle locale={locale} />
       </div>
     </nav>
   )

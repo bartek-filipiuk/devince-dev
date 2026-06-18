@@ -1,13 +1,19 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 
+import { getLocale } from '@/utilities/getLocale.server'
+import { t } from '@/i18n'
+
 import './course-theme.css'
 import { CoursesNav } from './_components/Nav'
 import { CoursesFooter } from './_components/Footer'
 
-export const metadata: Metadata = {
-  title: 'Devince · kursy',
-  description: 'Kursy budowane na żywo z Claude Code.',
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale()
+  return {
+    title: t(locale, 'courses.meta.title'),
+    description: t(locale, 'courses.meta.description'),
+  }
 }
 
 // No-FOUC: read the persisted theme and apply the `light` class before paint.
@@ -20,19 +26,21 @@ const NO_FOUC = `(function(){try{var t=localStorage.getItem('course:theme');if(t
  * is the root layout for every /courses-app/* route — fully isolated from
  * the main site's (frontend) layout and theme.
  */
-export default function CoursesRootLayout({ children }: { children: ReactNode }) {
+export default async function CoursesRootLayout({ children }: { children: ReactNode }) {
+  const locale = await getLocale()
+
   return (
-    <html lang="pl" className="dark" suppressHydrationWarning>
+    <html lang={locale} className="dark" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: NO_FOUC }} />
       </head>
       <body>
         <a className="skip-link" href="#main">
-          Przejdź do treści
+          {t(locale, 'courses.skip')}
         </a>
-        <CoursesNav />
+        <CoursesNav locale={locale} />
         <main id="main">{children}</main>
-        <CoursesFooter />
+        <CoursesFooter locale={locale} />
       </body>
     </html>
   )

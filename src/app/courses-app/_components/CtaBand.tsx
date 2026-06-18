@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import type { Program } from '@/payload-types'
+import { t, type Locale } from '@/i18n'
+import { getLocalizedPath } from '@/utilities/getLocale'
 
 /**
  * Closing `.cta-band` (handoff) driving the learner into the course: course
@@ -9,25 +11,25 @@ import type { Program } from '@/payload-types'
 export function CtaBand({
   program,
   firstLessonSlug,
+  locale,
 }: {
   program: Program
   firstLessonSlug: string | null
+  locale: Locale
 }) {
-  const href = firstLessonSlug
-    ? `/${program.slug}/learn/${firstLessonSlug}`
-    : `/${program.slug}`
+  const href = getLocalizedPath(
+    firstLessonSlug ? `/${program.slug}/learn/${firstLessonSlug}` : `/${program.slug}`,
+    locale,
+  )
 
   return (
     <div className="cta-band">
-      <h2>Gotowy, żeby zacząć?</h2>
-      <p>
-        Przejdź cały pipeline od pomysłu do wdrożenia — krok po kroku, z twardymi bramkami, które
-        pilnują jakości.
-      </p>
+      <h2>{t(locale, 'courses.syllabus.ctaBandTitle')}</h2>
+      <p>{t(locale, 'courses.syllabus.ctaBandBody')}</p>
       <div className="cta">
         <Link className="btn btn--primary btn--lg" href={href}>
           <span className="icon" data-i="play" aria-hidden="true" />
-          <span>{program.ctaLabel || 'Zacznij'}</span>
+          <span>{program.ctaLabel || t(locale, 'courses.syllabus.cta')}</span>
         </Link>
       </div>
     </div>

@@ -135,6 +135,16 @@ a { color: inherit; text-decoration: none; }
 .nav__spacer { flex: 1; }
 .nav__actions { display: flex; align-items: center; gap: 8px; }
 
+/* language switch — small inline links, active = accent */
+.lang-switch { display: inline-flex; align-items: center; gap: 2px; }
+.lang-switch a {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
+  color: var(--text-dim); padding: 6px 8px; border-radius: var(--r-btn);
+  transition: color .15s ease, background .15s ease;
+}
+.lang-switch a:hover { color: var(--text); background: var(--surface-2); }
+.lang-switch a[aria-current="true"] { color: var(--accent); }
+
 /* ============================================================ BUTTONS */
 .btn {
   --b-bg: var(--surface-2);

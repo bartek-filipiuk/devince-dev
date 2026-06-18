@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import type { Program } from '@/payload-types'
+import { t, type Locale } from '@/i18n'
+import { getLocalizedPath } from '@/utilities/getLocale'
 
 type CardMeta = {
   phases: number
@@ -14,23 +16,35 @@ type CardMeta = {
  * the handoff `.oc` card: eyebrow „Kurs", title, short description and a mono
  * meta row. All counts come precomputed via courseMeta in the page.
  */
-export function CourseCard({ program, meta }: { program: Program; meta: CardMeta }) {
+export function CourseCard({
+  program,
+  meta,
+  locale,
+}: {
+  program: Program
+  meta: CardMeta
+  locale: Locale
+}) {
   const time = formatTime(meta.timeMin, meta.timeMax)
 
   return (
-    <Link className="course-card" href={`/${program.slug}`}>
+    <Link className="course-card" href={getLocalizedPath(`/${program.slug}`, locale)}>
       <span className="eyebrow">
-        <i>Kurs</i>
+        <i>{t(locale, 'courses.auth.courseEyebrow')}</i>
       </span>
       <h3 className="course-card__title">{program.title}</h3>
       {program.heroDescription ? (
         <p className="course-card__desc">{program.heroDescription}</p>
       ) : null}
       <div className="course-card__meta mono">
-        <span>{meta.phases} faz</span>
-        <span>{meta.stages} etapów</span>
+        <span>
+          {meta.phases} {t(locale, 'courses.store.phases')}
+        </span>
+        <span>
+          {meta.stages} {t(locale, 'courses.store.stages')}
+        </span>
         {time ? <span>{time}</span> : null}
-        <span className="course-card__paid">Płatny</span>
+        <span className="course-card__paid">{t(locale, 'courses.store.paid')}</span>
       </div>
     </Link>
   )

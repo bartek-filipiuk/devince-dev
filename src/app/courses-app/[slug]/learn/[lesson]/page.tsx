@@ -5,6 +5,8 @@ import { redirect } from 'next/navigation'
 import { notFound } from 'next/navigation'
 
 import type { Lesson, Program } from '@/payload-types'
+import { getLocale } from '@/utilities/getLocale.server'
+import { getLocalizedPath } from '@/utilities/getLocale'
 import { LessonView } from '../../../_components/LessonView'
 
 export const dynamic = 'force-dynamic'
@@ -15,12 +17,14 @@ export default async function CourseLessonPage({
   params: Promise<{ slug: string; lesson: string }>
 }) {
   const { slug, lesson: lessonSlug } = await params
+  const locale = await getLocale()
   const payload = await getPayload({ config: configPromise })
 
   // ---- Gate (mirrors src/app/(frontend)/learn/[program]/[lesson]/page.tsx) ----
   const { user } = await payload.auth({ headers: await headers() })
   if (!user) {
-    redirect(`/login?next=${encodeURIComponent(`/${slug}/learn/${lessonSlug}`)}`)
+    const next = getLocalizedPath(`/${slug}/learn/${lessonSlug}`, locale)
+    redirect(`${getLocalizedPath('/login', locale)}?next=${encodeURIComponent(next)}`)
   }
 
   // Syllabus is public marketing, so resolving the program by slug can safely
@@ -31,16 +35,17 @@ export default async function CourseLessonPage({
     limit: 1,
     overrideAccess: true,
     depth: 0,
+    locale,
   })
   const program = prog.docs[0]
-  if (!program) redirect('/')
+  if (!program) redirect(getLocalizedPath('/', locale))
 
   const purchased = (user.purchases ?? []).map((p) =>
     typeof p === 'object' && p ? p.id : p,
   )
   const isAdmin = Array.isArray(user.roles) && user.roles.includes('admin')
   // Not enrolled → paywall = the syllabus page for this course.
-  if (!isAdmin && !purchased.includes(program.id)) redirect(`/${slug}`)
+  if (!isAdmin && !purchased.includes(program.id)) redirect(getLocalizedPath(`/${slug}`, locale))
 
   // overrideAccess: false + user enforces `enrolledOrAdmin` read access on
   // lessons (defense-in-depth: the query is access-checked even if the guard
@@ -54,6 +59,7 @@ export default async function CourseLessonPage({
     overrideAccess: false,
     user,
     depth: 1,
+    locale,
   })
   const lesson = found.docs[0]
   if (!lesson) notFound()
@@ -67,6 +73,7 @@ export default async function CourseLessonPage({
     limit: 1000,
     overrideAccess: true,
     depth: 0,
+    locale,
   })
   const allLessons = allRes.docs as Lesson[]
 
@@ -76,6 +83,7 @@ export default async function CourseLessonPage({
       program={program as Program}
       lesson={lesson as Lesson}
       allLessons={allLessons}
+      locale={locale}
     />
   )
 }

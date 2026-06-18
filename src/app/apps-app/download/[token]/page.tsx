@@ -4,12 +4,17 @@ import configPromise from '@payload-config'
 
 import type { AppAsset } from '@/payload-types'
 import { resolveGrant } from '@/utilities/resolveGrant'
+import { getLocale } from '@/utilities/getLocale.server'
+import { t } from '@/i18n'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title: 'Pobieranie',
-  robots: { index: false, follow: false },
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale()
+  return {
+    title: t(locale, 'apps.download.meta'),
+    robots: { index: false, follow: false },
+  }
 }
 
 function formatFileSize(bytes: number): string {
@@ -24,6 +29,7 @@ export default async function DownloadPage({
   params: Promise<{ token: string }>
 }) {
   const { token } = await params
+  const locale = await getLocale()
   const payload = await getPayload({ config: configPromise })
 
   const resolved = await resolveGrant(payload, token)
@@ -42,7 +48,7 @@ export default async function DownloadPage({
           }}
         >
           <span className="eyebrow">
-            <i>pobieranie</i>
+            <i>{t(locale, 'apps.download.eyebrow')}</i>
           </span>
           <h1
             style={{
@@ -53,11 +59,10 @@ export default async function DownloadPage({
               marginBottom: '12px',
             }}
           >
-            Link jest nieprawidłowy.
+            {t(locale, 'apps.download.invalid')}
           </h1>
           <p style={{ margin: 0, fontSize: '15px', color: 'var(--text-mut)', lineHeight: 1.6 }}>
-            Jeśli właśnie kupiłeś produkt — sprawdź, czy link z maila skopiował się w całości. W
-            razie problemów odpisz na maila z zakupem.
+            {t(locale, 'apps.download.invalidBody')}
           </p>
         </div>
       </section>
@@ -78,7 +83,7 @@ export default async function DownloadPage({
           }}
         >
           <span className="eyebrow">
-            <i>pobieranie</i>
+            <i>{t(locale, 'apps.download.eyebrow')}</i>
           </span>
           <h1
             style={{
@@ -89,10 +94,10 @@ export default async function DownloadPage({
               marginBottom: '12px',
             }}
           >
-            Link wygasł.
+            {t(locale, 'apps.download.expired')}
           </h1>
           <p style={{ margin: 0, fontSize: '15px', color: 'var(--text-mut)', lineHeight: 1.6 }}>
-            Odpisz na maila z potwierdzeniem zakupu, a wyślemy nowy.
+            {t(locale, 'apps.download.expiredBody')}
           </p>
         </div>
       </section>
@@ -113,7 +118,7 @@ export default async function DownloadPage({
           }}
         >
           <span className="eyebrow">
-            <i>pobieranie</i>
+            <i>{t(locale, 'apps.download.eyebrow')}</i>
           </span>
           <h1
             style={{
@@ -124,10 +129,10 @@ export default async function DownloadPage({
               marginBottom: '12px',
             }}
           >
-            Limit pobrań został wyczerpany.
+            {t(locale, 'apps.download.limit')}
           </h1>
           <p style={{ margin: 0, fontSize: '15px', color: 'var(--text-mut)', lineHeight: 1.6 }}>
-            Odpisz na maila z potwierdzeniem zakupu, a wyślemy nowy.
+            {t(locale, 'apps.download.limitBody')}
           </p>
         </div>
       </section>
@@ -165,7 +170,7 @@ export default async function DownloadPage({
     <section className="shell" style={{ padding: 'clamp(64px, 10vw, 120px) 0' }}>
       <div style={{ maxWidth: '600px' }}>
         <span className="eyebrow">
-          <i>pobieranie</i>
+          <i>{t(locale, 'apps.download.eyebrow')}</i>
         </span>
         <h1
           style={{
@@ -186,7 +191,7 @@ export default async function DownloadPage({
             color: 'var(--text-dim)',
           }}
         >
-          pozostało pobrań:{' '}
+          {t(locale, 'apps.download.remaining')}{' '}
           <span style={{ color: remaining > 0 ? 'var(--accent)' : 'var(--gate)' }}>
             {remaining}
           </span>
@@ -248,8 +253,7 @@ export default async function DownloadPage({
               fontStyle: 'italic',
             }}
           >
-            Brak plików do pobrania — skontaktuj się z nami odpisując na maila z potwierdzeniem
-            zakupu.
+            {t(locale, 'apps.download.contact')}
           </p>
         ) : null}
       </div>

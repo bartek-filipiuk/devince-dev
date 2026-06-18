@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 
+import { t, type Locale } from '@/i18n'
+
 const STORAGE_KEY = 'course:theme'
 
 /**
@@ -10,7 +12,7 @@ const STORAGE_KEY = 'course:theme'
  * layout.tsx applies the stored value before paint; this component only
  * keeps the button label in sync and handles clicks.
  */
-export function ThemeToggle() {
+export function ThemeToggle({ locale }: { locale: Locale }) {
   const [isLight, setIsLight] = useState(false)
 
   useEffect(() => {
@@ -38,7 +40,7 @@ export function ThemeToggle() {
     >
       <span className="icon" data-i="theme" aria-hidden="true" />
       <span className="btn__label" suppressHydrationWarning>
-        {isLight ? 'Ciemny' : 'Jasny'}
+        {isLight ? t(locale, 'courses.theme.dark') : t(locale, 'courses.theme.light')}
       </span>
     </button>
   )

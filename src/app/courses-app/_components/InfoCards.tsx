@@ -1,3 +1,5 @@
+import { t, type Locale } from '@/i18n'
+
 type Item = { item: string; id?: string | null }
 
 /**
@@ -8,16 +10,18 @@ type Item = { item: string; id?: string | null }
 export function InfoCards({
   audience,
   requirements,
+  locale,
 }: {
   audience: Item[]
   requirements: Item[]
+  locale: Locale
 }) {
   if (audience.length === 0 && requirements.length === 0) return null
 
   return (
     <div className="cols">
-      <Card title="Dla kogo" items={audience} />
-      <Card title="Czego potrzebujesz" items={requirements} />
+      <Card title={t(locale, 'courses.infocards.audience')} items={audience} />
+      <Card title={t(locale, 'courses.infocards.requirements')} items={requirements} />
     </div>
   )
 }

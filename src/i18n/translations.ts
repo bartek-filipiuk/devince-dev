@@ -176,6 +176,165 @@ const translations = {
     'contact.metaTitle': 'Kontakt',
     'contact.metaDescription':
       'Skontaktuj się z nami. Znajdź nasze dane kontaktowe i lokalizację.',
+
+    // ── Apps subdomain (apps.devince.dev) ──
+    // Layout / chrome
+    'apps.meta.title': 'Devince · apps',
+    'apps.meta.titleTemplate': '%s · Devince apps',
+    'apps.meta.description': 'Aplikacje i pliki do pobrania — Devince.',
+    'apps.skip': 'Przejdź do treści',
+    'apps.nav.brand': 'Devince',
+    'apps.nav.suffix': '· apps',
+    'apps.footer.tagline': 'aplikacje i pliki do pobrania',
+    'apps.theme.light': 'Jasny',
+    'apps.theme.dark': 'Ciemny',
+
+    // Storefront
+    'apps.store.meta': 'Sklep',
+    'apps.store.eyebrow': 'sklep',
+    'apps.store.title': 'Aplikacje i pliki',
+    'apps.store.lead': 'Gotowe narzędzia, szablony i pliki do pobrania — kup raz, korzystaj bez limitu.',
+    'apps.store.empty': 'Wkrótce — pracujemy nad pierwszymi produktami.',
+
+    // Product page
+    'apps.product.metaNotFound': 'Produkt nie znaleziony · Devince',
+    'apps.product.eyebrow': 'produkt',
+    'apps.product.buy': 'Kup teraz',
+    'apps.product.processing': 'Przekierowuję…',
+    'apps.product.error': 'Nie udało się rozpocząć płatności. Spróbuj ponownie.',
+    'apps.product.note': 'Po zakupie wyślemy link do pobrania na Twój e-mail.',
+
+    // Success page
+    'apps.success.meta': 'Dziękujemy',
+    'apps.success.eyebrow': 'zakup potwierdzony',
+    'apps.success.title': 'Dziękujemy za zakup!',
+    'apps.success.body': 'Wysłaliśmy link do pobrania na Twój adres e-mail. Sprawdź też folder spam.',
+
+    // Download page
+    'apps.download.meta': 'Pobieranie',
+    'apps.download.eyebrow': 'pobieranie',
+    'apps.download.invalid': 'Link jest nieprawidłowy.',
+    'apps.download.invalidBody':
+      'Jeśli właśnie kupiłeś produkt — sprawdź, czy link z maila skopiował się w całości. W razie problemów odpisz na maila z zakupem.',
+    'apps.download.expired': 'Link wygasł.',
+    'apps.download.expiredBody': 'Odpisz na maila z potwierdzeniem zakupu, a wyślemy nowy.',
+    'apps.download.limit': 'Limit pobrań został wyczerpany.',
+    'apps.download.limitBody': 'Odpisz na maila z potwierdzeniem zakupu, a wyślemy nowy.',
+    'apps.download.remaining': 'pozostało pobrań:',
+    'apps.download.contact':
+      'Brak plików do pobrania — skontaktuj się z nami odpisując na maila z potwierdzeniem zakupu.',
+    'apps.download.fileHeading': 'Pliki do pobrania',
+
+    // Not found
+    'apps.notFound.eyebrow': 'błąd',
+    'apps.notFound.title': '404 — nie ma takiej strony.',
+    'apps.notFound.body': 'Strona, której szukasz, nie istnieje lub została przeniesiona.',
+    'apps.notFound.cta': 'Wróć do sklepu',
+    'apps.footer.back': 'Wróć do sklepu',
+
+    // ── Courses subdomain (courses.devince.dev) ──
+    // Layout / chrome
+    'courses.meta.title': 'Devince · kursy',
+    'courses.meta.description': 'Kursy budowane na żywo z Claude Code.',
+    'courses.skip': 'Przejdź do treści',
+    'courses.nav.brand': 'Devince',
+    'courses.nav.suffix': '· kursy',
+    'courses.nav.courses': 'Kursy',
+    'courses.nav.account': 'Konto',
+    'courses.nav.start': 'Zacznij kurs',
+    'courses.footer.tagline': 'Devince — kursy budowane na żywo z Claude Code',
+    'courses.footer.stats': '9 faz · 23 etapy · 4 hard-gate',
+    'courses.theme.light': 'Jasny',
+    'courses.theme.dark': 'Ciemny',
+    'courses.pagination.prev': 'Poprzednia',
+    'courses.pagination.next': 'Następna',
+    'courses.pagination.label': 'Paginacja kursów',
+
+    // Storefront
+    'courses.store.eyebrow': 'Kursy',
+    'courses.store.title': 'Płatne kursy',
+    'courses.store.lead': 'Przeglądaj kursy budowane na żywo z Claude Code.',
+    'courses.store.empty': 'Brak dostępnych kursów.',
+    'courses.store.paid': 'Płatny',
+    'courses.store.phases': 'faz',
+    'courses.store.stages': 'etapów',
+
+    // Syllabus
+    'courses.syllabus.metaNotFound': 'Kurs nie znaleziony · Devince',
+    'courses.syllabus.eyebrow': 'Kurs · flow produkcyjny',
+    'courses.syllabus.metaPhases': 'faz',
+    'courses.syllabus.metaStages': 'etapy',
+    'courses.syllabus.metaTime': 'szac. czas',
+    'courses.syllabus.metaGates': 'hard-gate',
+    'courses.syllabus.cta': 'Zacznij',
+    'courses.syllabus.spineLabel': 'Przegląd faz',
+    'courses.syllabus.spineAxis': 'oś',
+    'courses.syllabus.stageShort': 'et.',
+    'courses.syllabus.outcomes': 'Czego się nauczysz',
+    'courses.syllabus.outcomesEyebrow': 'Efekty',
+    'courses.syllabus.curriculum': 'Program',
+    'courses.syllabus.curriculumEyebrow': 'Program',
+    'courses.syllabus.curriculumNote':
+      'Każdy etap to osobna lekcja: po co istnieje, co robisz, Definition of Done, skille i zależności. Twarde bramki oznaczone są jako',
+    'courses.syllabus.curriculumNoteAfter': '— są nieskippowalne.',
+    'courses.syllabus.phase': 'Faza',
+    'courses.syllabus.stageSingular': 'etap',
+    'courses.syllabus.stagePlural': 'etapy',
+    'courses.syllabus.soon': 'Wkrótce',
+    'courses.syllabus.ctaBandTitle': 'Gotowy, żeby zacząć?',
+    'courses.syllabus.ctaBandBody':
+      'Przejdź cały pipeline od pomysłu do wdrożenia — krok po kroku, z twardymi bramkami, które pilnują jakości.',
+
+    // Badges
+    'courses.badge.gate': 'hard-gate',
+    'courses.badge.hybrid': 'hybrid · IRL',
+    'courses.badge.decision': 'decision',
+
+    // Info cards
+    'courses.infocards.audience': 'Dla kogo',
+    'courses.infocards.requirements': 'Czego potrzebujesz',
+
+    // Lesson view
+    'courses.lesson.nav': 'Program kursu',
+    'courses.lesson.navStages': 'Etapy kursu',
+    'courses.lesson.stageSingular': 'etap',
+    'courses.lesson.stagePlural': 'etapów',
+    'courses.lesson.stageShort': 'et.',
+    'courses.lesson.syllabus': 'Sylabus',
+    'courses.lesson.phase': 'Faza',
+    'courses.lesson.stage': 'Etap',
+    'courses.lesson.recording': 'nagranie lekcji',
+    'courses.lesson.minutes': 'min',
+    'courses.lesson.pagerLabel': 'Nawigacja między lekcjami',
+    'courses.lesson.why': 'Po co',
+    'courses.lesson.what': 'Co robisz',
+    'courses.lesson.dod': 'Definition of Done',
+    'courses.lesson.skills': 'Skille w tej lekcji',
+    'courses.lesson.deps': 'Zależności',
+    'courses.lesson.prev': 'Poprzedni',
+    'courses.lesson.next': 'Następny',
+    'courses.lesson.start': 'Początek',
+    'courses.lesson.end': 'Koniec',
+
+    // Auth
+    'courses.auth.eyebrow': 'Konto',
+    'courses.auth.loginTitle': 'Zaloguj się',
+    'courses.auth.accountTitle': 'Twoje kursy',
+    'courses.auth.email': 'Email',
+    'courses.auth.password': 'Hasło',
+    'courses.auth.submit': 'Zaloguj się',
+    'courses.auth.submitting': 'Logowanie…',
+    'courses.auth.forgot': 'Nie pamiętasz hasła?',
+    'courses.auth.invalidCredentials': 'Nieprawidłowy email lub hasło.',
+    'courses.auth.logout': 'Wyloguj',
+    'courses.auth.loggingOut': 'Wylogowywanie…',
+    'courses.auth.empty': 'Nie masz jeszcze żadnych kursów.',
+    'courses.auth.courseEyebrow': 'Kurs',
+    'courses.auth.openSyllabus': 'Otwórz sylabus',
+
+    // Not found
+    'courses.notFound.title': 'Kurs nie znaleziony · Devince',
+    'courses.notFound.cta': 'Wróć do kursów',
   },
   en: {
     // Navigation
@@ -351,6 +510,165 @@ const translations = {
     'contact.pageTitle': 'Contact Us',
     'contact.metaTitle': 'Contact Us',
     'contact.metaDescription': 'Get in touch with us. Find our contact information and location.',
+
+    // ── Apps subdomain (apps.devince.dev) ──
+    // Layout / chrome
+    'apps.meta.title': 'Devince · apps',
+    'apps.meta.titleTemplate': '%s · Devince apps',
+    'apps.meta.description': 'Apps and downloadable files — Devince.',
+    'apps.skip': 'Skip to content',
+    'apps.nav.brand': 'Devince',
+    'apps.nav.suffix': '· apps',
+    'apps.footer.tagline': 'apps and downloadable files',
+    'apps.theme.light': 'Light',
+    'apps.theme.dark': 'Dark',
+
+    // Storefront
+    'apps.store.meta': 'Store',
+    'apps.store.eyebrow': 'store',
+    'apps.store.title': 'Apps & files',
+    'apps.store.lead': 'Ready-made tools, templates and downloadable files — buy once, use without limits.',
+    'apps.store.empty': 'Coming soon — we are working on our first products.',
+
+    // Product page
+    'apps.product.metaNotFound': 'Product not found · Devince',
+    'apps.product.eyebrow': 'product',
+    'apps.product.buy': 'Buy now',
+    'apps.product.processing': 'Redirecting…',
+    'apps.product.error': 'Could not start the payment. Please try again.',
+    'apps.product.note': 'After purchase we will send a download link to your email.',
+
+    // Success page
+    'apps.success.meta': 'Thank you',
+    'apps.success.eyebrow': 'purchase confirmed',
+    'apps.success.title': 'Thank you for your purchase!',
+    'apps.success.body': 'We have sent a download link to your email address. Check your spam folder too.',
+
+    // Download page
+    'apps.download.meta': 'Download',
+    'apps.download.eyebrow': 'download',
+    'apps.download.invalid': 'This link is invalid.',
+    'apps.download.invalidBody':
+      'If you have just bought a product — check that the link from the email was copied in full. If you still have problems, reply to your purchase email.',
+    'apps.download.expired': 'This link has expired.',
+    'apps.download.expiredBody': 'Reply to your purchase confirmation email and we will send a new one.',
+    'apps.download.limit': 'The download limit has been reached.',
+    'apps.download.limitBody': 'Reply to your purchase confirmation email and we will send a new one.',
+    'apps.download.remaining': 'downloads left:',
+    'apps.download.contact':
+      'No files to download — get in touch by replying to your purchase confirmation email.',
+    'apps.download.fileHeading': 'Files to download',
+
+    // Not found
+    'apps.notFound.eyebrow': 'error',
+    'apps.notFound.title': '404 — no such page.',
+    'apps.notFound.body': 'The page you are looking for does not exist or has been moved.',
+    'apps.notFound.cta': 'Back to store',
+    'apps.footer.back': 'Back to store',
+
+    // ── Courses subdomain (courses.devince.dev) ──
+    // Layout / chrome
+    'courses.meta.title': 'Devince · courses',
+    'courses.meta.description': 'Courses built live with Claude Code.',
+    'courses.skip': 'Skip to content',
+    'courses.nav.brand': 'Devince',
+    'courses.nav.suffix': '· courses',
+    'courses.nav.courses': 'Courses',
+    'courses.nav.account': 'Account',
+    'courses.nav.start': 'Start a course',
+    'courses.footer.tagline': 'Devince — courses built live with Claude Code',
+    'courses.footer.stats': '9 phases · 23 stages · 4 hard-gates',
+    'courses.theme.light': 'Light',
+    'courses.theme.dark': 'Dark',
+    'courses.pagination.prev': 'Previous',
+    'courses.pagination.next': 'Next',
+    'courses.pagination.label': 'Course pagination',
+
+    // Storefront
+    'courses.store.eyebrow': 'Courses',
+    'courses.store.title': 'Paid courses',
+    'courses.store.lead': 'Browse courses built live with Claude Code.',
+    'courses.store.empty': 'No courses available.',
+    'courses.store.paid': 'Paid',
+    'courses.store.phases': 'phases',
+    'courses.store.stages': 'stages',
+
+    // Syllabus
+    'courses.syllabus.metaNotFound': 'Course not found · Devince',
+    'courses.syllabus.eyebrow': 'Course · production flow',
+    'courses.syllabus.metaPhases': 'phases',
+    'courses.syllabus.metaStages': 'stages',
+    'courses.syllabus.metaTime': 'est. time',
+    'courses.syllabus.metaGates': 'hard-gate',
+    'courses.syllabus.cta': 'Start',
+    'courses.syllabus.spineLabel': 'Phases overview',
+    'courses.syllabus.spineAxis': 'axis',
+    'courses.syllabus.stageShort': 'st.',
+    'courses.syllabus.outcomes': 'What you will learn',
+    'courses.syllabus.outcomesEyebrow': 'Outcomes',
+    'courses.syllabus.curriculum': 'Curriculum',
+    'courses.syllabus.curriculumEyebrow': 'Curriculum',
+    'courses.syllabus.curriculumNote':
+      'Each stage is a separate lesson: why it exists, what you do, the Definition of Done, skills and dependencies. Hard gates are marked as',
+    'courses.syllabus.curriculumNoteAfter': '— they cannot be skipped.',
+    'courses.syllabus.phase': 'Phase',
+    'courses.syllabus.stageSingular': 'stage',
+    'courses.syllabus.stagePlural': 'stages',
+    'courses.syllabus.soon': 'Soon',
+    'courses.syllabus.ctaBandTitle': 'Ready to begin?',
+    'courses.syllabus.ctaBandBody':
+      'Go through the entire pipeline from idea to deployment — step by step, with hard gates that keep quality in check.',
+
+    // Badges
+    'courses.badge.gate': 'hard-gate',
+    'courses.badge.hybrid': 'hybrid · IRL',
+    'courses.badge.decision': 'decision',
+
+    // Info cards
+    'courses.infocards.audience': 'Who it is for',
+    'courses.infocards.requirements': 'What you need',
+
+    // Lesson view
+    'courses.lesson.nav': 'Course program',
+    'courses.lesson.navStages': 'Course stages',
+    'courses.lesson.stageSingular': 'stage',
+    'courses.lesson.stagePlural': 'stages',
+    'courses.lesson.stageShort': 'st.',
+    'courses.lesson.syllabus': 'Syllabus',
+    'courses.lesson.phase': 'Phase',
+    'courses.lesson.stage': 'Stage',
+    'courses.lesson.recording': 'lesson recording',
+    'courses.lesson.minutes': 'min',
+    'courses.lesson.pagerLabel': 'Navigation between lessons',
+    'courses.lesson.why': 'Why',
+    'courses.lesson.what': 'What you do',
+    'courses.lesson.dod': 'Definition of Done',
+    'courses.lesson.skills': 'Skills in this lesson',
+    'courses.lesson.deps': 'Dependencies',
+    'courses.lesson.prev': 'Previous',
+    'courses.lesson.next': 'Next',
+    'courses.lesson.start': 'Start',
+    'courses.lesson.end': 'End',
+
+    // Auth
+    'courses.auth.eyebrow': 'Account',
+    'courses.auth.loginTitle': 'Sign in',
+    'courses.auth.accountTitle': 'Your courses',
+    'courses.auth.email': 'Email',
+    'courses.auth.password': 'Password',
+    'courses.auth.submit': 'Sign in',
+    'courses.auth.submitting': 'Signing in…',
+    'courses.auth.forgot': 'Forgot your password?',
+    'courses.auth.invalidCredentials': 'Invalid email or password.',
+    'courses.auth.logout': 'Sign out',
+    'courses.auth.loggingOut': 'Signing out…',
+    'courses.auth.empty': 'You do not have any courses yet.',
+    'courses.auth.courseEyebrow': 'Course',
+    'courses.auth.openSyllabus': 'Open syllabus',
+
+    // Not found
+    'courses.notFound.title': 'Course not found · Devince',
+    'courses.notFound.cta': 'Back to courses',
   },
 } as const
 

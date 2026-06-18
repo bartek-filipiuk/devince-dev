@@ -3,6 +3,7 @@ import * as migration_20260610_200122_courses_syllabus_model from './20260610_20
 import * as migration_20260610_205758_phases_letter_field from './20260610_205758_phases_letter_field';
 import * as migration_20260611_010838_apps_store_model from './20260611_010838_apps_store_model';
 import * as migration_20260611_012513_grants_session_unique from './20260611_012513_grants_session_unique';
+import * as migration_20260618_044219_i18n_localized_content from './20260618_044219_i18n_localized_content';
 
 export const migrations = [
   {
@@ -28,6 +29,11 @@ export const migrations = [
   {
     up: migration_20260611_012513_grants_session_unique.up,
     down: migration_20260611_012513_grants_session_unique.down,
-    name: '20260611_012513_grants_session_unique'
+    name: '20260611_012513_grants_session_unique',
+  },
+  {
+    up: migration_20260618_044219_i18n_localized_content.up,
+    down: migration_20260618_044219_i18n_localized_content.down,
+    name: '20260618_044219_i18n_localized_content'
   },
 ];

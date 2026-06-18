@@ -35,6 +35,23 @@ const EXCLUDED_PREFIXES = [
 // /next preview, sitemaps) is intentionally NOT here — it stays shared.
 const COURSE_PAGE_PREFIXES = ['/login', '/account', '/learn', '/set-password', '/forgot-password']
 
+// For subdomain (apps/courses) hosts: derive locale from a leading /en or /pl
+// segment, return the locale + the "bare" path (locale stripped). PL is
+// canonical prefix-less. Returns { redirectTo } when a /pl prefix must be
+// bounced to the prefix-less canonical URL.
+function resolveSubLocale(pathname: string):
+  | { locale: 'pl' | 'en'; bare: string; redirectTo?: undefined }
+  | { redirectTo: string; locale?: undefined; bare?: undefined } {
+  const seg = pathname.split('/')[1] ?? ''
+  if (seg === defaultLocale) {
+    return { redirectTo: stripDefaultLocalePrefix(pathname, defaultLocale) }
+  }
+  if (isValidLocale(seg)) {
+    return { locale: seg as 'pl' | 'en', bare: '/' + pathname.split('/').slice(2).join('/') }
+  }
+  return { locale: defaultLocale, bare: pathname }
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -58,17 +75,32 @@ export function middleware(request: NextRequest) {
     ) {
       // On the courses subdomain, locale-neutral course PAGE paths must rewrite
       // into the isolated /courses-app tree (not the main (frontend) versions).
+      // These are prefix-less (PL) paths only — /en/<page> is NOT excluded and
+      // is handled by the locale-aware rewrite below.
       if (COURSE_PAGE_PREFIXES.some((p) => pathname.startsWith(p))) {
         const url = request.nextUrl.clone()
         url.pathname = `/courses-app${pathname}`
-        return NextResponse.rewrite(url)
+        const res = NextResponse.rewrite(url)
+        res.headers.set('x-locale', defaultLocale)
+        res.headers.set('x-pathname', pathname)
+        return res
       }
       return NextResponse.next()
     }
-    // All other paths on courses.*: rewrite into /courses-app.
+    // All other paths on courses.*: rewrite into /courses-app with locale.
+    // Handles /en/login etc. — bare /login -> /courses-app/login, x-locale=en.
+    const sub = resolveSubLocale(pathname)
+    if (sub.redirectTo !== undefined) {
+      const url = request.nextUrl.clone()
+      url.pathname = sub.redirectTo
+      return NextResponse.redirect(url)
+    }
     const url = request.nextUrl.clone()
-    url.pathname = `/courses-app${pathname === '/' ? '' : pathname}`
-    return NextResponse.rewrite(url)
+    url.pathname = `/courses-app${sub.bare === '/' ? '' : sub.bare}`
+    const res = NextResponse.rewrite(url)
+    res.headers.set('x-locale', sub.locale)
+    res.headers.set('x-pathname', pathname)
+    return res
   }
 
   // --- apps.* subdomain ---
@@ -85,10 +117,20 @@ export function middleware(request: NextRequest) {
     ) {
       return NextResponse.next()
     }
-    // All other paths on apps.*: rewrite into /apps-app.
+    // All other paths on apps.*: rewrite into /apps-app with locale.
+    // /en/... renders EN, prefix-less renders PL, /pl/... redirects to bare.
+    const sub = resolveSubLocale(pathname)
+    if (sub.redirectTo !== undefined) {
+      const url = request.nextUrl.clone()
+      url.pathname = sub.redirectTo
+      return NextResponse.redirect(url)
+    }
     const url = request.nextUrl.clone()
-    url.pathname = `/apps-app${pathname === '/' ? '' : pathname}`
-    return NextResponse.rewrite(url)
+    url.pathname = `/apps-app${sub.bare === '/' ? '' : sub.bare}`
+    const res = NextResponse.rewrite(url)
+    res.headers.set('x-locale', sub.locale)
+    res.headers.set('x-pathname', pathname)
+    return res
   }
 
   // --- Main host: handle /courses-app and /apps-app direct access ---
