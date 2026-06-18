@@ -90,6 +90,12 @@ const translations = {
     'footer.contact': 'Kontakt',
     'footer.followUs': 'Obserwuj nas',
     'footer.allRightsReserved': 'Wszelkie prawa zastrzeżone.',
+    'footer.legal': 'Informacje prawne',
+
+    // Legal
+    'legal.terms': 'Regulamin',
+    'legal.privacy': 'Polityka Prywatności',
+    'legal.updated': 'Ostatnia aktualizacja',
 
     // Header
     'header.search': 'Szukaj',
@@ -425,6 +431,12 @@ const translations = {
     'footer.contact': 'Contact',
     'footer.followUs': 'Follow Us',
     'footer.allRightsReserved': 'All rights reserved.',
+    'footer.legal': 'Legal',
+
+    // Legal
+    'legal.terms': 'Terms of Service',
+    'legal.privacy': 'Privacy Policy',
+    'legal.updated': 'Last updated',
 
     // Header
     'header.search': 'Search',

@@ -89,6 +89,22 @@ export async function Footer({ locale = defaultLocale }: { locale?: Locale }) {
             </span>
           </div>
 
+          {/* Legal Links */}
+          <nav className="flex items-center gap-4 text-sm">
+            <Link
+              className="text-gray-400 hover:text-white transition-colors"
+              href={getLocalizedPath('/regulamin', locale)}
+            >
+              {t(locale, 'legal.terms')}
+            </Link>
+            <Link
+              className="text-gray-400 hover:text-white transition-colors"
+              href={getLocalizedPath('/polityka-prywatnosci', locale)}
+            >
+              {t(locale, 'legal.privacy')}
+            </Link>
+          </nav>
+
           {/* Social Links */}
           {showSocialLinks && siteSettings?.socialLinks && (
             <SocialLinks links={siteSettings.socialLinks} />
