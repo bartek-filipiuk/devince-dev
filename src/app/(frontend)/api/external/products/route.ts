@@ -8,20 +8,10 @@ import {
   validateContentFormat,
 } from '../_lib/payload.js'
 
-const VALID_CURRENCIES = ['pln', 'eur', 'usd'] as const
+import type { CreateProductRequest } from '../_lib/types.js'
 
-type CreateProductRequest = {
-  title?: unknown
-  slug?: unknown
-  description?: unknown
-  contentFormat?: string
-  priceCents?: unknown
-  currency?: unknown
-  stripePriceId?: unknown
-  downloadFiles?: unknown
-  coverImage?: unknown
-  _status?: unknown
-}
+const VALID_CURRENCIES = ['pln', 'eur', 'usd'] as const
+const VALID_ACCESS_MODES = ['paid', 'lead-magnet'] as const
 
 /**
  * POST /api/external/products — create a downloadable apps-store product.
@@ -75,6 +65,12 @@ export async function POST(request: NextRequest) {
     if (body.stripePriceId !== undefined && typeof body.stripePriceId !== 'string') {
       return createErrorResponse('VALIDATION_ERROR', 'stripePriceId must be a string')
     }
+    if (body.accessMode !== undefined && !(VALID_ACCESS_MODES as readonly string[]).includes(body.accessMode)) {
+      return createErrorResponse(
+        'VALIDATION_ERROR',
+        `accessMode must be one of: ${VALID_ACCESS_MODES.join(', ')}`,
+      )
+    }
 
     const status = body._status === 'published' ? 'published' : 'draft'
 
@@ -87,6 +83,7 @@ export async function POST(request: NextRequest) {
       ...(typeof body.stripePriceId === 'string' && { stripePriceId: body.stripePriceId }),
       ...(Array.isArray(body.downloadFiles) && { downloadFiles: body.downloadFiles }),
       ...(typeof body.coverImage === 'number' && { coverImage: body.coverImage }),
+      ...(body.accessMode !== undefined && { accessMode: body.accessMode }),
     }
 
     // Optional richText description: markdown (default) or lexical object.

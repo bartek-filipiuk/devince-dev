@@ -14,6 +14,7 @@ import type { CreateProgramRequest } from '../../_lib/types.js'
 const VALID_TYPES = ['course', 'workshop', 'event'] as const
 const VALID_FORMATS = ['online', 'physical', 'hybrid'] as const
 const VALID_PRICING = ['free', 'paid'] as const
+const VALID_ACCESS_MODES = ['paid', 'lead-magnet'] as const
 
 export async function PATCH(
   request: NextRequest,
@@ -85,6 +86,15 @@ export async function PATCH(
         )
       }
       data.pricing = body.pricing
+    }
+    if (body.accessMode !== undefined) {
+      if (!(VALID_ACCESS_MODES as readonly string[]).includes(body.accessMode)) {
+        return createErrorResponse(
+          'VALIDATION_ERROR',
+          `accessMode must be one of: ${VALID_ACCESS_MODES.join(', ')}`,
+        )
+      }
+      data.accessMode = body.accessMode
     }
 
     if (body.ctaUrl !== undefined) {

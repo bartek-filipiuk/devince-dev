@@ -8,10 +8,12 @@ import {
   resolveDocId,
   validateContentFormat,
 } from '../../_lib/payload.js'
+import type { CreateProductRequest } from '../../_lib/types.js'
 
 const VALID_CURRENCIES = ['pln', 'eur', 'usd'] as const
+const VALID_ACCESS_MODES = ['paid', 'lead-magnet'] as const
 
-type UpdateProductRequest = {
+type UpdateProductRequest = Partial<CreateProductRequest> & {
   title?: unknown
   slug?: unknown
   description?: unknown
@@ -100,6 +102,15 @@ export async function PATCH(
         return createErrorResponse('VALIDATION_ERROR', '_status must be "draft" or "published"')
       }
       data._status = body._status
+    }
+    if (body.accessMode !== undefined) {
+      if (!(VALID_ACCESS_MODES as readonly string[]).includes(body.accessMode)) {
+        return createErrorResponse(
+          'VALIDATION_ERROR',
+          `accessMode must be one of: ${VALID_ACCESS_MODES.join(', ')}`,
+        )
+      }
+      data.accessMode = body.accessMode
     }
     if (body.description !== undefined && body.description !== null) {
       const format = validateContentFormat(body.contentFormat)

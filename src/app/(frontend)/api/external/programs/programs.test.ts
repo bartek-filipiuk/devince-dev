@@ -215,3 +215,192 @@ describe('DELETE /api/external/programs/[idOrSlug]', () => {
     expect(res.status).toBe(401)
   })
 })
+
+// ── accessMode — POST ──────────────────────────────────────────────────────
+
+describe('POST /api/external/programs — accessMode', () => {
+  beforeEach(() => {
+    process.env.EXTERNAL_API_TOKEN = TOKEN
+    vi.clearAllMocks()
+  })
+
+  it('forwards accessMode:lead-magnet to payload.create', async () => {
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    const create = vi.fn().mockResolvedValue({
+      id: 10,
+      title: 'Lead Magnet Course',
+      slug: 'lead-magnet-course',
+      _status: 'draft',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    })
+    vi.mocked(getPayloadClient).mockResolvedValue({ create } as never)
+
+    const { POST } = await import('./route.js')
+
+    const req = makeAuthedReq('POST', 'http://localhost/api/external/programs', {
+      title: 'Lead Magnet Course',
+      type: 'course',
+      accessMode: 'lead-magnet',
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+
+    expect(create).toHaveBeenCalledOnce()
+    const data = create.mock.calls[0][0].data
+    expect(data.accessMode).toBe('lead-magnet')
+  })
+
+  it('forwards accessMode:paid to payload.create', async () => {
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    const create = vi.fn().mockResolvedValue({
+      id: 11,
+      title: 'Paid Course',
+      slug: 'paid-course',
+      _status: 'draft',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    })
+    vi.mocked(getPayloadClient).mockResolvedValue({ create } as never)
+
+    const { POST } = await import('./route.js')
+
+    const req = makeAuthedReq('POST', 'http://localhost/api/external/programs', {
+      title: 'Paid Course',
+      type: 'course',
+      accessMode: 'paid',
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+
+    const data = create.mock.calls[0][0].data
+    expect(data.accessMode).toBe('paid')
+  })
+
+  it('omits accessMode when not provided', async () => {
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    const create = vi.fn().mockResolvedValue({
+      id: 12,
+      title: 'No AccessMode',
+      slug: 'no-access-mode',
+      _status: 'draft',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    })
+    vi.mocked(getPayloadClient).mockResolvedValue({ create } as never)
+
+    const { POST } = await import('./route.js')
+
+    const req = makeAuthedReq('POST', 'http://localhost/api/external/programs', {
+      title: 'No AccessMode',
+      type: 'workshop',
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+
+    const data = create.mock.calls[0][0].data
+    expect(data).not.toHaveProperty('accessMode')
+  })
+
+  it('returns 400 for invalid accessMode', async () => {
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    vi.mocked(getPayloadClient).mockResolvedValue({} as never)
+
+    const { POST } = await import('./route.js')
+
+    const req = makeAuthedReq('POST', 'http://localhost/api/external/programs', {
+      title: 'Bad AccessMode',
+      type: 'course',
+      accessMode: 'foo',
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(400)
+  })
+})
+
+// ── accessMode — PATCH ─────────────────────────────────────────────────────
+
+describe('PATCH /api/external/programs/[idOrSlug] — accessMode', () => {
+  beforeEach(() => {
+    process.env.EXTERNAL_API_TOKEN = TOKEN
+    vi.clearAllMocks()
+  })
+
+  it('forwards accessMode to payload.update', async () => {
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    const update = vi.fn().mockResolvedValue({
+      id: 20,
+      title: 'Updated',
+      slug: 'updated',
+      _status: 'draft',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    })
+    const findByID = vi.fn().mockResolvedValue({ id: 20 })
+    vi.mocked(getPayloadClient).mockResolvedValue({ update, findByID } as never)
+
+    const { PATCH } = await import('./[idOrSlug]/route.js')
+
+    const req = makeAuthedReq(
+      'PATCH',
+      'http://localhost/api/external/programs/20',
+      { accessMode: 'lead-magnet' },
+    )
+
+    const res = await PATCH(req, { params: Promise.resolve({ idOrSlug: '20' }) })
+    expect(res.status).toBe(200)
+
+    expect(update).toHaveBeenCalledOnce()
+    const data = update.mock.calls[0][0].data
+    expect(data.accessMode).toBe('lead-magnet')
+  })
+
+  it('omits accessMode when not provided in PATCH', async () => {
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    const update = vi.fn().mockResolvedValue({
+      id: 21,
+      title: 'No Change',
+      slug: 'no-change',
+      _status: 'draft',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    })
+    const findByID = vi.fn().mockResolvedValue({ id: 21 })
+    vi.mocked(getPayloadClient).mockResolvedValue({ update, findByID } as never)
+
+    const { PATCH } = await import('./[idOrSlug]/route.js')
+
+    const req = makeAuthedReq(
+      'PATCH',
+      'http://localhost/api/external/programs/21',
+      { title: 'New Title' },
+    )
+
+    const res = await PATCH(req, { params: Promise.resolve({ idOrSlug: '21' }) })
+    expect(res.status).toBe(200)
+
+    const data = update.mock.calls[0][0].data
+    expect(data).not.toHaveProperty('accessMode')
+  })
+
+  it('returns 400 for invalid accessMode in PATCH', async () => {
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    const findByID = vi.fn().mockResolvedValue({ id: 22 })
+    vi.mocked(getPayloadClient).mockResolvedValue({ findByID } as never)
+
+    const { PATCH } = await import('./[idOrSlug]/route.js')
+
+    const req = makeAuthedReq(
+      'PATCH',
+      'http://localhost/api/external/programs/22',
+      { accessMode: 'bar' },
+    )
+
+    const res = await PATCH(req, { params: Promise.resolve({ idOrSlug: '22' }) })
+    expect(res.status).toBe(400)
+  })
+})
