@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Lesson, Program } from '@/payload-types'
 import { t, type Locale } from '@/i18n'
 import { getLocalizedPath } from '@/utilities/getLocale'
+import { progressFor } from '@/utilities/courseProgress'
 
 type Phase = NonNullable<Program['phases']>[number]
 
@@ -12,16 +13,23 @@ type Phase = NonNullable<Program['phases']>[number]
  * link to its learn URL with hard-gate / hybrid / decision badges and a time
  * range. Faithful to the handoff `#curriculum` / `.phase-block` / `.srow`.
  */
+const lessonTime = (l: Lesson, unit: string) =>
+  l.estTimeMin?.max ? `~${l.estTimeMin.max} ${unit}` : null
+
 export function Curriculum({
   slug,
   phases,
   lessons,
   locale,
+  byPhase,
+  totalTimeMax,
 }: {
   slug: string
   phases: Phase[]
   lessons: Lesson[]
   locale: Locale
+  byPhase?: Map<string, { done: number; total: number }>
+  totalTimeMax?: number
 }) {
   return (
     <section className="block" id="curriculum-sec">
@@ -33,6 +41,7 @@ export function Curriculum({
         <h2 className="section-title">
           {phases.length} {t(locale, 'courses.syllabus.metaPhases')} · {lessons.length}{' '}
           {t(locale, 'courses.syllabus.metaStages')}
+          {totalTimeMax ? <> · ~{Math.round(totalTimeMax / 60)} {t(locale, 'courses.syllabus.totalTimeUnit')}</> : null}
         </h2>
         <p>
           {t(locale, 'courses.syllabus.curriculumNote')}{' '}
@@ -65,6 +74,16 @@ export function Curriculum({
                     ? t(locale, 'courses.syllabus.stageSingular')
                     : t(locale, 'courses.syllabus.stagePlural')}
                 </div>
+                {byPhase ? (() => {
+                  const pp = byPhase.get(phase.letter ?? '') ?? { done: 0, total: rows.length }
+                  const pr = progressFor(pp.total, pp.done)
+                  return (
+                    <div className="pc-progress">
+                      <div className="progressbar__track"><div className="progressbar__fill" style={{ width: `${pr.pct}%` }} /></div>
+                      <span>{pr.done}/{pr.total}</span>
+                    </div>
+                  )
+                })() : null}
               </div>
 
               {rows.map((lesson) => (
@@ -94,6 +113,9 @@ export function Curriculum({
                         <span className="badge decision">{t(locale, 'courses.badge.decision')}</span>
                       ) : null}
                     </span>
+                    {lessonTime(lesson, t(locale, 'courses.lesson.readMin')) ? (
+                      <span className="srow__time">{lessonTime(lesson, t(locale, 'courses.lesson.readMin'))}</span>
+                    ) : null}
                     {lesson.why ? <span className="srow__teaser">{lesson.why}</span> : null}
                   </span>
                   <span className="srow__go icon" data-i="arrow" aria-hidden="true" />
