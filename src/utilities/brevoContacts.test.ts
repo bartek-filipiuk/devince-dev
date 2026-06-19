@@ -9,6 +9,11 @@ import { addBrevoContact, brevoDoubleOptin } from './brevoContacts'
 // path, so they must NEVER throw — a Brevo outage or a misconfig is a no-op,
 // never a 500 that breaks a money-critical grant. DOI additionally NO-OPS when
 // no templateId is configured (ships dark).
+//
+// brevoDoubleOptin returns a boolean:
+//   true  — Brevo accepted the DOI request (ok response)
+//   false — no-op (missing config) OR Brevo returned non-ok OR fetch threw
+// addBrevoContact remains void (callers never need the result).
 
 const ORIGINAL_KEY = process.env.BREVO_API_KEY
 
@@ -88,11 +93,11 @@ describe('addBrevoContact', () => {
 })
 
 describe('brevoDoubleOptin', () => {
-  it('POSTs to /v3/contacts/doubleOptinConfirmation with the DOI body shape', async () => {
+  it('POSTs to /v3/contacts/doubleOptinConfirmation with the DOI body shape and returns true on ok', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) })
     vi.stubGlobal('fetch', fetchMock)
 
-    await brevoDoubleOptin({
+    const result = await brevoDoubleOptin({
       email: 'jan@example.com',
       listId: 12,
       templateId: 1,
@@ -100,6 +105,7 @@ describe('brevoDoubleOptin', () => {
       attributes: { SOURCE: 'purchase', PRODUCT: 'flow', SURFACE: 'courses' },
     })
 
+    expect(result).toBe(true)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     const [url, opts] = fetchMock.mock.calls[0]
     expect(url).toBe('https://api.brevo.com/v3/contacts/doubleOptinConfirmation')
@@ -134,66 +140,68 @@ describe('brevoDoubleOptin', () => {
     expect(body.templateId).toBe(1)
   })
 
-  it('NO-OPS (no fetch) when templateId is falsy — ships dark', async () => {
+  it('NO-OPS (no fetch) when templateId is falsy — ships dark — returns false', async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
     vi.spyOn(console, 'log').mockImplementation(() => {})
 
-    await brevoDoubleOptin({
+    const result = await brevoDoubleOptin({
       email: 'jan@example.com',
       listId: 12,
       templateId: undefined,
       redirectionUrl: 'https://courses.devince.dev/',
     })
 
+    expect(result).toBe(false)
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it('NO-OPS when templateId is an unparseable / zero value', async () => {
+  it('NO-OPS when templateId is an unparseable / zero value — returns false', async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
     vi.spyOn(console, 'log').mockImplementation(() => {})
 
-    await brevoDoubleOptin({
+    const result = await brevoDoubleOptin({
       email: 'jan@example.com',
       listId: 12,
       templateId: 'abc' as unknown as number,
       redirectionUrl: 'https://courses.devince.dev/',
     })
 
+    expect(result).toBe(false)
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it('no-ops (no fetch) when BREVO_API_KEY is unset even with a templateId', async () => {
+  it('no-ops (no fetch) when BREVO_API_KEY is unset even with a templateId — returns false', async () => {
     delete process.env.BREVO_API_KEY
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
     vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    await brevoDoubleOptin({
+    const result = await brevoDoubleOptin({
       email: 'jan@example.com',
       listId: 12,
       templateId: 1,
       redirectionUrl: 'https://courses.devince.dev/',
     })
 
+    expect(result).toBe(false)
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it('never throws when fetch rejects (best-effort)', async () => {
+  it('never throws when fetch rejects (best-effort) — returns false', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('brevo down')))
-    await expect(
-      brevoDoubleOptin({
-        email: 'jan@example.com',
-        listId: 12,
-        templateId: 1,
-        redirectionUrl: 'https://courses.devince.dev/',
-      }),
-    ).resolves.toBeUndefined()
+    const result = await brevoDoubleOptin({
+      email: 'jan@example.com',
+      listId: 12,
+      templateId: 1,
+      redirectionUrl: 'https://courses.devince.dev/',
+    })
+    expect(result).toBe(false)
   })
 
-  it('never throws when Brevo returns a non-ok response', async () => {
+  it('never throws when Brevo returns a non-ok response — returns false', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
     vi.stubGlobal(
       'fetch',
@@ -204,13 +212,31 @@ describe('brevoDoubleOptin', () => {
         text: async () => '{"code":"duplicate_parameter"}',
       }),
     )
-    await expect(
-      brevoDoubleOptin({
-        email: 'jan@example.com',
-        listId: 12,
-        templateId: 1,
-        redirectionUrl: 'https://courses.devince.dev/',
-      }),
-    ).resolves.toBeUndefined()
+    const result = await brevoDoubleOptin({
+      email: 'jan@example.com',
+      listId: 12,
+      templateId: 1,
+      redirectionUrl: 'https://courses.devince.dev/',
+    })
+    expect(result).toBe(false)
+  })
+
+  it('masks email in brevo_doi_skipped log (no plain PII in logs)', async () => {
+    vi.stubGlobal('fetch', vi.fn())
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    await brevoDoubleOptin({
+      email: 'jankowalski@example.com',
+      listId: 12,
+      templateId: undefined,
+      redirectionUrl: 'https://courses.devince.dev/',
+    })
+
+    expect(logSpy).toHaveBeenCalledTimes(1)
+    const logged = logSpy.mock.calls[0][0] as string
+    // Raw email must not appear
+    expect(logged).not.toContain('jankowalski@example.com')
+    // Masked form should appear (first char + ellipsis + domain)
+    expect(logged).toContain('j…@example.com')
   })
 })

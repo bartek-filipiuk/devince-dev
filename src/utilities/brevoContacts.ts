@@ -69,6 +69,11 @@ export async function addBrevoContact(
  * (rendered from the owner's `templateId`); clicking its link adds them to
  * `listId` and redirects to `redirectionUrl`. Best-effort: never throws.
  *
+ * Returns `true` when the DOI POST returned an ok response; `false` in every
+ * other case (no-op / missing config / Brevo 4xx/5xx / network failure).
+ * Callers in the Stripe webhook ignore the return value (best-effort); the
+ * newsletter route uses it to surface an error to the subscriber.
+ *
  * NO-OPS (no fetch) when `templateId` is unset/0/unparseable — this is the
  * env-gate that lets the newsletter/lead-magnet feature ship dark until the owner
  * configures `BREVO_DOI_TEMPLATE_ID`.
@@ -79,24 +84,25 @@ export async function brevoDoubleOptin(args: {
   templateId: number | string | undefined
   redirectionUrl: string
   attributes?: Record<string, unknown>
-}): Promise<void> {
+}): Promise<boolean> {
   const templateId = Number(args.templateId)
   // Falsy / unparseable templateId → the DOI template isn't configured → no-op.
   if (!args.templateId || !Number.isFinite(templateId) || templateId <= 0) {
+    const maskedEmail = args.email.replace(/(.).*(@.*)/, '$1…$2')
     console.log(
       JSON.stringify({
         event: 'brevo_doi_skipped',
         reason: 'no BREVO_DOI_TEMPLATE_ID configured',
-        email: args.email,
+        email: maskedEmail,
       }),
     )
-    return
+    return false
   }
 
   const apiKey = process.env.BREVO_API_KEY
   if (!apiKey) {
     console.error('[brevoContacts] brevoDoubleOptin skipped: BREVO_API_KEY not set')
-    return
+    return false
   }
 
   const body: Record<string, unknown> = {
@@ -123,8 +129,11 @@ export async function brevoDoubleOptin(args: {
     if (!res.ok) {
       const text = await res.text().catch(() => '')
       console.error(`[brevoContacts] brevoDoubleOptin non-ok ${res.status}: ${text}`)
+      return false
     }
+    return true
   } catch (err) {
     console.error('[brevoContacts] brevoDoubleOptin threw (best-effort, swallowed):', err)
+    return false
   }
 }

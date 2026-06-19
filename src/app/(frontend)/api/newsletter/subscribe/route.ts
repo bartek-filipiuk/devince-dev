@@ -38,15 +38,23 @@ export async function POST(request: NextRequest) {
 
     // Create double opt-in contact via the shared best-effort helper (DRY — same
     // /v3/contacts/doubleOptinConfirmation call the purchase webhook uses). It
-    // never throws; a Brevo "already subscribed" (duplicate_parameter) is a
-    // benign no-op, so a neutral 200 "check your email" is correct here (Brevo
-    // dedups, no email enumeration).
-    await brevoDoubleOptin({
+    // never throws; returns true when Brevo accepted the request, false otherwise.
+    // A false here means the confirmation email was never sent — surface that as
+    // a 500 so the subscriber knows to retry rather than wait for an email that
+    // won't arrive.
+    const ok = await brevoDoubleOptin({
       email,
       listId: Number(targetListId),
       templateId: BREVO_DOI_TEMPLATE_ID,
       redirectionUrl: `${siteUrl}/newsletter/confirmed`,
     })
+
+    if (!ok) {
+      return NextResponse.json(
+        { error: 'Failed to subscribe. Please try again later.' },
+        { status: 500 },
+      )
+    }
 
     return NextResponse.json(
       { message: 'Please check your email to confirm your subscription' },
