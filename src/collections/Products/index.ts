@@ -39,6 +39,29 @@ export const Products: CollectionConfig = {
         {
           label: 'Produkt',
           fields: [
+            {
+              // Access model. 'paid' = normal Stripe checkout (default).
+              // 'lead-magnet' = FREE in exchange for a double-opted-in email:
+              // the storefront swaps the buy button for an email-capture form,
+              // and /api/free-claim grants access on DOI confirmation. The
+              // free-claim + confirm routes re-check this value server-side from
+              // the DB record — the client can never make a paid item free.
+              name: 'accessMode',
+              type: 'select',
+              // Not `required` so existing/seeded products need not set it — the
+              // defaultValue applies and any null is treated as 'paid' by the
+              // free-claim/confirm guards (fail-safe to PAID, never to free).
+              defaultValue: 'paid',
+              options: [
+                { label: 'Płatny (Stripe)', value: 'paid' },
+                { label: 'Lead magnet (darmowy za e-mail)', value: 'lead-magnet' },
+              ],
+              admin: {
+                description:
+                  'Płatny = checkout Stripe. Lead magnet = darmowy za zapis na listę (double opt-in); cena ignorowana.',
+                position: 'sidebar',
+              },
+            },
             { name: 'description', type: 'richText', localized: true },
             { name: 'coverImage', type: 'upload', relationTo: 'media' },
             {

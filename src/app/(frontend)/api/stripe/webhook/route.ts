@@ -262,6 +262,23 @@ export async function POST(req: NextRequest) {
         email,
       })
 
+      // Newsletter opt-in (Part A): if the buyer ticked the newsletter box at
+      // checkout (metadata.newsletter==='true'), trigger Brevo's native double
+      // opt-in to add them to the list. Placed AFTER the durable grant + sales
+      // ping, exactly like notifyEvent: brevoDoubleOptin is best-effort and never
+      // throws, so it can never block, roll back, or break course access. No-ops
+      // entirely when BREVO_DOI_TEMPLATE_ID is unset (ships dark).
+      if (session.metadata?.newsletter === 'true') {
+        const { brevoDoubleOptin } = await import('@/utilities/brevoContacts')
+        await brevoDoubleOptin({
+          email,
+          listId: Number(process.env.BREVO_LIST_ID),
+          templateId: process.env.BREVO_DOI_TEMPLATE_ID,
+          redirectionUrl: process.env.NEXT_PUBLIC_COURSES_URL ?? 'https://courses.devince.dev',
+          attributes: { SOURCE: 'purchase', PRODUCT: programDoc?.slug ?? String(programId), SURFACE: 'courses' },
+        })
+      }
+
       // Art. 38 pkt 13 consent timestamp, server-stamped at checkout creation by
       // /api/courses/checkout. Absent for sessions created outside our flow (e.g.
       // a hand-made Stripe Payment Link) — the email then omits the confirmation.
@@ -335,7 +352,7 @@ export async function POST(req: NextRequest) {
       // unlock an expensive download. We re-fetch the full product for the email
       // title below; this lookup is depth:0 and just for verification.
       let productDoc:
-        | { priceCents?: unknown; currency?: unknown; stripePriceId?: unknown }
+        | { slug?: string; priceCents?: unknown; currency?: unknown; stripePriceId?: unknown }
         | null = null
       try {
         productDoc = (await payload.findByID({
@@ -344,6 +361,7 @@ export async function POST(req: NextRequest) {
           depth: 0,
           overrideAccess: true,
         })) as unknown as {
+          slug?: string
           priceCents?: unknown
           currency?: unknown
           stripePriceId?: unknown
@@ -393,6 +411,22 @@ export async function POST(req: NextRequest) {
           currency: session.currency ?? 'pln',
           email,
         })
+        // Newsletter opt-in (Part A): if the buyer ticked the newsletter box,
+        // fire Brevo's double opt-in to add them to the list. Placed AFTER the
+        // durable grant + sales ping (gated on `created`, mirroring those), and
+        // brevoDoubleOptin is best-effort/never-throws — so it can never block,
+        // roll back, or break the download grant. No-ops when the DOI template
+        // env is unset (ships dark).
+        if (session.metadata?.newsletter === 'true') {
+          const { brevoDoubleOptin } = await import('@/utilities/brevoContacts')
+          await brevoDoubleOptin({
+            email,
+            listId: Number(process.env.BREVO_LIST_ID),
+            templateId: process.env.BREVO_DOI_TEMPLATE_ID,
+            redirectionUrl: process.env.NEXT_PUBLIC_APPS_URL ?? 'https://apps.devince.dev',
+            attributes: { SOURCE: 'purchase', PRODUCT: productDoc?.slug ?? String(productId), SURFACE: 'apps' },
+          })
+        }
       }
       if (result.created && result.token) {
         // Best-effort email, same policy as course access mails: a Brevo failure

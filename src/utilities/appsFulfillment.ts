@@ -5,6 +5,42 @@ const GRANT_TTL_MS = 7 * 24 * 60 * 60 * 1000
 const GRANT_MAX_USES = 5
 
 /**
+ * Create a bare DownloadGrant (token + 7-day expiry + use limit) for a product
+ * and return the token. Shared by the paid path (fulfillAppPurchase, which wraps
+ * this with stripeSessionId idempotency) and the FREE lead-magnet confirm route
+ * (where single-use is enforced upstream by the claim-grants unique index, so no
+ * stripeSessionId is needed). Throws if DOWNLOAD_TOKEN_SECRET is unset.
+ */
+export async function createDownloadGrant(
+  payload: Payload,
+  args: {
+    productId: number | string
+    email: string
+    stripeSessionId?: string
+    withdrawalConsentAt?: string
+  },
+): Promise<string> {
+  const secret = process.env.DOWNLOAD_TOKEN_SECRET
+  if (!secret) throw new Error('DOWNLOAD_TOKEN_SECRET is not set')
+  const token = createDownloadToken(secret)
+  await payload.create({
+    collection: 'download-grants',
+    data: {
+      token,
+      product: args.productId,
+      email: args.email,
+      expiresAt: new Date(Date.now() + GRANT_TTL_MS).toISOString(),
+      maxUses: GRANT_MAX_USES,
+      uses: 0,
+      stripeSessionId: args.stripeSessionId,
+      withdrawalConsentAt: args.withdrawalConsentAt,
+    } as never,
+    overrideAccess: true,
+  })
+  return token
+}
+
+/**
  * Account-less fulfillment for app purchases: create one DownloadGrant per
  * Checkout Session. Idempotent — re-delivered webhooks for the same session
  * find the existing grant and do nothing.

@@ -4,6 +4,7 @@ import { t, type Locale } from '@/i18n'
 import { getLocalizedPath } from '@/utilities/getLocale'
 import { formatPrice } from '@/utilities/formatPrice'
 import { CourseCheckoutButton } from './CourseCheckoutButton'
+import { CourseLeadMagnet } from './CourseLeadMagnet'
 
 type Meta = {
   phases: number
@@ -44,8 +45,12 @@ export function SyllabusHero({
     firstLessonSlug ? `/${program.slug}/learn/${firstLessonSlug}` : `/${program.slug}`,
     locale,
   )
+  // Lead magnet (free-for-email): not enrolled → email capture form (takes
+  // precedence over the paid path).
+  const leadMagnet = program.accessMode === 'lead-magnet' && !enrolled
   // Paid + not enrolled + purchasable → show the consent checkout CTA.
   const paidLocked =
+    !leadMagnet &&
     program.pricing === 'paid' &&
     !enrolled &&
     (!!program.stripePriceId || typeof program.priceCents === 'number')
@@ -75,12 +80,16 @@ export function SyllabusHero({
             </div>
 
             <div className="cta">
-              {program.pricing === 'paid' && typeof program.priceCents === 'number' ? (
+              {!leadMagnet &&
+              program.pricing === 'paid' &&
+              typeof program.priceCents === 'number' ? (
                 <span className="hero__price">
                   {formatPrice(program.priceCents, program.currency ?? 'pln')}
                 </span>
               ) : null}
-              {paidLocked ? (
+              {leadMagnet ? (
+                <CourseLeadMagnet slug={program.slug} locale={locale} />
+              ) : paidLocked ? (
                 <CourseCheckoutButton
                   slug={program.slug}
                   locale={locale}
@@ -89,6 +98,7 @@ export function SyllabusHero({
                   processingLabel={t(locale, 'courses.checkout.processing')}
                   errorLabel={t(locale, 'courses.checkout.error')}
                   consentRequiredLabel={t(locale, 'courses.checkout.consentRequired')}
+                  newsletterLabel={t(locale, 'courses.checkout.newsletter')}
                 />
               ) : (
                 <Link className="btn btn--primary btn--lg" href={startHref}>

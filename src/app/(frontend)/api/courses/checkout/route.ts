@@ -24,8 +24,9 @@ export async function POST(req: NextRequest) {
   let slug: unknown
   let consent: unknown
   let locale: unknown
+  let newsletter: unknown
   try {
-    ;({ slug, consent, locale } = await req.json())
+    ;({ slug, consent, locale, newsletter } = await req.json())
   } catch {
     return NextResponse.json({ error: 'invalid body' }, { status: 400 })
   }
@@ -89,6 +90,10 @@ export async function POST(req: NextRequest) {
       withdrawalConsent: 'true',
       withdrawalConsentAt,
       locale: emailLocale,
+      // Newsletter opt-in (separate from the Art. 38 consent above, never gates
+      // the purchase, never affects price). Stamped only when the buyer ticked
+      // the box; the webhook reads it post-grant to fire a Brevo double opt-in.
+      ...(newsletter === true ? { newsletter: 'true' } : {}),
     },
     success_url: `${COURSES_URL()}/success`,
     cancel_url: `${COURSES_URL()}/${program.slug}`,

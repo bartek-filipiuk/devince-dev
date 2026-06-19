@@ -11,6 +11,7 @@ import { getLocale } from '@/utilities/getLocale.server'
 import { t } from '@/i18n'
 import RichText from '@/components/RichText'
 import { BuyButton } from '../_components/BuyButton'
+import { AppLeadMagnet } from '../_components/AppLeadMagnet'
 
 export const dynamic = 'force-dynamic'
 
@@ -64,6 +65,10 @@ export default async function ProductPage({
   const coverUrl = cover ? getMediaUrl(cover.url) : null
 
   const files = product.downloadFiles ?? []
+  // Lead magnet (free-for-email): render the email capture form instead of the
+  // paid buy control + price. The free-claim/confirm routes re-validate this
+  // server-side from the DB record — the client can't make a paid item free.
+  const leadMagnet = product.accessMode === 'lead-magnet'
 
   return (
     <article>
@@ -88,19 +93,26 @@ export default async function ProductPage({
               ) : null}
 
               <div className="product-buy">
-                <p className="product-price">
-                  {formatPrice(product.priceCents, product.currency)}
-                </p>
-                <BuyButton
-                  slug={product.slug}
-                  locale={locale}
-                  label={t(locale, 'apps.product.buy')}
-                  processingLabel={t(locale, 'apps.product.processing')}
-                  errorLabel={t(locale, 'apps.product.error')}
-                  consentLabel={t(locale, 'apps.product.consent')}
-                  disabled={files.length === 0}
-                />
-                <p className="product-note">{t(locale, 'apps.product.note')}</p>
+                {leadMagnet ? (
+                  <AppLeadMagnet slug={product.slug} locale={locale} />
+                ) : (
+                  <>
+                    <p className="product-price">
+                      {formatPrice(product.priceCents, product.currency)}
+                    </p>
+                    <BuyButton
+                      slug={product.slug}
+                      locale={locale}
+                      label={t(locale, 'apps.product.buy')}
+                      processingLabel={t(locale, 'apps.product.processing')}
+                      errorLabel={t(locale, 'apps.product.error')}
+                      consentLabel={t(locale, 'apps.product.consent')}
+                      newsletterLabel={t(locale, 'apps.checkout.newsletter')}
+                      disabled={files.length === 0}
+                    />
+                    <p className="product-note">{t(locale, 'apps.product.note')}</p>
+                  </>
+                )}
               </div>
             </div>
 
