@@ -346,7 +346,7 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
 .phase-block__head .pc { font-family: var(--font-mono); font-size: 12px; color: var(--text-mut); white-space: nowrap; }
 .phase-block__head .pc b { color: var(--accent); }
 
-.srow { display: grid; grid-template-columns: 42px 1fr auto auto; gap: 14px; align-items: center; padding: 13px 18px;
+.srow { display: grid; grid-template-columns: 42px 1fr auto; gap: 14px; align-items: center; padding: 13px 18px;
   border-top: 1px solid var(--line-soft); transition: background .14s ease; }
 .srow:first-of-type { border-top: 0; }
 .srow:hover { background: var(--surface-2); }
@@ -356,7 +356,6 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
 .srow__name .lk { color: var(--gate); display: inline-flex; }
 .srow__name .lk .icon { width: 13px; height: 13px; }
 .srow__badges { display: flex; flex-wrap: wrap; gap: 6px; }
-.srow__time { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-dim); white-space: nowrap; }
 .srow__go { color: var(--text-dim); transition: color .15s ease, transform .15s ease; }
 .srow:hover .srow__go { color: var(--accent); transform: translateX(2px); }
 
@@ -385,7 +384,6 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
   .spine-card { order: 2; }
   .cols { grid-template-columns: 1fr; }
   .srow { grid-template-columns: 36px 1fr auto; }
-  .srow__time { display: none; }
 }
 
 @media (max-width: 720px) {

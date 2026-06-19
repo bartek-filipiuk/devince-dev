@@ -29,7 +29,6 @@ export function CourseCard({
   enrolled: boolean
   locale: Locale
 }) {
-  const time = formatTime(meta.timeMin, meta.timeMax)
   const syllabusHref = getLocalizedPath(`/${program.slug}`, locale)
   // Paid + not enrolled + purchasable → consent checkout button,
   // a sibling of the title link (cannot be nested inside a <Link>).
@@ -56,7 +55,6 @@ export function CourseCard({
         <span>
           {meta.stages} {t(locale, 'courses.store.stages')}
         </span>
-        {time ? <span>{time}</span> : null}
         <span className="course-card__paid">{t(locale, 'courses.store.paid')}</span>
         {program.pricing === 'paid' && typeof program.priceCents === 'number' ? (
           <span className="course-card__price">
@@ -85,15 +83,4 @@ export function CourseCard({
       </div>
     </div>
   )
-}
-
-/** Renders the summed est-time range as „Xh" / „X–Yh" (minutes → hours, 1 dp). */
-function formatTime(min: number, max: number): string | null {
-  if (!min && !max) return null
-  const toH = (m: number) => {
-    const h = m / 60
-    return Number.isInteger(h) ? String(h) : h.toFixed(1)
-  }
-  if (min === max) return `~${toH(min)}h`
-  return `${toH(min)}–${toH(max)}h`
 }
