@@ -201,6 +201,7 @@ Administratorem Twoich danych osobowych jest **${SELLER.name}**, ${SELLER.addres
 | Realizacja zamówienia, dostarczenie pliku, dostęp do Kursu, obsługa konta | art. 6 ust. 1 lit. b RODO (wykonanie umowy) |
 | Wystawianie i przechowywanie faktur, rozliczenia podatkowe | art. 6 ust. 1 lit. c RODO (obowiązek prawny) |
 | Newsletter / informacje marketingowe | art. 6 ust. 1 lit. a RODO (zgoda) |
+| Powiadomienia operacyjne o zamówieniach (Discord) oraz statystyka anonimowa (Umami) | art. 6 ust. 1 lit. f RODO (prawnie uzasadniony interes: obsługa i monitorowanie sprzedaży) |
 | Zapobieganie oszustwom, bezpieczeństwo, dochodzenie i obrona roszczeń | art. 6 ust. 1 lit. f RODO (prawnie uzasadniony interes) |
 | Pliki cookies inne niż niezbędne (jeśli zostaną wdrożone) | art. 6 ust. 1 lit. a RODO (zgoda) |
 
@@ -211,10 +212,15 @@ Dane mogą być powierzane następującym podmiotom, z którymi Administrator za
 - **Stripe** (Stripe Payments Europe, Ltd., Irlandia) — obsługa płatności; przetwarza dane płatnicze i identyfikacyjne. Stripe może przekazywać dane do **USA** na podstawie **EU–US Data Privacy Framework (DPF)** oraz **standardowych klauzul umownych (SCC)**. Stripe pełni rolę podmiotu przetwarzającego, a w zakresie zapobiegania oszustwom i obowiązków regulacyjnych — odrębnego administratora.
 - **Brevo (Sendinblue SAS, Paryż, Francja)** — wysyłka wiadomości e-mail (transakcyjnych i marketingowych); podmiot z siedzibą w **UE**, dane przetwarzane w UE.
 - **Hetzner Online GmbH (Niemcy)** — hosting/infrastruktura; podmiot z siedzibą w **UE** (serwery w Niemczech).
+- **Discord (Discord Inc., USA)** — wewnętrzny kanał Administratora, na który trafiają **operacyjne powiadomienia o zamówieniach** (zawierające adres e-mail kupującego, nazwę produktu i kwotę). Służą wyłącznie bieżącej obsłudze i monitorowaniu sprzedaży. Przekazanie do **USA** odbywa się na podstawie **standardowych klauzul umownych (SCC)**.
+
+## Analityka (Umami)
+
+Do statystyki ruchu Administrator używa **samodzielnie hostowanego narzędzia Umami** (pod adresem **stats.67projects.app**). Umami działa **bez plików cookies** i bez identyfikatorów pozwalających na śledzenie między witrynami; zbiera wyłącznie **zanonimizowane, zagregowane** dane (np. liczba odsłon, kraj, typ urządzenia, kliknięcia w przycisk zakupu). Nie korzystamy z analityki firm trzecich (np. Google Analytics) ani z narzędzi reklamowych. Ponieważ analityka jest beznośnikowa i anonimowa, nie wymaga banera zgody na cookies.
 
 ## 4. Przekazywanie do państw trzecich
 
-Co do zasady dane są przetwarzane w Europejskim Obszarze Gospodarczym. Jedyne przekazanie poza EOG dotyczy operatora płatności Stripe (USA) i odbywa się na podstawie DPF oraz SCC, zapewniających odpowiedni poziom ochrony.
+Co do zasady dane są przetwarzane w Europejskim Obszarze Gospodarczym. Przekazania poza EOG dotyczą: operatora płatności **Stripe** (USA) — na podstawie DPF oraz SCC; oraz kanału powiadomień **Discord** (USA), na który trafiają operacyjne powiadomienia o zamówieniach (w tym adres e-mail kupującego) — na podstawie SCC. Oba zapewniają odpowiedni poziom ochrony.
 
 ## 5. Okresy przechowywania
 
@@ -237,7 +243,7 @@ Podanie danych jest dobrowolne, ale niezbędne do zawarcia i wykonania umowy (np
 
 ## 9. Pliki cookies
 
-Sklep wykorzystuje wyłącznie pliki cookies **niezbędne** do działania serwisu: cookie sesji/logowania (dla Kursów) oraz cookie zapamiętujące preferencję motywu (jasny/ciemny). Cookies niezbędne nie wymagają zgody; informujemy o nich w niniejszej Polityce. W procesie płatności operator Stripe może ustawiać własne, niezbędne cookies (m.in. dla zapobiegania oszustwom). Administrator nie stosuje cookies analitycznych ani marketingowych; ich ewentualne wdrożenie wiązałoby się z wprowadzeniem mechanizmu zgody (banera). Cookies można zarządzać w ustawieniach przeglądarki.
+Sklep wykorzystuje wyłącznie pliki cookies **niezbędne** do działania serwisu: cookie sesji/logowania (dla Kursów) oraz cookie zapamiętujące preferencję motywu (jasny/ciemny). Cookies niezbędne nie wymagają zgody; informujemy o nich w niniejszej Polityce. W procesie płatności operator Stripe może ustawiać własne, niezbędne cookies (m.in. dla zapobiegania oszustwom). Administrator nie stosuje cookies analitycznych ani marketingowych — używana analityka (Umami, zob. sekcja „Analityka") jest **beznośnikowa** i nie zapisuje cookies. Cookies można zarządzać w ustawieniach przeglądarki.
 
 ## 10. Zautomatyzowane podejmowanie decyzji
 
@@ -264,6 +270,7 @@ The controller of your personal data is **${SELLER.name}**, ${SELLER.address}, P
 | Order fulfilment, file delivery, Course access, account management | Art. 6(1)(b) GDPR (contract performance) |
 | Issuing and storing invoices, tax settlements | Art. 6(1)(c) GDPR (legal obligation) |
 | Newsletter / marketing messages | Art. 6(1)(a) GDPR (consent) |
+| Operational order notifications (Discord) and anonymous analytics (Umami) | Art. 6(1)(f) GDPR (legitimate interest: running and monitoring sales) |
 | Fraud prevention, security, establishing/defending claims | Art. 6(1)(f) GDPR (legitimate interest) |
 | Non-essential cookies (if implemented) | Art. 6(1)(a) GDPR (consent) |
 
@@ -274,10 +281,15 @@ Data may be entrusted to the following processors, with whom the Controller has 
 - **Stripe** (Stripe Payments Europe, Ltd., Ireland) — payment processing; processes payment and identification data. Stripe may transfer data to the **USA** under the **EU–US Data Privacy Framework (DPF)** and **Standard Contractual Clauses (SCCs)**. Stripe acts as a processor and, for fraud prevention and regulatory duties, as a separate controller.
 - **Brevo (Sendinblue SAS, Paris, France)** — sending e-mails (transactional and marketing); an **EU-based** processor, data processed in the EU.
 - **Hetzner Online GmbH (Germany)** — hosting/infrastructure; an **EU-based** processor (servers in Germany).
+- **Discord (Discord Inc., USA)** — the Controller's internal channel that receives **operational order notifications** (containing the buyer's e-mail address, product name and amount). Used solely to run and monitor sales in real time. The transfer to the **USA** is based on **Standard Contractual Clauses (SCCs)**.
+
+## Analytics (Umami)
+
+For traffic statistics the Controller uses **self-hosted Umami** (at **stats.67projects.app**). Umami runs **without cookies** and without cross-site tracking identifiers; it collects only **anonymous, aggregate** data (e.g. page views, country, device type, buy-button clicks). We do not use third-party analytics (e.g. Google Analytics) or advertising tools. Because the analytics is cookieless and anonymous, no cookie-consent banner is required.
 
 ## 4. International transfers
 
-As a rule, data is processed within the European Economic Area. The only transfer outside the EEA concerns the payment provider Stripe (USA), based on the DPF and SCCs ensuring an adequate level of protection.
+As a rule, data is processed within the European Economic Area. Transfers outside the EEA concern: the payment provider **Stripe** (USA) — based on the DPF and SCCs; and the **Discord** notification channel (USA), which receives operational order notifications (including the buyer's e-mail) — based on SCCs. Both ensure an adequate level of protection.
 
 ## 5. Retention periods
 
@@ -300,7 +312,7 @@ Providing data is voluntary but necessary to conclude and perform the contract (
 
 ## 9. Cookies
 
-The Store uses only **essential** cookies: a session/login cookie (for Courses) and a cookie remembering the theme preference (light/dark). Essential cookies do not require consent; we inform you about them in this Policy. During payment, Stripe may set its own essential cookies (e.g. for fraud prevention). The Controller does not use analytics or marketing cookies; introducing any would require a consent mechanism (banner). Cookies can be managed in your browser settings.
+The Store uses only **essential** cookies: a session/login cookie (for Courses) and a cookie remembering the theme preference (light/dark). Essential cookies do not require consent; we inform you about them in this Policy. During payment, Stripe may set its own essential cookies (e.g. for fraud prevention). The Controller does not use analytics or marketing cookies — the analytics in use (Umami, see the "Analytics" section) is **cookieless** and sets no cookies. Cookies can be managed in your browser settings.
 
 ## 10. Automated decision-making
 

@@ -5,6 +5,7 @@ import { getLocale } from '@/utilities/getLocale.server'
 import { t } from '@/i18n'
 
 import './course-theme.css'
+import { UmamiScript } from '@/components/UmamiScript'
 import { CoursesNav } from './_components/Nav'
 import { CoursesFooter } from './_components/Footer'
 
@@ -33,6 +34,7 @@ export default async function CoursesRootLayout({ children }: { children: ReactN
     <html lang={locale} className="dark" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: NO_FOUC }} />
+        <UmamiScript />
       </head>
       <body>
         {/* NDQS "Cyber Gold" ambience — fixed, behind everything (dark only;

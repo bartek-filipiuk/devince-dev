@@ -5,6 +5,7 @@ import configPromise from '@payload-config'
 import { addProgramToPurchases } from '@/utilities/purchases'
 import { sendCourseAccessEmail, sendDownloadLinkEmail } from '@/utilities/brevo'
 import { fulfillAppPurchase } from '@/utilities/appsFulfillment'
+import { notifyEvent } from '@/utilities/notify'
 
 // Lazy-init: constructing Stripe at module scope throws if STRIPE_SECRET_KEY is
 // unset, which would crash Next.js's build-time "collect page data" step. Defer
@@ -97,6 +98,17 @@ export async function POST(req: NextRequest) {
         overrideAccess: true,
       })
 
+      // Observability: the grant above is durable — fire the sales-pulse ping.
+      // Best-effort (notifyEvent never throws); placed AFTER the grant so a
+      // failing log/Discord POST can never break or roll back access.
+      await notifyEvent('purchase', {
+        surface: 'courses',
+        item: `program ${programIdRaw}`,
+        amount: session.amount_total ?? undefined,
+        currency: session.currency ?? 'pln',
+        email,
+      })
+
       // Art. 38 pkt 13 consent timestamp, server-stamped at checkout creation by
       // /api/courses/checkout. Absent for sessions created outside our flow (e.g.
       // a hand-made Stripe Payment Link) — the email then omits the confirmation.
@@ -162,6 +174,9 @@ export async function POST(req: NextRequest) {
           `[stripe webhook] access email failed for ${email} (program ${programId}); grant succeeded, continuing:`,
           err,
         )
+        // Observability: grant is OK, only the durable-medium email failed —
+        // ping so the owner can recover delivery manually. Best-effort.
+        await notifyEvent('email_failed', { kind: 'set-password', email })
       }
     }
 
@@ -189,6 +204,18 @@ export async function POST(req: NextRequest) {
         sessionId: session.id,
         withdrawalConsentAt,
       })
+      // Observability: the download grant is durable once fulfillAppPurchase
+      // returns. Fire the sales-pulse ping AFTER it (best-effort, never throws).
+      // `created` distinguishes a fresh sale from an idempotent re-delivery.
+      if (result.created) {
+        await notifyEvent('purchase', {
+          surface: 'apps',
+          item: `product ${productIdRaw}`,
+          amount: session.amount_total ?? undefined,
+          currency: session.currency ?? 'pln',
+          email,
+        })
+      }
       if (result.created && result.token) {
         // Best-effort email, same policy as course access mails: a Brevo failure
         // must NOT fail the webhook — the grant exists; admin can resend.
@@ -213,6 +240,8 @@ export async function POST(req: NextRequest) {
             `[stripe webhook] download email failed for ${email} (product ${productId}); grant exists, continuing:`,
             err,
           )
+          // Observability: grant exists, only the download-link email failed.
+          await notifyEvent('email_failed', { kind: 'download', email })
         }
       }
     }
@@ -229,6 +258,18 @@ export async function POST(req: NextRequest) {
         console.error(
           `[stripe webhook] NDQS enroll failed (course ${ndqsCourseId}, ${email}) status=${r.status}; event recorded, recover by re-POSTing enroll-by-email`,
         )
+        // Observability: the enroll (grant) did NOT succeed — surface it as a
+        // failed delivery so the owner recovers it manually. Best-effort.
+        await notifyEvent('email_failed', { kind: 'ndqs-enroll', email })
+      } else {
+        // Enroll succeeded → the NDQS access grant is durable. Sales-pulse ping.
+        await notifyEvent('purchase', {
+          surface: 'ndqs',
+          item: `course ${ndqsCourseId}`,
+          amount: session.amount_total ?? undefined,
+          currency: session.currency ?? 'pln',
+          email,
+        })
       }
     }
   }
@@ -262,6 +303,10 @@ export async function POST(req: NextRequest) {
             console.error(
               `[stripe webhook] NDQS revoke failed (course ${ndqsCourseId}, ${email}) status=${r.status}; event recorded, recover by re-POSTing revoke-enrollment`,
             )
+          } else {
+            // Revoke succeeded → access removal is durable. Refund pulse ping.
+            // Best-effort (notifyEvent never throws) and AFTER the revoke.
+            await notifyEvent('refund', { item: `course ${ndqsCourseId}`, email })
           }
         }
       } catch (err) {

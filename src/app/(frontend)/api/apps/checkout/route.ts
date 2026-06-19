@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { buildLineItem } from '@/utilities/checkoutLineItem'
+import { notifyEvent } from '@/utilities/notify'
 
 // Lazy-init: constructing Stripe at module scope throws if STRIPE_SECRET_KEY is
 // unset, which would crash Next.js's build-time "collect page data" step. Defer
@@ -82,6 +83,17 @@ export async function POST(req: NextRequest) {
     success_url: `${APPS_URL()}/success`,
     cancel_url: `${APPS_URL()}/${product.slug}`,
   })
+
+  // Observability: server-side checkout_start ping. Best-effort — notifyEvent
+  // never throws, so this cannot change the response or block the redirect.
+  await notifyEvent('checkout_start', {
+    surface: 'apps',
+    slug,
+    item: product.title,
+    amount: typeof product.priceCents === 'number' ? product.priceCents : undefined,
+    currency: product.currency ?? 'pln',
+  })
+
   return NextResponse.json({ url: session.url })
 }
 

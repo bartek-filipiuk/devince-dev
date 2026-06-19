@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { track } from '@/utilities/track'
 
 export function CourseCheckoutButton({
   slug,
@@ -26,9 +27,12 @@ export function CourseCheckoutButton({
   const [notice, setNotice] = useState<{ kind: 'consent' | 'error'; text: string } | null>(null)
 
   const buy = async () => {
+    // Funnel: every buy attempt. track() is fire-and-forget and never throws.
+    track('buy_click', { surface: 'courses', slug })
     // The button stays clickable on purpose: a dead, disabled button gives the
     // buyer no idea why nothing happens. Clicking without consent explains it.
     if (!consented) {
+      track('consent_blocked', { surface: 'courses', slug })
       setNotice({ kind: 'consent', text: consentRequiredLabel })
       return
     }
@@ -42,6 +46,8 @@ export function CourseCheckoutButton({
       })
       const data = await res.json()
       if (!res.ok || !data.url) throw new Error(data.error ?? 'checkout failed')
+      // The checkout session was created; we're redirecting to Stripe.
+      track('checkout_start', { surface: 'courses', slug })
       window.location.assign(data.url)
     } catch {
       setNotice({ kind: 'error', text: errorLabel })
@@ -59,7 +65,10 @@ export function CourseCheckoutButton({
           checked={consented}
           onChange={(e) => {
             setConsented(e.target.checked)
-            if (e.target.checked) setNotice(null)
+            if (e.target.checked) {
+              track('consent_checked', { surface: 'courses', slug })
+              setNotice(null)
+            }
           }}
           disabled={busy}
         />
