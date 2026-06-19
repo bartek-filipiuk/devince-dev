@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { brevoDoubleOptin } from '@/utilities/brevoContacts'
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY
 const BREVO_LIST_ID = process.env.BREVO_LIST_ID
@@ -6,7 +7,9 @@ const BREVO_DOI_TEMPLATE_ID = process.env.BREVO_DOI_TEMPLATE_ID
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if Brevo is configured
+    // Check if Brevo is configured. The DOI helper itself no-ops without an API
+    // key / template, but the public newsletter form should tell the user the
+    // service is unavailable rather than silently "succeed".
     if (!BREVO_API_KEY || !BREVO_LIST_ID || !BREVO_DOI_TEMPLATE_ID) {
       console.error('Brevo environment variables not configured')
       return NextResponse.json(
@@ -33,36 +36,17 @@ export async function POST(request: NextRequest) {
     // Get the site URL for redirect
     const siteUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 
-    // Create double opt-in contact via Brevo API v3
-    const response = await fetch('https://api.brevo.com/v3/contacts/doubleOptinConfirmation', {
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
-        'api-key': BREVO_API_KEY,
-      },
-      body: JSON.stringify({
-        email,
-        includeListIds: [parseInt(targetListId)],
-        templateId: parseInt(BREVO_DOI_TEMPLATE_ID),
-        redirectionUrl: `${siteUrl}/newsletter/confirmed`,
-      }),
+    // Create double opt-in contact via the shared best-effort helper (DRY — same
+    // /v3/contacts/doubleOptinConfirmation call the purchase webhook uses). It
+    // never throws; a Brevo "already subscribed" (duplicate_parameter) is a
+    // benign no-op, so a neutral 200 "check your email" is correct here (Brevo
+    // dedups, no email enumeration).
+    await brevoDoubleOptin({
+      email,
+      listId: Number(targetListId),
+      templateId: BREVO_DOI_TEMPLATE_ID,
+      redirectionUrl: `${siteUrl}/newsletter/confirmed`,
     })
-
-    if (!response.ok) {
-      const errorData = await response.json()
-
-      // Handle "contact already exists" case
-      if (errorData.code === 'duplicate_parameter') {
-        return NextResponse.json(
-          { message: 'This email is already subscribed' },
-          { status: 200 },
-        )
-      }
-
-      console.error('Brevo API error:', errorData)
-      throw new Error(errorData.message || 'Brevo API error')
-    }
 
     return NextResponse.json(
       { message: 'Please check your email to confirm your subscription' },

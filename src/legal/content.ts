@@ -218,6 +218,10 @@ Dane mogą być powierzane następującym podmiotom, z którymi Administrator za
 
 Do statystyki ruchu Administrator używa **samodzielnie hostowanego narzędzia Umami** (pod adresem **stats.67projects.app**). Umami działa **bez plików cookies** i bez identyfikatorów pozwalających na śledzenie między witrynami; zbiera wyłącznie **zanonimizowane, zagregowane** dane (np. liczba odsłon, kraj, typ urządzenia, kliknięcia w przycisk zakupu). Nie korzystamy z analityki firm trzecich (np. Google Analytics) ani z narzędzi reklamowych. Ponieważ analityka jest beznośnikowa i anonimowa, nie wymaga banera zgody na cookies.
 
+## Newsletter i marketing (zgoda, double opt-in)
+
+Jeżeli zapiszesz się na newsletter — przy zakupie zaznaczając odrębne, niewymagane pole „Chcę dostawać newsletter" (niezależne od zgody dotyczącej zakupu), poprzez formularz zapisu, albo podając e-mail w zamian za **bezpłatny materiał** (tzw. lead-magnet — darmowa aplikacja lub kurs) — Twój adres e-mail trafia do listy mailingowej obsługiwanej przez **Brevo (Sendinblue SAS)**. Stosujemy **podwójne potwierdzenie zapisu (double opt-in)**: po zapisaniu otrzymasz wiadomość z linkiem potwierdzającym, a Twój adres zostaje dodany do listy **dopiero po kliknięciu** tego linku. Brevo przechowuje audytowalny zapis tej zgody. Przy adresie zapisujemy też atrybuty służące wyłącznie segmentacji wysyłki: **źródło zapisu** (zakup albo lead-magnet), **identyfikator produktu** (slug), oraz **powierzchnię** (apps/courses). Podstawą prawną jest **zgoda (art. 6 ust. 1 lit. a RODO)**. W przypadku lead-magnetu zapis na listę i odblokowanie bezpłatnego materiału następują tym samym kliknięciem potwierdzającym. Zgodę możesz **wycofać w dowolnym momencie** — klikając „wypisz się" w stopce każdej wiadomości lub pisząc na **${SELLER.email}** — bez wpływu na zgodność z prawem przetwarzania przed wycofaniem.
+
 ## 4. Przekazywanie do państw trzecich
 
 Co do zasady dane są przetwarzane w Europejskim Obszarze Gospodarczym. Przekazania poza EOG dotyczą: operatora płatności **Stripe** (USA) — na podstawie DPF oraz SCC; oraz kanału powiadomień **Discord** (USA), na który trafiają operacyjne powiadomienia o zamówieniach (w tym adres e-mail kupującego) — na podstawie SCC. Oba zapewniają odpowiedni poziom ochrony.
@@ -286,6 +290,10 @@ Data may be entrusted to the following processors, with whom the Controller has 
 ## Analytics (Umami)
 
 For traffic statistics the Controller uses **self-hosted Umami** (at **stats.67projects.app**). Umami runs **without cookies** and without cross-site tracking identifiers; it collects only **anonymous, aggregate** data (e.g. page views, country, device type, buy-button clicks). We do not use third-party analytics (e.g. Google Analytics) or advertising tools. Because the analytics is cookieless and anonymous, no cookie-consent banner is required.
+
+## Newsletter and marketing (consent, double opt-in)
+
+If you subscribe to the newsletter — at checkout by ticking the separate, optional "I want to receive the newsletter" box (independent of the purchase consent), via the signup form, or by giving your e-mail in exchange for **free content** (a lead-magnet — a free app or course) — your e-mail address is added to a mailing list operated by **Brevo (Sendinblue SAS)**. We use **double opt-in**: after subscribing you receive an e-mail with a confirmation link, and your address is added to the list **only after you click** it. Brevo keeps an auditable record of that consent. Alongside the address we store attributes used solely for sending-segmentation: the **subscription source** (purchase or lead-magnet), the **product identifier** (slug), and the **surface** (apps/courses). The legal basis is **consent (Art. 6(1)(a) GDPR)**. For a lead-magnet, joining the list and unlocking the free content happen with the same confirmation click. You may **withdraw consent at any time** — using the "unsubscribe" link in the footer of every message, or by writing to **${SELLER.email}** — without affecting the lawfulness of processing before withdrawal.
 
 ## 4. International transfers
 

@@ -211,6 +211,7 @@ const translations = {
     'apps.product.note': 'Po zakupie wyślemy link do pobrania na Twój e-mail.',
     'apps.product.consent':
       'Wyrażam zgodę na natychmiastowe rozpoczęcie dostarczania treści cyfrowej (pobranie pliku) i przyjmuję do wiadomości, że z chwilą wykonania umowy (udostępnienia pliku) tracę prawo odstąpienia od umowy.',
+    'apps.checkout.newsletter': 'Chcę dostawać newsletter (oddzielne od zakupu).',
 
     // Success page
     'apps.success.meta': 'Dziękujemy',
@@ -310,6 +311,7 @@ const translations = {
     'courses.checkout.processing': 'Przekierowuję…',
     'courses.checkout.error': 'Nie udało się rozpocząć płatności. Spróbuj ponownie.',
     'courses.checkout.consentRequired': 'Zaznacz najpierw zgodę powyżej, aby przejść do płatności.',
+    'courses.checkout.newsletter': 'Chcę dostawać newsletter (oddzielne od zakupu).',
 
     // Badges
     'courses.badge.gate': 'hard-gate',
@@ -587,6 +589,7 @@ const translations = {
     'apps.product.note': 'After purchase we will send a download link to your email.',
     'apps.product.consent':
       'I consent to the immediate start of delivery of the digital content (file download) and acknowledge that, once the contract is performed (the file is made available), I lose the right of withdrawal.',
+    'apps.checkout.newsletter': 'I want to receive the newsletter (separate from the purchase).',
 
     // Success page
     'apps.success.meta': 'Thank you',
@@ -686,6 +689,7 @@ const translations = {
     'courses.checkout.processing': 'Redirecting…',
     'courses.checkout.error': 'Could not start the payment. Please try again.',
     'courses.checkout.consentRequired': 'Please tick the consent box above to continue to payment.',
+    'courses.checkout.newsletter': 'I want to receive the newsletter (separate from the purchase).',
 
     // Badges
     'courses.badge.gate': 'hard-gate',

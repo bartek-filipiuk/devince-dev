@@ -9,6 +9,7 @@ export function BuyButton({
   processingLabel,
   errorLabel,
   consentLabel,
+  newsletterLabel,
   disabled,
 }: {
   slug: string
@@ -17,6 +18,7 @@ export function BuyButton({
   processingLabel: string
   errorLabel: string
   consentLabel: string
+  newsletterLabel: string
   disabled?: boolean
 }) {
   const [busy, setBusy] = useState(false)
@@ -24,6 +26,10 @@ export function BuyButton({
   // disabled until the buyer actively ticks it. The server re-checks this — the
   // checkbox is the UX, /api/apps/checkout is the legal gate.
   const [consented, setConsented] = useState(false)
+  // Newsletter opt-in: a SEPARATE, unticked checkbox, independent of the Art. 38
+  // consent. It does NOT gate the buy button and does NOT affect price — it only
+  // stamps metadata.newsletter so the webhook fires a Brevo double opt-in.
+  const [newsletter, setNewsletter] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const buy = async () => {
@@ -39,7 +45,7 @@ export function BuyButton({
       const res = await fetch('/api/apps/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug, consent: true, locale }),
+        body: JSON.stringify({ slug, consent: true, locale, newsletter }),
       })
       const data = await res.json()
       if (!res.ok || !data.url) throw new Error(data.error ?? 'checkout failed')
@@ -65,6 +71,15 @@ export function BuyButton({
           disabled={busy}
         />
         <span>{consentLabel}</span>
+      </label>
+      <label className="newsletter-check">
+        <input
+          type="checkbox"
+          checked={newsletter}
+          onChange={(e) => setNewsletter(e.target.checked)}
+          disabled={busy}
+        />
+        <span>{newsletterLabel}</span>
       </label>
       <button
         className="btn btn--primary btn--lg"

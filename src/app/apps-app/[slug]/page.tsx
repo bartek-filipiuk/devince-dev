@@ -98,6 +98,7 @@ export default async function ProductPage({
                   processingLabel={t(locale, 'apps.product.processing')}
                   errorLabel={t(locale, 'apps.product.error')}
                   consentLabel={t(locale, 'apps.product.consent')}
+                  newsletterLabel={t(locale, 'apps.checkout.newsletter')}
                   disabled={files.length === 0}
                 />
                 <p className="product-note">{t(locale, 'apps.product.note')}</p>
