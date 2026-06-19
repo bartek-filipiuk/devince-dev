@@ -96,6 +96,7 @@ export function SyllabusHero({
                   consentLabel={t(locale, 'courses.checkout.consent')}
                   processingLabel={t(locale, 'courses.checkout.processing')}
                   errorLabel={t(locale, 'courses.checkout.error')}
+                  consentRequiredLabel={t(locale, 'courses.checkout.consentRequired')}
                 />
               ) : (
                 <Link className="btn btn--primary btn--lg" href={startHref}>
