@@ -21,6 +21,7 @@ import { Footer } from '@/Footer/Component'
 import { Header } from '@/Header/Component'
 import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
+import { UmamiScript } from '@/components/UmamiScript'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { draftMode } from 'next/headers'
 import { getLocale } from '@/utilities/getLocale.server'
@@ -41,6 +42,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html className={cn(spaceGrotesk.variable, jetbrainsMono.variable)} lang={lang} suppressHydrationWarning>
       <head>
         <InitTheme />
+        <UmamiScript />
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
       </head>

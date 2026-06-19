@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { track } from '@/utilities/track'
 
 export function BuyButton({
   slug,
@@ -26,7 +27,12 @@ export function BuyButton({
   const [error, setError] = useState<string | null>(null)
 
   const buy = async () => {
-    if (!consented) return
+    // Funnel: every buy attempt. track() is fire-and-forget and never throws.
+    track('buy_click', { surface: 'apps', slug })
+    if (!consented) {
+      track('consent_blocked', { surface: 'apps', slug })
+      return
+    }
     setBusy(true)
     setError(null)
     try {
@@ -37,6 +43,8 @@ export function BuyButton({
       })
       const data = await res.json()
       if (!res.ok || !data.url) throw new Error(data.error ?? 'checkout failed')
+      // The checkout session was created; we're redirecting to Stripe.
+      track('checkout_start', { surface: 'apps', slug })
       window.location.assign(data.url)
     } catch {
       setError(errorLabel)
@@ -50,7 +58,10 @@ export function BuyButton({
         <input
           type="checkbox"
           checked={consented}
-          onChange={(e) => setConsented(e.target.checked)}
+          onChange={(e) => {
+            setConsented(e.target.checked)
+            if (e.target.checked) track('consent_checked', { surface: 'apps', slug })
+          }}
           disabled={busy}
         />
         <span>{consentLabel}</span>
