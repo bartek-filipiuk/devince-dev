@@ -1,3 +1,5 @@
+import type { Payload } from 'payload'
+
 type UserLike = {
   roles?: (string | null)[] | null
   purchases?: (number | { id: number } | null)[] | null
@@ -49,8 +51,6 @@ export function firstIncompleteLesson<T extends { id: number }>(
   for (const l of sortedLessons) if (!completed.has(l.id)) return l
   return null
 }
-
-import type { Payload } from 'payload'
 
 /** Lesson ids the user has completed in a program (server-side, overrideAccess). */
 export async function getCompletedLessonIds(

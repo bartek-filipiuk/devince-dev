@@ -54,7 +54,11 @@ export async function POST(req: NextRequest) {
       // Unique (user,lesson) race on a concurrent double-complete → already done.
     }
   } else if (!completed && row) {
-    await payload.delete({ collection: 'lesson-progress', id: row.id, overrideAccess: true })
+    try {
+      await payload.delete({ collection: 'lesson-progress', id: row.id, overrideAccess: true })
+    } catch {
+      // Row already removed by a concurrent request — idempotent no-op.
+    }
   }
 
   const all = await payload.find({
