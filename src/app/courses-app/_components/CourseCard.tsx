@@ -2,6 +2,8 @@ import Link from 'next/link'
 import type { Program } from '@/payload-types'
 import { t, type Locale } from '@/i18n'
 import { getLocalizedPath } from '@/utilities/getLocale'
+import { formatPrice } from '@/utilities/formatPrice'
+import { CourseCheckoutButton } from './CourseCheckoutButton'
 
 type CardMeta = {
   phases: number
@@ -29,9 +31,12 @@ export function CourseCard({
 }) {
   const time = formatTime(meta.timeMin, meta.timeMax)
   const syllabusHref = getLocalizedPath(`/${program.slug}`, locale)
-  // Paid + not enrolled + has a Stripe link → external buy affordance,
-  // a sibling of the title link (a buy <a> cannot be nested inside a <Link>).
-  const paidLocked = program.pricing === 'paid' && !enrolled && !!program.stripePaymentLink
+  // Paid + not enrolled + purchasable → consent checkout button,
+  // a sibling of the title link (cannot be nested inside a <Link>).
+  const paidLocked =
+    program.pricing === 'paid' &&
+    !enrolled &&
+    (!!program.stripePriceId || typeof program.priceCents === 'number')
 
   return (
     <div className="course-card">
@@ -53,17 +58,22 @@ export function CourseCard({
         </span>
         {time ? <span>{time}</span> : null}
         <span className="course-card__paid">{t(locale, 'courses.store.paid')}</span>
+        {program.pricing === 'paid' && typeof program.priceCents === 'number' ? (
+          <span className="course-card__price">
+            {formatPrice(program.priceCents, program.currency ?? 'pln')}
+          </span>
+        ) : null}
       </div>
       <div className="course-card__foot">
         {paidLocked ? (
-          <a
-            className="btn btn--primary"
-            href={program.stripePaymentLink!}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {t(locale, 'courses.syllabus.buy')}
-          </a>
+          <CourseCheckoutButton
+            slug={program.slug}
+            locale={locale}
+            label={t(locale, 'courses.syllabus.buy')}
+            consentLabel={t(locale, 'courses.checkout.consent')}
+            processingLabel={t(locale, 'courses.checkout.processing')}
+            errorLabel={t(locale, 'courses.checkout.error')}
+          />
         ) : (
           <Link className="btn" href={syllabusHref}>
             {enrolled

@@ -130,20 +130,34 @@ export async function sendCourseAccessEmail(args: {
   token: string
   isNew: boolean
   programId: string
+  // Post-purchase redirect (e.g. `/<program-slug>`), baked into the activation
+  // link so the buyer lands on their course right after setting a password.
+  next?: string
+  // ISO timestamp of the buyer's Art. 38 pkt 13 consent. When present, the email
+  // carries the durable-medium confirmation block. Absent for legacy / out-of-flow
+  // purchases made before the consent gate existed.
+  withdrawalConsentAt?: string
 }) {
+  // Course access mails are Polish-only for now (the courses surface is PL); the
+  // consent block is built in PL to match. If/when EN courses ship, thread a
+  // `locale` arg through here like sendDownloadLinkEmail does.
+  const locale: 'pl' | 'en' = 'pl'
   const base = process.env.NEXT_PUBLIC_COURSES_URL ?? 'https://courses.devince.dev'
-  const link = `${base}/set-password?token=${args.token}`
+  const link = `${base}/set-password?token=${args.token}${args.next ? `&next=${args.next}` : ''}`
+  const consentLine = args.withdrawalConsentAt ? buildConsentLine(locale, args.withdrawalConsentAt) : ''
   const templateId = process.env.BREVO_COURSE_ACCESS_TEMPLATE_ID
   if (templateId) {
     return sendTransactionalEmail({
       to: args.to,
       templateId: Number(templateId),
-      params: { activationLink: link },
+      params: { activationLink: link, CONSENT: consentLine, LOCALE: locale },
     })
   }
   return sendTransactionalEmail({
     to: args.to,
     subject: 'Twój dostęp do kursu',
-    htmlContent: `<p>Dziękujemy za zakup. Ustaw hasło i wejdź do kursu:</p><p><a href="${link}">${link}</a></p>`,
+    htmlContent:
+      `<p>Dziękujemy za zakup. Ustaw hasło i wejdź do kursu:</p><p><a href="${esc(link)}">${esc(link)}</a></p>` +
+      consentLine,
   })
 }

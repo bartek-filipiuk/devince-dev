@@ -97,11 +97,46 @@ export async function POST(req: NextRequest) {
         overrideAccess: true,
       })
 
+      // Art. 38 pkt 13 consent timestamp, server-stamped at checkout creation by
+      // /api/courses/checkout. Absent for sessions created outside our flow (e.g.
+      // a hand-made Stripe Payment Link) — the email then omits the confirmation.
+      const withdrawalConsentAt = session.metadata?.withdrawalConsentAt || undefined
+      // The legal gate lives at /api/courses/checkout (consent !== true → 400), so
+      // every course session WE create carries this. A course session reaching here
+      // without it was created outside our flow — flag it: that purchase has NO
+      // durable-medium consent record (mirror the apps branch warning).
+      if (!withdrawalConsentAt) {
+        console.warn(
+          `[stripe webhook] course purchase (program ${programIdRaw}, session ${session.id}) has no withdrawalConsentAt — created outside /api/courses/checkout; no Art. 38 pkt 13 consent recorded`,
+        )
+      }
+
       // Email delivery is best-effort and MUST NOT cause a Stripe retry storm or
       // duplicate emails. If Brevo (or token generation) fails, log and CONTINUE
       // so the event is still marked processed below. The access grant already
       // succeeded; the customer can also recover access via /forgot-password.
       try {
+        // Resolve the program slug for the post-purchase redirect so the buyer
+        // lands on their course right after setting a password. Best-effort: if
+        // the slug lookup fails, send the email WITHOUT `next` (a missing slug
+        // must not block the access mail — the grant already succeeded).
+        let next: string | undefined
+        try {
+          const program = await payload.findByID({
+            collection: 'program',
+            id: programId,
+            depth: 0,
+            overrideAccess: true,
+          })
+          const slug = (program as { slug?: string } | null)?.slug
+          if (slug) next = `/${slug}`
+        } catch (slugErr) {
+          console.error(
+            `[stripe webhook] program slug lookup failed (program ${programId}); sending access email without next:`,
+            slugErr,
+          )
+        }
+
         // Generate a password-reset token WITHOUT sending Payload's own email
         // (we deliver the access link via Brevo). In Payload 3.67,
         // forgotPassword({ disableEmail: true }) returns the raw token string,
@@ -114,7 +149,14 @@ export async function POST(req: NextRequest) {
           disableEmail: true,
         })) as unknown as string
 
-        await sendCourseAccessEmail({ to: email, token, isNew, programId: String(programId) })
+        await sendCourseAccessEmail({
+          to: email,
+          token,
+          isNew,
+          programId: String(programId),
+          next,
+          withdrawalConsentAt,
+        })
       } catch (err) {
         console.error(
           `[stripe webhook] access email failed for ${email} (program ${programId}); grant succeeded, continuing:`,

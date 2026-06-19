@@ -3,11 +3,13 @@
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { Suspense, useState } from 'react'
+import { safeNext } from '@/utilities/safeNext'
 
 function SetPasswordForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
+  const redirectTo = safeNext(searchParams.get('next'), '/account')
 
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -52,7 +54,7 @@ function SetPasswordForm() {
         return
       }
 
-      router.push('/account')
+      router.push(redirectTo)
     } catch {
       setError('Coś poszło nie tak. Spróbuj ponownie.')
       setLoading(false)
@@ -98,7 +100,7 @@ function SetPasswordForm() {
       )}
 
       <button className="auth-submit" type="submit" disabled={loading}>
-        {loading ? 'Aktywowanie...' : 'Aktywuj konto'}
+        {loading ? 'Aktywowanie...' : 'Rozpocznij kurs'}
       </button>
 
       <p className="auth-links">

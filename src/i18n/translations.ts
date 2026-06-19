@@ -258,6 +258,14 @@ const translations = {
     'courses.pagination.next': 'Następna',
     'courses.pagination.label': 'Paginacja kursów',
 
+    // Checkout success ("check your email")
+    'courses.success.meta': 'Dziękujemy',
+    'courses.success.eyebrow': 'zakup potwierdzony',
+    'courses.success.title': 'Dziękujemy za zakup!',
+    'courses.success.body':
+      'Sprawdź mail — wysłaliśmy link, żeby ustawić hasło i wejść do kursu. Zajrzyj też do folderu spam.',
+    'courses.success.back': 'Wróć do kursów',
+
     // Storefront
     'courses.store.eyebrow': 'Kursy',
     'courses.store.title': 'Płatne kursy',
@@ -295,6 +303,12 @@ const translations = {
       'Przejdź cały pipeline od pomysłu do wdrożenia — krok po kroku, z twardymi bramkami, które pilnują jakości.',
     'courses.syllabus.buy': 'Kup dostęp',
     'courses.syllabus.continue': 'Kontynuuj',
+
+    // Checkout (consent gate)
+    'courses.checkout.consent':
+      'Wyrażam zgodę na rozpoczęcie dostępu do treści cyfrowych przed upływem terminu odstąpienia i przyjmuję do wiadomości utratę prawa do odstąpienia (art. 38 pkt 13).',
+    'courses.checkout.processing': 'Przekierowuję…',
+    'courses.checkout.error': 'Nie udało się rozpocząć płatności. Spróbuj ponownie.',
 
     // Badges
     'courses.badge.gate': 'hard-gate',
@@ -342,6 +356,22 @@ const translations = {
     'courses.auth.empty': 'Nie masz jeszcze żadnych kursów.',
     'courses.auth.courseEyebrow': 'Kurs',
     'courses.auth.openSyllabus': 'Otwórz sylabus',
+    // Set password (post-purchase activation)
+    'courses.auth.setPasswordTitle': 'Ustaw hasło',
+    'courses.auth.confirmPassword': 'Powtórz hasło',
+    'courses.auth.startCourse': 'Rozpocznij kurs',
+    'courses.auth.activating': 'Aktywowanie…',
+    'courses.auth.passwordMismatch': 'Hasła nie są identyczne.',
+    'courses.auth.invalidToken': 'Link aktywacyjny wygasł lub jest nieprawidłowy.',
+    'courses.auth.missingToken': 'Nieprawidłowy lub brakujący link aktywacyjny.',
+    'courses.auth.sendNewLink': 'Wyślij nowy link',
+    'courses.auth.genericError': 'Coś poszło nie tak. Spróbuj ponownie.',
+    // Forgot password
+    'courses.auth.forgotPasswordTitle': 'Resetuj hasło',
+    'courses.auth.sendLink': 'Wyślij link',
+    'courses.auth.sending': 'Wysyłanie…',
+    'courses.auth.resetSent': 'Jeśli konto istnieje, wyślemy link do zresetowania hasła.',
+    'courses.auth.backToLogin': 'Wróć do logowania',
 
     // Not found
     'courses.notFound.title': 'Kurs nie znaleziony · Devince',
@@ -603,6 +633,14 @@ const translations = {
     'courses.pagination.next': 'Next',
     'courses.pagination.label': 'Course pagination',
 
+    // Checkout success ("check your email")
+    'courses.success.meta': 'Thank you',
+    'courses.success.eyebrow': 'purchase confirmed',
+    'courses.success.title': 'Thank you for your purchase!',
+    'courses.success.body':
+      'Check your email — we sent a link to set your password and enter the course. Check your spam folder too.',
+    'courses.success.back': 'Back to courses',
+
     // Storefront
     'courses.store.eyebrow': 'Courses',
     'courses.store.title': 'Paid courses',
@@ -640,6 +678,12 @@ const translations = {
       'Go through the entire pipeline from idea to deployment — step by step, with hard gates that keep quality in check.',
     'courses.syllabus.buy': 'Buy access',
     'courses.syllabus.continue': 'Continue',
+
+    // Checkout (consent gate)
+    'courses.checkout.consent':
+      'I consent to early access to the digital content before the withdrawal period expires and acknowledge that I lose my right of withdrawal (Art. 38(13)).',
+    'courses.checkout.processing': 'Redirecting…',
+    'courses.checkout.error': 'Could not start the payment. Please try again.',
 
     // Badges
     'courses.badge.gate': 'hard-gate',
@@ -687,6 +731,22 @@ const translations = {
     'courses.auth.empty': 'You do not have any courses yet.',
     'courses.auth.courseEyebrow': 'Course',
     'courses.auth.openSyllabus': 'Open syllabus',
+    // Set password (post-purchase activation)
+    'courses.auth.setPasswordTitle': 'Set your password',
+    'courses.auth.confirmPassword': 'Confirm password',
+    'courses.auth.startCourse': 'Start the course',
+    'courses.auth.activating': 'Activating…',
+    'courses.auth.passwordMismatch': 'Passwords do not match.',
+    'courses.auth.invalidToken': 'This activation link has expired or is invalid.',
+    'courses.auth.missingToken': 'Invalid or missing activation link.',
+    'courses.auth.sendNewLink': 'Send a new link',
+    'courses.auth.genericError': 'Something went wrong. Please try again.',
+    // Forgot password
+    'courses.auth.forgotPasswordTitle': 'Reset your password',
+    'courses.auth.sendLink': 'Send link',
+    'courses.auth.sending': 'Sending…',
+    'courses.auth.resetSent': 'If an account exists, we will send a password reset link.',
+    'courses.auth.backToLogin': 'Back to sign in',
 
     // Not found
     'courses.notFound.title': 'Course not found · Devince',

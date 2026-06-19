@@ -489,6 +489,11 @@ export interface Program {
   pricing?: ('free' | 'paid') | null;
   stripePaymentLink?: string | null;
   stripePriceId?: string | null;
+  /**
+   * Cena w najmniejszej jednostce waluty (np. 4700 = 47,00 zł). Trzymaj zgodne z Payment Link / Price w Stripe.
+   */
+  priceCents?: number | null;
+  currency?: ('pln' | 'eur' | 'usd') | null;
   duration?: string | null;
   ctaLabel?: string | null;
   ctaUrl?: string | null;
@@ -1969,6 +1974,8 @@ export interface ProgramSelect<T extends boolean = true> {
   pricing?: T;
   stripePaymentLink?: T;
   stripePriceId?: T;
+  priceCents?: T;
+  currency?: T;
   duration?: T;
   ctaLabel?: T;
   ctaUrl?: T;

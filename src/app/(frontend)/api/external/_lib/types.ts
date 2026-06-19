@@ -44,6 +44,9 @@ export interface CreateProgramRequest extends BaseRequest {
   duration?: string
   ctaLabel?: string
   ctaUrl?: string
+  // Paid-course price (in smallest currency unit, e.g. grosz/cent).
+  priceCents?: number
+  currency?: 'pln' | 'eur' | 'usd'
   // Paid-course checkout: the Stripe Payment Link the syllabus "Kup" button
   // points to (metadata.programId = this program's id) + optional price id.
   stripePaymentLink?: string
@@ -56,6 +59,33 @@ export interface CreateProgramRequest extends BaseRequest {
   requirements?: string[]
   level?: 'beginner' | 'intermediate' | 'advanced'
 }
+
+export interface CreateLessonRequest {
+  title?: string
+  program?: number | string // id or slug; required on create, not applicable on update
+  phase?: string
+  order?: number
+  nr?: number
+  phaseId?: string
+  hardGate?: boolean
+  hybrid?: boolean
+  kind?: 'normal' | 'decision'
+  estTimeMin?: { min?: number; max?: number }
+  why?: string
+  what?: string
+  dod?: string
+  skills?: string[]
+  dependencies?: number[] // lesson ids
+  type?: 'text' | 'embed' | 'video' | 'download'
+  content?: string | Record<string, unknown>
+  contentFormat?: string
+  youtubeEmbedUrl?: string
+  slug?: string
+  publishedAt?: string
+  _status?: 'draft' | 'published'
+}
+
+export type UpdateLessonRequest = Partial<CreateLessonRequest>
 
 export interface DocSummary {
   id: number
