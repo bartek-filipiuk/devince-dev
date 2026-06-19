@@ -25,7 +25,15 @@ async function getCourse(slug: string, locale: Locale) {
   const res = await payload.find({
     collection: 'program',
     where: {
-      and: [{ type: { equals: 'course' } }, { slug: { equals: slug } }],
+      // `_status: published` is REQUIRED here: this page is public + uses
+      // overrideAccess:true (to populate media), so without it a draft/unpublished
+      // course would render its full syllabus/landing/pricing to anyone who knows
+      // the slug. The checkout route already gates on published; this matches it.
+      and: [
+        { type: { equals: 'course' } },
+        { slug: { equals: slug } },
+        { _status: { equals: 'published' } },
+      ],
     },
     limit: 1,
     overrideAccess: true,
