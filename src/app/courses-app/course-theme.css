@@ -55,6 +55,8 @@ html {
 
   --nav-h: 64px;
   --maxw: 1180px;
+  --side-w: 304px;
+  --toc-w: 220px;
   color-scheme: dark;
 }
 
@@ -678,6 +680,11 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
    2-col (.side + .lmain) when TOC is absent/empty. */
 .lesson {
   grid-template-columns: var(--side-w, 260px) minmax(0, 1fr) var(--toc-w, 220px);
+}
+/* No headings → TableOfContents renders nothing; collapse to 2-col so the
+   right rail leaves no empty track. */
+.lesson:not(:has(.lesson-toc)) {
+  grid-template-columns: var(--side-w, 304px) minmax(0, 1fr);
 }
 @media (max-width: 1100px) {
   .lesson { grid-template-columns: var(--side-w, 260px) minmax(0, 1fr); }
