@@ -1,13 +1,17 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 
+import { Inter, JetBrains_Mono } from 'next/font/google'
+import { UmamiScript } from '@/components/UmamiScript'
 import { getLocale } from '@/utilities/getLocale.server'
 import { t } from '@/i18n'
-
-import './course-theme.css'
-import { UmamiScript } from '@/components/UmamiScript'
 import { CoursesNav } from './_components/Nav'
 import { CoursesFooter } from './_components/Footer'
+
+import './course-theme.css'
+
+const inter = Inter({ subsets: ['latin', 'latin-ext'], variable: '--font-ui', display: 'swap' })
+const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' })
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale()
@@ -31,7 +35,7 @@ export default async function CoursesRootLayout({ children }: { children: ReactN
   const locale = await getLocale()
 
   return (
-    <html lang={locale} className="dark" suppressHydrationWarning>
+    <html lang={locale} className={`dark ${inter.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: NO_FOUC }} />
         <UmamiScript />
