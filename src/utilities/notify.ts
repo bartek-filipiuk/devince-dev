@@ -50,6 +50,16 @@ export function formatDiscord(kind: EventKind, payload: Record<string, unknown>)
     case 'refund':
       return join(['↩️ **Zwrot**', item, email])
     case 'email_failed':
+      // `kind: 'ndqs-enroll'` signals the GRANT itself failed (recover by
+      // re-POSTing enroll-by-email). Every other kind means the grant SUCCEEDED
+      // but the email (download / set-password / magic-link) wasn't delivered.
+      if (failKind === 'ndqs-enroll') {
+        return join([
+          '⚠️ **Enroll NDQS nie powiódł się**',
+          email,
+          'odzyskaj: re-POST /api/admin/enroll-by-email',
+        ])
+      }
       return join([
         '⚠️ **Mail nie dostarczony**',
         failKind,

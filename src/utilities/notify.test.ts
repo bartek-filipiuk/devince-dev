@@ -93,12 +93,17 @@ describe('notifyEvent', () => {
     await notifyEvent('refund', { item: 'idea-to-mvp', email: 'jan@example.com' })
     await notifyEvent('email_failed', { kind: 'set-password', email: 'jan@example.com' })
     await notifyEvent('checkout_start', { item: 'Kurs', amount: 4700, currency: 'pln' })
+    // ndqs-enroll = the grant itself failed → must NOT claim "grant OK"
+    await notifyEvent('email_failed', { kind: 'ndqs-enroll', email: 'jan@example.com' })
 
     const lines = fetchMock.mock.calls.map((c) => JSON.parse(c[1].body as string).content as string)
     expect(lines[0]).toContain('Zwrot')
     expect(lines[0]).toContain('idea-to-mvp')
     expect(lines[1]).toContain('Mail nie dostarczony')
     expect(lines[1]).toContain('set-password')
+    expect(lines[1]).toContain('grant OK')
     expect(lines[2]).toContain('Checkout')
+    expect(lines[3]).toContain('Enroll NDQS nie powiódł się')
+    expect(lines[3]).not.toContain('grant OK')
   })
 })
