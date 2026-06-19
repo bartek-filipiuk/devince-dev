@@ -4,8 +4,8 @@ export type LessonHeading = { id: string; text: string; level: 2 | 3 }
 
 function nodeText(node: any): string {
   if (!node) return ''
-  if (typeof node.text === 'string') return node.text
   if (Array.isArray(node.children)) return node.children.map(nodeText).join('')
+  if (typeof node.text === 'string') return node.text
   return ''
 }
 

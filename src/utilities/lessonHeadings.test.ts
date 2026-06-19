@@ -29,4 +29,19 @@ describe('extractHeadings', () => {
     expect(extractHeadings(undefined)).toEqual([])
     expect(extractHeadings(doc([]))).toEqual([])
   })
+  it('concatenates nested inline text (e.g. links) inside a heading', () => {
+    const content = doc([
+      {
+        type: 'heading',
+        tag: 'h2',
+        children: [
+          { type: 'text', text: 'Zobacz ' },
+          { type: 'link', children: [{ type: 'text', text: 'dokumentację' }] },
+        ],
+      },
+    ])
+    expect(extractHeadings(content)).toEqual([
+      { id: 'zobacz-dokumentacje', text: 'Zobacz dokumentację', level: 2 },
+    ])
+  })
 })
