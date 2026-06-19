@@ -511,6 +511,10 @@ export interface Program {
         | FormBlock
       )[]
     | null;
+  /**
+   * Sekcje strony sprzedażowej kursu — pokazywane pod nagłówkiem, nad sylabusem.
+   */
+  landing?: (CourseRichTextBlock | CourseVideoBlock | CourseImageBlock | CourseCalloutBlock)[] | null;
   phases?:
     | {
         /**
@@ -1097,6 +1101,70 @@ export interface FormBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'formBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CourseRichTextBlock".
+ */
+export interface CourseRichTextBlock {
+  heading?: string | null;
+  body: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'courseRichText';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CourseVideoBlock".
+ */
+export interface CourseVideoBlock {
+  /**
+   * YouTube / Vimeo / dowolny https embed
+   */
+  url: string;
+  caption?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'courseVideo';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CourseImageBlock".
+ */
+export interface CourseImageBlock {
+  image: number | Media;
+  caption?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'courseImage';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CourseCalloutBlock".
+ */
+export interface CourseCalloutBlock {
+  eyebrow?: string | null;
+  heading: string;
+  body?: string | null;
+  ctaLabel?: string | null;
+  ctaUrl?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'courseCallout';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1993,6 +2061,14 @@ export interface ProgramSelect<T extends boolean = true> {
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
       };
+  landing?:
+    | T
+    | {
+        courseRichText?: T | CourseRichTextBlockSelect<T>;
+        courseVideo?: T | CourseVideoBlockSelect<T>;
+        courseImage?: T | CourseImageBlockSelect<T>;
+        courseCallout?: T | CourseCalloutBlockSelect<T>;
+      };
   phases?:
     | T
     | {
@@ -2034,6 +2110,49 @@ export interface ProgramSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CourseRichTextBlock_select".
+ */
+export interface CourseRichTextBlockSelect<T extends boolean = true> {
+  heading?: T;
+  body?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CourseVideoBlock_select".
+ */
+export interface CourseVideoBlockSelect<T extends boolean = true> {
+  url?: T;
+  caption?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CourseImageBlock_select".
+ */
+export interface CourseImageBlockSelect<T extends boolean = true> {
+  image?: T;
+  caption?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CourseCalloutBlock_select".
+ */
+export interface CourseCalloutBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  ctaLabel?: T;
+  ctaUrl?: T;
+  id?: T;
+  blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

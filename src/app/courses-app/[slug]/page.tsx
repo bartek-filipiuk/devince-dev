@@ -14,6 +14,7 @@ import { Outcomes } from '../_components/Outcomes'
 import { Curriculum } from '../_components/Curriculum'
 import { InfoCards } from '../_components/InfoCards'
 import { CtaBand } from '../_components/CtaBand'
+import { RenderCourseLanding } from '@/blocks/course/RenderCourseLanding'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,7 +29,9 @@ async function getCourse(slug: string, locale: Locale) {
     },
     limit: 1,
     overrideAccess: true,
-    depth: 0,
+    // depth 1 populates upload relations (heroImage, meta.image and the
+    // landing `courseImage` blocks) so images render; lessons load separately.
+    depth: 1,
     locale,
   })
 
@@ -112,6 +115,12 @@ export default async function SyllabusPage({
         enrolled={enrolled}
         locale={locale}
       />
+
+      {program.landing?.length ? (
+        <div className="shell">
+          <RenderCourseLanding blocks={program.landing} locale={locale} />
+        </div>
+      ) : null}
 
       <div className="shell">
         <Outcomes outcomes={program.outcomes ?? []} locale={locale} />

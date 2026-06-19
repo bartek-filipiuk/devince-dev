@@ -94,6 +94,7 @@ export function Curriculum({
                         <span className="badge decision">{t(locale, 'courses.badge.decision')}</span>
                       ) : null}
                     </span>
+                    {lesson.why ? <span className="srow__teaser">{lesson.why}</span> : null}
                   </span>
                   <span className="srow__go icon" data-i="arrow" aria-hidden="true" />
                 </Link>
