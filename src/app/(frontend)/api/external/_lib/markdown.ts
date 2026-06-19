@@ -43,6 +43,9 @@ const RICH_TEXT_FIELDS: Record<string, string[]> = {
   brevoSignup: ['description'],
   archive: ['introContent'],
   formBlock: ['introContent'],
+  // Course landing blocks (courses-app). courseCallout.body is a textarea
+  // (plain text), so only courseRichText.body is markdown→Lexical converted.
+  courseRichText: ['body'],
 }
 
 export async function convertBlocksMarkdown(
