@@ -9,6 +9,7 @@ import * as migration_20260618_185500_reconcile_program_v_stripe from './2026061
 import * as migration_20260618_200715_program_price from './20260618_200715_program_price';
 import * as migration_20260619_061612_course_landing from './20260619_061612_course_landing';
 import * as migration_20260619_150906_claim_grants from './20260619_150906_claim_grants';
+import * as migration_20260619_180416_lesson_progress from './20260619_180416_lesson_progress';
 
 export const migrations = [
   {
@@ -64,6 +65,11 @@ export const migrations = [
   {
     up: migration_20260619_150906_claim_grants.up,
     down: migration_20260619_150906_claim_grants.down,
-    name: '20260619_150906_claim_grants'
+    name: '20260619_150906_claim_grants',
+  },
+  {
+    up: migration_20260619_180416_lesson_progress.up,
+    down: migration_20260619_180416_lesson_progress.down,
+    name: '20260619_180416_lesson_progress'
   },
 ];
