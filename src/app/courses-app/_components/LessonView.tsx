@@ -72,9 +72,6 @@ export function LessonView({
   )
   const skills = (lesson.skills ?? []).map((s) => s.skill).filter(Boolean)
 
-  const time = lesson.estTimeMin
-  const hasTime = time && (time.min != null || time.max != null)
-
   // Sidebar: every phase with its lessons (by nr), current one highlighted.
   const sidebarPhases = phases.map((p) => ({
     phase: p,
@@ -190,19 +187,6 @@ export function LessonView({
           )}
         </div>
 
-        {hasTime ? (
-          <div className="lbar">
-            <span className="fct">
-              <span className="icon" data-i="clock" aria-hidden="true" />
-              <span>
-                <b>
-                  {time?.min ?? 0}–{time?.max ?? 0}
-                </b>{' '}
-                {t(locale, 'courses.lesson.minutes')}
-              </span>
-            </span>
-          </div>
-        ) : null}
 
         {lesson.why ? (
           <section className="lsec">

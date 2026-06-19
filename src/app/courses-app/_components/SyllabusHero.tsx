@@ -5,12 +5,6 @@ import { getLocalizedPath } from '@/utilities/getLocale'
 import { formatPrice } from '@/utilities/formatPrice'
 import { CourseCheckoutButton } from './CourseCheckoutButton'
 
-/** Formats a minute count as „{min} min" (<60) or „~{h} h" (rounded hours). */
-function fmtHours(min: number): string {
-  if (min < 60) return `${min} min`
-  return `~${Math.round(min / 60)} h`
-}
-
 type Meta = {
   phases: number
   stages: number
@@ -55,12 +49,10 @@ export function SyllabusHero({
     program.pricing === 'paid' &&
     !enrolled &&
     (!!program.stripePriceId || typeof program.priceCents === 'number')
-  const time = `${fmtHours(meta.timeMin)}–${fmtHours(meta.timeMax)}`
 
   const chips: Array<{ value: string; label: string; gate?: boolean }> = [
     { value: `${meta.phases}`, label: t(locale, 'courses.syllabus.metaPhases') },
     { value: `${meta.stages}`, label: t(locale, 'courses.syllabus.metaStages') },
-    { value: time, label: t(locale, 'courses.syllabus.metaTime') },
     { value: `${meta.hardGates}`, label: t(locale, 'courses.syllabus.metaGates'), gate: true },
   ]
 

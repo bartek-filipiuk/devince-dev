@@ -95,10 +95,6 @@ export function Curriculum({
                       ) : null}
                     </span>
                   </span>
-                  <span className="srow__time">
-                    {lesson.estTimeMin?.min ?? 0}–{lesson.estTimeMin?.max ?? 0}{' '}
-                    {t(locale, 'courses.lesson.minutes')}
-                  </span>
                   <span className="srow__go icon" data-i="arrow" aria-hidden="true" />
                 </Link>
               ))}
