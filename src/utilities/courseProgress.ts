@@ -49,3 +49,23 @@ export function firstIncompleteLesson<T extends { id: number }>(
   for (const l of sortedLessons) if (!completed.has(l.id)) return l
   return null
 }
+
+import type { Payload } from 'payload'
+
+/** Lesson ids the user has completed in a program (server-side, overrideAccess). */
+export async function getCompletedLessonIds(
+  payload: Payload,
+  userId: number,
+  programId: number,
+): Promise<Set<number>> {
+  const res = await payload.find({
+    collection: 'lesson-progress',
+    where: { and: [{ user: { equals: userId } }, { program: { equals: programId } }] },
+    limit: 0,
+    overrideAccess: true,
+    depth: 0,
+  })
+  return new Set(
+    res.docs.map((d: any) => (typeof d.lesson === 'object' && d.lesson ? d.lesson.id : d.lesson)),
+  )
+}
