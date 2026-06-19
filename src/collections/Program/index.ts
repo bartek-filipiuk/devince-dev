@@ -12,6 +12,10 @@ import { GlassHero } from '../../blocks/GlassHero/config'
 import { Features } from '../../blocks/Features/config'
 import { Testimonials } from '../../blocks/Testimonials/config'
 import { ContactCTA } from '../../blocks/ContactCTA/config'
+import { CourseRichText } from '../../blocks/course/CourseRichText/config'
+import { CourseVideo } from '../../blocks/course/CourseVideo/config'
+import { CourseImage } from '../../blocks/course/CourseImage/config'
+import { CourseCallout } from '../../blocks/course/CourseCallout/config'
 import { slugField } from 'payload'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
@@ -282,6 +286,17 @@ export const Program: CollectionConfig<'program'> = {
               ],
               admin: {
                 initCollapsed: true,
+              },
+            },
+            {
+              name: 'landing',
+              type: 'blocks',
+              label: 'Landing kursu (sekcje)',
+              blocks: [CourseRichText, CourseVideo, CourseImage, CourseCallout],
+              admin: {
+                initCollapsed: true,
+                description:
+                  'Sekcje strony sprzedażowej kursu — pokazywane pod nagłówkiem, nad sylabusem.',
               },
             },
           ],
