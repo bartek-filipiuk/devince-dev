@@ -16,7 +16,10 @@ const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
 }
 
 function headingText(node: any): string {
-  return (node?.children ?? []).map((c: any) => (typeof c?.text === 'string' ? c.text : '')).join('')
+  if (!node) return ''
+  if (Array.isArray(node.children)) return node.children.map(headingText).join('')
+  if (typeof node.text === 'string') return node.text
+  return ''
 }
 
 /**
@@ -38,7 +41,7 @@ export function CourseLessonProse({ content, locale }: {
       const Tag = node.tag as 'h2' | 'h3' | 'h4'
       const children = nodesToJSX({ nodes: node.children })
       if (Tag === 'h2' || Tag === 'h3') {
-        const id = uniqueSlug(headingText(node), seen)
+        const id = uniqueSlug(headingText(node).trim(), seen)
         return (
           <Tag id={id} className="ct-anchor">
             {children}
