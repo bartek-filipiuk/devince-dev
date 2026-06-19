@@ -14,7 +14,16 @@
  * unset `DISCORD_WEBHOOK_URL` == no Discord POST == today's behavior.
  */
 
-export type EventKind = 'purchase' | 'refund' | 'email_failed' | 'checkout_start'
+export type EventKind =
+  | 'purchase'
+  | 'refund'
+  | 'email_failed'
+  | 'checkout_start'
+  // MONEY-CRITICAL security alert: a `checkout.session.completed` arrived but the
+  // amount paid does NOT reconcile against the item's real price (underpay /
+  // substitution / unverifiable price). The grant is REFUSED; this fires so the
+  // owner can investigate. Payload: { item, paid, expected, email }.
+  | 'payment_mismatch'
 
 /**
  * Build the human-readable Discord line for an event. Pure + total: it reads
@@ -27,6 +36,8 @@ export function formatDiscord(kind: EventKind, payload: Record<string, unknown>)
   const amount = typeof payload.amount === 'number' ? payload.amount : undefined
   const currency = typeof payload.currency === 'string' ? payload.currency : 'pln'
   const failKind = typeof payload.kind === 'string' ? payload.kind : undefined
+  const paid = typeof payload.paid === 'number' ? payload.paid : undefined
+  const expected = typeof payload.expected === 'number' ? payload.expected : undefined
 
   // Amount arrives in minor units (cents/grosze). Format defensively — a bad
   // Intl input must not throw out of the best-effort pipe.
@@ -67,6 +78,15 @@ export function formatDiscord(kind: EventKind, payload: Record<string, unknown>)
       ])
     case 'checkout_start':
       return join(['🛒 **Checkout**', item, money, email])
+    case 'payment_mismatch': {
+      // Amounts are minor units (grosze/cents). Render both so the owner sees
+      // the underpayment/substitution at a glance.
+      const fmt = (v: number | undefined) =>
+        v === undefined ? undefined : `${(v / 100).toFixed(2)} ${currency.toUpperCase()}`
+      const paidStr = paid !== undefined ? `zapłacono ${fmt(paid)}` : undefined
+      const expStr = expected !== undefined ? `oczekiwano ${fmt(expected)}` : undefined
+      return join(['🚨 **Płatność nie zgadza się z ceną**', item, paidStr, expStr, email])
+    }
     default:
       return join([String(kind), item, money, email])
   }
