@@ -8,6 +8,7 @@ export function CourseCheckoutButton({
   processingLabel,
   errorLabel,
   consentLabel,
+  consentRequiredLabel,
 }: {
   slug: string
   locale: string
@@ -15,18 +16,24 @@ export function CourseCheckoutButton({
   processingLabel: string
   errorLabel: string
   consentLabel: string
+  consentRequiredLabel: string
 }) {
   const [busy, setBusy] = useState(false)
-  // Art. 38 pkt 13: a separate, unticked-by-default consent. The button stays
-  // disabled until the buyer actively ticks it. The server re-checks this — the
-  // checkbox is the UX, /api/courses/checkout is the legal gate.
+  // Art. 38 pkt 13: a separate, unticked-by-default consent. The server re-checks
+  // it — the checkbox is the UX, /api/courses/checkout is the legal gate.
   const [consented, setConsented] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  // Inline feedback below the button: a "tick the box" nudge or a network error.
+  const [notice, setNotice] = useState<{ kind: 'consent' | 'error'; text: string } | null>(null)
 
   const buy = async () => {
-    if (!consented) return
+    // The button stays clickable on purpose: a dead, disabled button gives the
+    // buyer no idea why nothing happens. Clicking without consent explains it.
+    if (!consented) {
+      setNotice({ kind: 'consent', text: consentRequiredLabel })
+      return
+    }
     setBusy(true)
-    setError(null)
+    setNotice(null)
     try {
       const res = await fetch('/api/courses/checkout', {
         method: 'POST',
@@ -37,33 +44,39 @@ export function CourseCheckoutButton({
       if (!res.ok || !data.url) throw new Error(data.error ?? 'checkout failed')
       window.location.assign(data.url)
     } catch {
-      setError(errorLabel)
+      setNotice({ kind: 'error', text: errorLabel })
       setBusy(false)
     }
   }
 
+  const consentMissing = notice?.kind === 'consent'
+
   return (
-    <div>
-      <label className="consent-check">
+    <div className="checkout-block">
+      <label className="consent-check" data-error={consentMissing ? '' : undefined}>
         <input
           type="checkbox"
           checked={consented}
-          onChange={(e) => setConsented(e.target.checked)}
+          onChange={(e) => {
+            setConsented(e.target.checked)
+            if (e.target.checked) setNotice(null)
+          }}
           disabled={busy}
         />
         <span>{consentLabel}</span>
       </label>
       <button
-        className="btn btn--primary btn--lg"
+        type="button"
+        className="btn btn--primary btn--lg checkout-buy"
         onClick={buy}
-        disabled={busy || !consented}
         aria-busy={busy}
+        disabled={busy}
       >
         {busy ? processingLabel : label}
       </button>
-      {error ? (
-        <p role="alert" style={{ marginTop: '10px', color: 'var(--destructive, red)', fontSize: '14px' }}>
-          {error}
+      {notice ? (
+        <p className="checkout-msg" data-kind={notice.kind} role="alert">
+          {notice.text}
         </p>
       ) : null}
     </div>

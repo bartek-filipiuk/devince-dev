@@ -271,6 +271,39 @@ a { color: inherit; text-decoration: none; }
 .hero h1 .arw { color: var(--accent); font-family: var(--font-mono); font-weight: 500; }
 .hero .lead { font-size: clamp(15px, 1.6vw, 18px); color: var(--text-mut); line-height: 1.55; max-width: 52ch; margin: 18px 0 0; }
 .hero .cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+.hero__price { font-family: var(--font-mono); font-size: 20px; font-weight: 640; color: var(--text); align-self: center; }
+
+/* Course checkout: consent (Art. 38 pkt 13) + buy button. Stacks vertically so
+   the long consent text never collides with the button. The block takes a full
+   row in `.cta`/`.cta-band .cta` so it sits below the price. */
+.checkout-block { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; flex: 1 1 100%; margin-top: 4px; }
+.consent-check {
+  display: flex; gap: 11px; align-items: flex-start;
+  max-width: 60ch; font-size: 13px; line-height: 1.55; color: var(--text-mut);
+  cursor: pointer; user-select: none; transition: color .15s ease;
+}
+.consent-check input[type="checkbox"] {
+  flex: 0 0 auto; width: 17px; height: 17px; margin-top: 1px;
+  accent-color: var(--accent); cursor: pointer;
+}
+.consent-check:hover { color: var(--text); }
+.consent-check[data-error] { color: var(--text); }
+.consent-check[data-error] input[type="checkbox"] {
+  outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px;
+  animation: consent-nudge .32s ease;
+}
+@keyframes consent-nudge {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+.checkout-buy { align-self: flex-start; }
+.checkout-msg { margin: 0; font-size: 13px; line-height: 1.5; }
+.checkout-msg[data-kind="consent"] { color: var(--accent); }
+.checkout-msg[data-kind="error"] { color: #f0616d; }
+/* In the centred closing band, centre the consent+button group. */
+.cta-band .checkout-block { align-items: center; }
+.cta-band .consent-check { text-align: left; }
 .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
 .meta .m { display: inline-flex; align-items: baseline; gap: 7px; padding: 8px 13px; border-radius: 6px; background: var(--surface-1); border: 1px solid var(--line-soft); }
 .meta .m b { font-family: var(--font-mono); font-size: 16px; font-weight: 600; }

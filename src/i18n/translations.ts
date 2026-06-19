@@ -309,6 +309,7 @@ const translations = {
       'Wyrażam zgodę na rozpoczęcie dostępu do treści cyfrowych przed upływem terminu odstąpienia i przyjmuję do wiadomości utratę prawa do odstąpienia (art. 38 pkt 13).',
     'courses.checkout.processing': 'Przekierowuję…',
     'courses.checkout.error': 'Nie udało się rozpocząć płatności. Spróbuj ponownie.',
+    'courses.checkout.consentRequired': 'Zaznacz najpierw zgodę powyżej, aby przejść do płatności.',
 
     // Badges
     'courses.badge.gate': 'hard-gate',
@@ -684,6 +685,7 @@ const translations = {
       'I consent to early access to the digital content before the withdrawal period expires and acknowledge that I lose my right of withdrawal (Art. 38(13)).',
     'courses.checkout.processing': 'Redirecting…',
     'courses.checkout.error': 'Could not start the payment. Please try again.',
+    'courses.checkout.consentRequired': 'Please tick the consent box above to continue to payment.',
 
     // Badges
     'courses.badge.gate': 'hard-gate',
