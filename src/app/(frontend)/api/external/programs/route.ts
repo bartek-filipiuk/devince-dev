@@ -13,6 +13,7 @@ import type { CreateProgramRequest } from '../_lib/types.js'
 const VALID_TYPES = ['course', 'workshop', 'event'] as const
 const VALID_FORMATS = ['online', 'physical', 'hybrid'] as const
 const VALID_PRICING = ['free', 'paid'] as const
+const VALID_ACCESS_MODES = ['paid', 'lead-magnet'] as const
 
 export async function POST(request: NextRequest) {
   const authError = validateAuth(request)
@@ -48,6 +49,12 @@ export async function POST(request: NextRequest) {
       return createErrorResponse(
         'VALIDATION_ERROR',
         `pricing must be one of: ${VALID_PRICING.join(', ')}`,
+      )
+    }
+    if (body.accessMode && !(VALID_ACCESS_MODES as readonly string[]).includes(body.accessMode)) {
+      return createErrorResponse(
+        'VALIDATION_ERROR',
+        `accessMode must be one of: ${VALID_ACCESS_MODES.join(', ')}`,
       )
     }
 
@@ -93,6 +100,7 @@ export async function POST(request: NextRequest) {
         requirements: body.requirements.map((item) => ({ item })),
       }),
       ...(body.level && { level: body.level }),
+      ...(body.accessMode !== undefined && { accessMode: body.accessMode }),
     }
 
     const program = await payload.create({

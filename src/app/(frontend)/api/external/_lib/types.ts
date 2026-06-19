@@ -58,6 +58,21 @@ export interface CreateProgramRequest extends BaseRequest {
   audience?: string[]
   requirements?: string[]
   level?: 'beginner' | 'intermediate' | 'advanced'
+  accessMode?: 'paid' | 'lead-magnet'
+}
+
+export interface CreateProductRequest {
+  title?: unknown
+  slug?: unknown
+  description?: unknown
+  contentFormat?: string
+  priceCents?: unknown
+  currency?: unknown
+  stripePriceId?: unknown
+  downloadFiles?: unknown
+  coverImage?: unknown
+  _status?: unknown
+  accessMode?: 'paid' | 'lead-magnet'
 }
 
 export interface CreateLessonRequest {
