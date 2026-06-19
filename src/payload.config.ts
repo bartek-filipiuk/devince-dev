@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url'
 
 import { AppAssets } from './collections/AppAssets'
 import { Categories } from './collections/Categories'
+import { ClaimGrants } from './collections/ClaimGrants'
 import { CourseAssets } from './collections/CourseAssets'
 import { DownloadGrants } from './collections/DownloadGrants'
 import { Media } from './collections/Media'
@@ -101,6 +102,7 @@ export default buildConfig({
     Users,
     StripeEvents,
     DownloadGrants,
+    ClaimGrants,
   ],
   cors: [getServerSideURL(), process.env.NEXT_PUBLIC_COURSES_URL, process.env.NEXT_PUBLIC_APPS_URL].filter(Boolean) as string[],
   globals: [Header, Footer, SiteSettings],

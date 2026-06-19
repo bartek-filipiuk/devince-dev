@@ -193,6 +193,31 @@ export const Program: CollectionConfig<'program'> = {
               ],
             },
             {
+              // Access model, independent of `pricing` (which only drives the
+              // paid-checkout UI). 'paid' = normal Stripe checkout (default).
+              // 'lead-magnet' = FREE in exchange for a double-opted-in email:
+              // the syllabus/cards swap the buy button for an email-capture
+              // form, and /api/free-claim grants access on DOI confirmation.
+              // The free-claim + confirm routes re-check this from the DB —
+              // the client can never make a paid course free; price is ignored.
+              name: 'accessMode',
+              type: 'select',
+              label: 'Model dostępu',
+              // Not `required` so existing/seeded programs need not set it — the
+              // defaultValue applies and any null is treated as 'paid' by the
+              // free-claim/confirm guards (fail-safe to PAID, never to free).
+              defaultValue: 'paid',
+              options: [
+                { label: 'Płatny (Stripe)', value: 'paid' },
+                { label: 'Lead magnet (darmowy za e-mail)', value: 'lead-magnet' },
+              ],
+              admin: {
+                description:
+                  'Lead magnet = darmowy dostęp za zapis na listę (double opt-in); cena ignorowana.',
+                position: 'sidebar',
+              },
+            },
+            {
               name: 'stripePaymentLink',
               type: 'text',
               label: 'Stripe Payment Link (dla płatnych)',

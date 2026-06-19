@@ -213,6 +213,34 @@ const translations = {
       'Wyrażam zgodę na natychmiastowe rozpoczęcie dostarczania treści cyfrowej (pobranie pliku) i przyjmuję do wiadomości, że z chwilą wykonania umowy (udostępnienia pliku) tracę prawo odstąpienia od umowy.',
     'apps.checkout.newsletter': 'Chcę dostawać newsletter (oddzielne od zakupu).',
 
+    // Lead magnet (free-for-email) — shared form copy (apps + courses)
+    'leadMagnet.emailLabel': 'Twój e-mail',
+    'leadMagnet.emailPlaceholder': 'ty@example.com',
+    'leadMagnet.submit': 'Odbierz za darmo',
+    'leadMagnet.processing': 'Wysyłam…',
+    'leadMagnet.note':
+      'Podaj e-mail → potwierdź zapis w mailu → dostajesz dostęp i dołączasz do listy. Bez płatności.',
+    'leadMagnet.success': '📧 Sprawdź mail i potwierdź zapis, żeby odebrać dostęp.',
+    'leadMagnet.error': 'Coś poszło nie tak. Spróbuj ponownie za chwilę.',
+    'leadMagnet.invalidEmail': 'Podaj poprawny adres e-mail.',
+    'leadMagnet.unavailable': 'Darmowy dostęp jest chwilowo niedostępny. Wróć później.',
+    'leadMagnet.freeBadge': 'Za darmo',
+
+    // Lead magnet confirm landing (/claim/confirmed)
+    'claim.meta': 'Potwierdzenie dostępu',
+    'claim.granted.eyebrow': 'dostęp odblokowany',
+    'claim.granted.title': '✅ Dostęp odblokowany',
+    'claim.granted.body':
+      'Wszystko gotowe! Wysłaliśmy Ci maila z linkiem dostępowym — sprawdź skrzynkę (i folder spam).',
+    'claim.used.eyebrow': 'link już wykorzystany',
+    'claim.used.title': 'Ten link został już użyty',
+    'claim.used.body':
+      'Dostęp został już przyznany wcześniej. Sprawdź swoją skrzynkę — wysłaliśmy maila z linkiem dostępowym. W razie problemów odpisz na tego maila.',
+    'claim.invalid.eyebrow': 'link nieprawidłowy',
+    'claim.invalid.title': 'Link jest nieprawidłowy',
+    'claim.invalid.body':
+      'Ten link dostępowy jest nieprawidłowy lub niekompletny. Upewnij się, że skopiował się w całości z maila potwierdzającego, albo spróbuj zapisać się jeszcze raz.',
+
     // Success page
     'apps.success.meta': 'Dziękujemy',
     'apps.success.eyebrow': 'zakup potwierdzony',
@@ -590,6 +618,34 @@ const translations = {
     'apps.product.consent':
       'I consent to the immediate start of delivery of the digital content (file download) and acknowledge that, once the contract is performed (the file is made available), I lose the right of withdrawal.',
     'apps.checkout.newsletter': 'I want to receive the newsletter (separate from the purchase).',
+
+    // Lead magnet (free-for-email) — shared form copy (apps + courses)
+    'leadMagnet.emailLabel': 'Your email',
+    'leadMagnet.emailPlaceholder': 'you@example.com',
+    'leadMagnet.submit': 'Get it free',
+    'leadMagnet.processing': 'Sending…',
+    'leadMagnet.note':
+      'Enter your email → confirm in the email → you get access and join the list. No payment.',
+    'leadMagnet.success': '📧 Check your email and confirm to unlock your access.',
+    'leadMagnet.error': 'Something went wrong. Please try again in a moment.',
+    'leadMagnet.invalidEmail': 'Please enter a valid email address.',
+    'leadMagnet.unavailable': 'Free access is temporarily unavailable. Please check back later.',
+    'leadMagnet.freeBadge': 'Free',
+
+    // Lead magnet confirm landing (/claim/confirmed)
+    'claim.meta': 'Access confirmation',
+    'claim.granted.eyebrow': 'access unlocked',
+    'claim.granted.title': '✅ Access unlocked',
+    'claim.granted.body':
+      'All set! We have emailed you an access link — check your inbox (and the spam folder).',
+    'claim.used.eyebrow': 'link already used',
+    'claim.used.title': 'This link has already been used',
+    'claim.used.body':
+      'Access was already granted earlier. Check your inbox — we emailed you an access link. If you have any trouble, just reply to that email.',
+    'claim.invalid.eyebrow': 'invalid link',
+    'claim.invalid.title': 'This link is invalid',
+    'claim.invalid.body':
+      'This access link is invalid or incomplete. Make sure it was copied in full from the confirmation email, or try signing up again.',
 
     // Success page
     'apps.success.meta': 'Thank you',

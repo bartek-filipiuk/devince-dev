@@ -3,6 +3,7 @@ import type { Program } from '@/payload-types'
 import { t, type Locale } from '@/i18n'
 import { getLocalizedPath } from '@/utilities/getLocale'
 import { CourseCheckoutButton } from './CourseCheckoutButton'
+import { CourseLeadMagnet } from './CourseLeadMagnet'
 
 /**
  * Closing `.cta-band` (handoff) driving the learner into the course: course
@@ -24,8 +25,12 @@ export function CtaBand({
     firstLessonSlug ? `/${program.slug}/learn/${firstLessonSlug}` : `/${program.slug}`,
     locale,
   )
+  // Lead magnet (free-for-email): not enrolled → email capture form (takes
+  // precedence over the paid path).
+  const leadMagnet = program.accessMode === 'lead-magnet' && !enrolled
   // Paid + not enrolled + purchasable → show the consent checkout CTA.
   const paidLocked =
+    !leadMagnet &&
     program.pricing === 'paid' &&
     !enrolled &&
     (!!program.stripePriceId || typeof program.priceCents === 'number')
@@ -35,7 +40,9 @@ export function CtaBand({
       <h2>{t(locale, 'courses.syllabus.ctaBandTitle')}</h2>
       <p>{t(locale, 'courses.syllabus.ctaBandBody')}</p>
       <div className="cta">
-        {paidLocked ? (
+        {leadMagnet ? (
+          <CourseLeadMagnet slug={program.slug} locale={locale} />
+        ) : paidLocked ? (
           <CourseCheckoutButton
             slug={program.slug}
             locale={locale}

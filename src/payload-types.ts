@@ -80,6 +80,7 @@ export interface Config {
     users: User;
     'stripe-events': StripeEvent;
     'download-grants': DownloadGrant;
+    'claim-grants': ClaimGrant;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -110,6 +111,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     'stripe-events': StripeEventsSelect<false> | StripeEventsSelect<true>;
     'download-grants': DownloadGrantsSelect<false> | DownloadGrantsSelect<true>;
+    'claim-grants': ClaimGrantsSelect<false> | ClaimGrantsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -487,6 +489,10 @@ export interface Program {
   locationName?: string | null;
   locationAddress?: string | null;
   pricing?: ('free' | 'paid') | null;
+  /**
+   * Lead magnet = darmowy dostęp za zapis na listę (double opt-in); cena ignorowana.
+   */
+  accessMode?: ('paid' | 'lead-magnet') | null;
   stripePaymentLink?: string | null;
   stripePriceId?: string | null;
   /**
@@ -1324,6 +1330,10 @@ export interface Project {
 export interface Product {
   id: number;
   title: string;
+  /**
+   * Płatny = checkout Stripe. Lead magnet = darmowy za zapis na listę (double opt-in); cena ignorowana.
+   */
+  accessMode?: ('paid' | 'lead-magnet') | null;
   description?: {
     root: {
       type: string;
@@ -1415,6 +1425,20 @@ export interface DownloadGrant {
   uses: number;
   withdrawalConsentAt?: string | null;
   stripeSessionId?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "claim-grants".
+ */
+export interface ClaimGrant {
+  id: number;
+  token: string;
+  kind: 'app' | 'course';
+  itemId: string;
+  email: string;
+  claimedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1659,6 +1683,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'download-grants';
         value: number | DownloadGrant;
+      } | null)
+    | ({
+        relationTo: 'claim-grants';
+        value: number | ClaimGrant;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2040,6 +2068,7 @@ export interface ProgramSelect<T extends boolean = true> {
   locationName?: T;
   locationAddress?: T;
   pricing?: T;
+  accessMode?: T;
   stripePaymentLink?: T;
   stripePriceId?: T;
   priceCents?: T;
@@ -2231,6 +2260,7 @@ export interface ProjectsSelect<T extends boolean = true> {
  */
 export interface ProductsSelect<T extends boolean = true> {
   title?: T;
+  accessMode?: T;
   description?: T;
   coverImage?: T;
   priceCents?: T;
@@ -2449,6 +2479,19 @@ export interface DownloadGrantsSelect<T extends boolean = true> {
   uses?: T;
   withdrawalConsentAt?: T;
   stripeSessionId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "claim-grants_select".
+ */
+export interface ClaimGrantsSelect<T extends boolean = true> {
+  token?: T;
+  kind?: T;
+  itemId?: T;
+  email?: T;
+  claimedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -99,7 +99,9 @@ export default async function AppsStorefront({
                 <h3 className="course-card__title">{product.title}</h3>
                 <div className="course-card__meta mono">
                   <span className="course-card__paid">
-                    {formatPrice(product.priceCents, product.currency)}
+                    {product.accessMode === 'lead-magnet'
+                      ? t(locale, 'leadMagnet.freeBadge')
+                      : formatPrice(product.priceCents, product.currency)}
                   </span>
                 </div>
               </Link>

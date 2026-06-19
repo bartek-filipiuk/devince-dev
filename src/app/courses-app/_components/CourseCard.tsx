@@ -4,6 +4,7 @@ import { t, type Locale } from '@/i18n'
 import { getLocalizedPath } from '@/utilities/getLocale'
 import { formatPrice } from '@/utilities/formatPrice'
 import { CourseCheckoutButton } from './CourseCheckoutButton'
+import { CourseLeadMagnet } from './CourseLeadMagnet'
 
 type CardMeta = {
   phases: number
@@ -30,9 +31,13 @@ export function CourseCard({
   locale: Locale
 }) {
   const syllabusHref = getLocalizedPath(`/${program.slug}`, locale)
+  // Lead magnet (free-for-email): not enrolled → show the email capture form
+  // instead of any paid control. Takes precedence over the paid path.
+  const leadMagnet = program.accessMode === 'lead-magnet' && !enrolled
   // Paid + not enrolled + purchasable → consent checkout button,
   // a sibling of the title link (cannot be nested inside a <Link>).
   const paidLocked =
+    !leadMagnet &&
     program.pricing === 'paid' &&
     !enrolled &&
     (!!program.stripePriceId || typeof program.priceCents === 'number')
@@ -55,15 +60,22 @@ export function CourseCard({
         <span>
           {meta.stages} {t(locale, 'courses.store.stages')}
         </span>
-        <span className="course-card__paid">{t(locale, 'courses.store.paid')}</span>
-        {program.pricing === 'paid' && typeof program.priceCents === 'number' ? (
+        {/* A lead-magnet course is free — never show the paid badge/price. */}
+        {program.accessMode !== 'lead-magnet' ? (
+          <span className="course-card__paid">{t(locale, 'courses.store.paid')}</span>
+        ) : null}
+        {program.accessMode !== 'lead-magnet' &&
+        program.pricing === 'paid' &&
+        typeof program.priceCents === 'number' ? (
           <span className="course-card__price">
             {formatPrice(program.priceCents, program.currency ?? 'pln')}
           </span>
         ) : null}
       </div>
       <div className="course-card__foot">
-        {paidLocked ? (
+        {leadMagnet ? (
+          <CourseLeadMagnet slug={program.slug} locale={locale} />
+        ) : paidLocked ? (
           <CourseCheckoutButton
             slug={program.slug}
             locale={locale}
