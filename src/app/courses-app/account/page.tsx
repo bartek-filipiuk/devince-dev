@@ -8,6 +8,8 @@ import { getLocale } from '@/utilities/getLocale.server'
 import { getLocalizedPath } from '@/utilities/getLocale'
 import { t } from '@/i18n'
 import { LogoutButton } from './LogoutButton'
+import { getCompletedLessonIds, progressFor, firstIncompleteLesson } from '@/utilities/courseProgress'
+import type { Lesson } from '@/payload-types'
 
 /**
  * Course-themed account page for courses.devince.dev. Behaviour mirrors the
@@ -45,6 +47,24 @@ export default async function CoursesAccountPage() {
       ).docs
     : []
 
+  const progressByProgram = new Map<number, { pct: number; done: number; total: number; resumeSlug: string | null }>()
+  for (const p of programs as any[]) {
+    const lessonsRes = await payload.find({
+      collection: 'lessons',
+      where: { program: { equals: p.id } },
+      sort: 'nr',
+      limit: 1000,
+      overrideAccess: true,
+      depth: 0,
+      locale,
+    })
+    const ls = lessonsRes.docs as Lesson[]
+    const completed = await getCompletedLessonIds(payload, user.id, p.id)
+    const pr = progressFor(ls.length, completed.size)
+    const fi = firstIncompleteLesson(ls, completed)
+    progressByProgram.set(p.id, { ...pr, resumeSlug: fi?.slug ?? ls[0]?.slug ?? null })
+  }
+
   return (
     <section className="shell auth-shell">
       <header className="auth-account-head">
@@ -71,6 +91,16 @@ export default async function CoursesAccountPage() {
                 <i>{t(locale, 'courses.auth.courseEyebrow')}</i>
               </span>
               <h2 className="course-card__title">{p.title}</h2>
+              {(() => {
+                const pr = progressByProgram.get(p.id)
+                if (!pr) return null
+                return (
+                  <div className="progressbar auth-progress" aria-label={t(locale, 'courses.progress.label')}>
+                    <div className="progressbar__track"><div className="progressbar__fill" style={{ width: `${pr.pct}%` }} /></div>
+                    <span className="progressbar__txt">{pr.done}/{pr.total} {t(locale, 'courses.progress.unit')}</span>
+                  </div>
+                )
+              })()}
               <span className="auth-course-cta">
                 {t(locale, 'courses.auth.openSyllabus')}
                 <i className="icon" data-i="arrow" aria-hidden="true" />

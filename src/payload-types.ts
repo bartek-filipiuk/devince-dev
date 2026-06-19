@@ -81,6 +81,7 @@ export interface Config {
     'stripe-events': StripeEvent;
     'download-grants': DownloadGrant;
     'claim-grants': ClaimGrant;
+    'lesson-progress': LessonProgress;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -112,6 +113,7 @@ export interface Config {
     'stripe-events': StripeEventsSelect<false> | StripeEventsSelect<true>;
     'download-grants': DownloadGrantsSelect<false> | DownloadGrantsSelect<true>;
     'claim-grants': ClaimGrantsSelect<false> | ClaimGrantsSelect<true>;
+    'lesson-progress': LessonProgressSelect<false> | LessonProgressSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -1444,6 +1446,19 @@ export interface ClaimGrant {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lesson-progress".
+ */
+export interface LessonProgress {
+  id: number;
+  user: number | User;
+  lesson: number | Lesson;
+  program: number | Program;
+  completedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1687,6 +1702,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'claim-grants';
         value: number | ClaimGrant;
+      } | null)
+    | ({
+        relationTo: 'lesson-progress';
+        value: number | LessonProgress;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2492,6 +2511,18 @@ export interface ClaimGrantsSelect<T extends boolean = true> {
   itemId?: T;
   email?: T;
   claimedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lesson-progress_select".
+ */
+export interface LessonProgressSelect<T extends boolean = true> {
+  user?: T;
+  lesson?: T;
+  program?: T;
+  completedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

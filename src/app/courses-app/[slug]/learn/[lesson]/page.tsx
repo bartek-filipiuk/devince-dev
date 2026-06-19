@@ -8,6 +8,8 @@ import type { Lesson, Program } from '@/payload-types'
 import { getLocale } from '@/utilities/getLocale.server'
 import { getLocalizedPath } from '@/utilities/getLocale'
 import { LessonView } from '../../../_components/LessonView'
+import { getCompletedLessonIds } from '@/utilities/courseProgress'
+import { extractHeadings } from '@/utilities/lessonHeadings'
 
 export const dynamic = 'force-dynamic'
 
@@ -77,12 +79,17 @@ export default async function CourseLessonPage({
   })
   const allLessons = allRes.docs as Lesson[]
 
+  const completedIds = await getCompletedLessonIds(payload, user.id, program.id)
+  const headings = extractHeadings((lesson as Lesson).content)
+
   return (
     <LessonView
       slug={slug}
       program={program as Program}
       lesson={lesson as Lesson}
       allLessons={allLessons}
+      completedIds={completedIds}
+      headings={headings}
       locale={locale}
     />
   )

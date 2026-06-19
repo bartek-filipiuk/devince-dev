@@ -7,6 +7,7 @@ import configPromise from '@payload-config'
 import type { Lesson } from '@/payload-types'
 import type { Locale } from '@/i18n'
 import { courseMeta } from '@/utilities/courseMeta'
+import { getCompletedLessonIds, phaseProgress, firstIncompleteLesson } from '@/utilities/courseProgress'
 import { getLocale } from '@/utilities/getLocale.server'
 import { t } from '@/i18n'
 import { SyllabusHero } from '../_components/SyllabusHero'
@@ -112,6 +113,18 @@ export default async function SyllabusPage({
     stageCounts.set(lesson.phaseId, (stageCounts.get(lesson.phaseId) ?? 0) + 1)
   }
 
+  // Progress — only for enrolled viewers; keeps the syllabus public for all.
+  let byPhase: Map<string, { done: number; total: number }> | undefined
+  let resumeSlug: string | null = firstLessonSlug
+  let allDone = false
+  if (enrolled && user) {
+    const completed = await getCompletedLessonIds(payload, user.id, program.id)
+    byPhase = phaseProgress(lessons, completed)
+    const fi = firstIncompleteLesson(lessons, completed)
+    resumeSlug = fi?.slug ?? null
+    allDone = lessons.length > 0 && !fi
+  }
+
   return (
     <>
       <SyllabusHero
@@ -122,6 +135,8 @@ export default async function SyllabusPage({
         firstLessonSlug={firstLessonSlug}
         enrolled={enrolled}
         locale={locale}
+        resumeSlug={resumeSlug}
+        allDone={allDone}
       />
 
       {program.landing?.length ? (
@@ -133,7 +148,8 @@ export default async function SyllabusPage({
       <div className="shell">
         <Outcomes outcomes={program.outcomes ?? []} locale={locale} />
 
-        <Curriculum slug={program.slug} phases={phases} lessons={lessons} locale={locale} />
+        <Curriculum slug={program.slug} phases={phases} lessons={lessons} locale={locale}
+          byPhase={byPhase} totalTimeMax={meta.timeMax} />
 
         <section className="block">
           <InfoCards

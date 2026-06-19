@@ -30,6 +30,8 @@ export function SyllabusHero({
   firstLessonSlug,
   enrolled,
   locale,
+  resumeSlug,
+  allDone,
 }: {
   program: Program
   meta: Meta
@@ -39,6 +41,8 @@ export function SyllabusHero({
   firstLessonSlug: string | null
   enrolled: boolean
   locale: Locale
+  resumeSlug?: string | null
+  allDone?: boolean
 }) {
   const headline = program.heroHeadline || program.title
   const startHref = getLocalizedPath(
@@ -101,11 +105,20 @@ export function SyllabusHero({
                   newsletterLabel={t(locale, 'courses.checkout.newsletter')}
                 />
               ) : (
-                <Link className="btn btn--primary btn--lg" href={startHref}>
+                <Link
+                  className="btn btn--primary btn--lg"
+                  href={
+                    enrolled && resumeSlug
+                      ? getLocalizedPath(`/${program.slug}/learn/${resumeSlug}`, locale)
+                      : startHref
+                  }
+                >
                   <span className="icon" data-i="play" aria-hidden="true" />
                   <span>
                     {enrolled
-                      ? t(locale, 'courses.syllabus.continue')
+                      ? allDone
+                        ? t(locale, 'courses.syllabus.allDone')
+                        : t(locale, 'courses.syllabus.resume')
                       : program.ctaLabel || t(locale, 'courses.syllabus.cta')}
                   </span>
                 </Link>

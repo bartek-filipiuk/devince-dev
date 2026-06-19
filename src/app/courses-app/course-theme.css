@@ -6,9 +6,14 @@
    the main site's (frontend) theme.
    ============================================================ */
 
-:root {
+/* Font fallbacks on the html type-selector (specificity 0,0,1) so that
+   next/font's class variables (specificity 0,1,0) always win when present. */
+html {
   --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+}
+
+:root {
 
   /* NDQS "Cyber Gold" — premium dark glassmorphism. Near-black base, gold
      accent, glassy white-alpha surfaces (read as glass over the aurora). */
@@ -50,6 +55,8 @@
 
   --nav-h: 64px;
   --maxw: 1180px;
+  --side-w: 304px;
+  --toc-w: 220px;
   color-scheme: dark;
 }
 
@@ -664,3 +671,109 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
 /* #2 — short per-lesson teaser under the syllabus-row badges (2-line clamp) */
 .srow__teaser { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
   overflow: hidden; font-size: 12.5px; line-height: 1.45; color: var(--text-mut); }
+
+/* ============================================================
+   PRO UX — lesson reading (3-col), prose, code, TOC, progress
+   ============================================================ */
+
+/* 3-column lesson grid: nav | prose | TOC. Falls back to the existing
+   2-col (.side + .lmain) when TOC is absent/empty. */
+.lesson {
+  grid-template-columns: var(--side-w, 260px) minmax(0, 1fr) var(--toc-w, 220px);
+}
+/* No headings → TableOfContents renders nothing; collapse to 2-col so the
+   right rail leaves no empty track. */
+.lesson:not(:has(.lesson-toc)) {
+  grid-template-columns: var(--side-w, 304px) minmax(0, 1fr);
+}
+@media (max-width: 1100px) {
+  .lesson { grid-template-columns: var(--side-w, 260px) minmax(0, 1fr); }
+  .lesson-toc { display: none; }
+}
+@media (max-width: 900px) {
+  .lesson { grid-template-columns: 1fr; }
+}
+
+/* Calm reading surface: solid-ish dark, high contrast, NO blur behind text. */
+.lmain { backdrop-filter: none; }
+.course-prose,
+.lprose {
+  max-width: 68ch;
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--text);
+}
+.lprose > * + * { margin-top: 1.1em; }
+.lprose h2, .lprose h3 { line-height: 1.25; scroll-margin-top: calc(var(--nav-h, 64px) + 16px); }
+.lprose h2 { font-size: 1.5em; margin-top: 2em; }
+.lprose h3 { font-size: 1.22em; margin-top: 1.6em; }
+.lprose a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.lprose ul, .lprose ol { padding-left: 1.4em; }
+.lprose li + li { margin-top: 0.4em; }
+.lprose blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1em; color: var(--text-mut);
+}
+
+/* Hover-revealed heading anchors */
+.ct-anchor { position: relative; }
+.ct-anchor__link {
+  margin-left: 0.4em; opacity: 0; text-decoration: none; color: var(--accent);
+  transition: opacity 0.15s;
+}
+.ct-anchor:hover .ct-anchor__link { opacity: 0.6; }
+
+/* Shiki code block: title bar + copy + the highlighted body */
+.lc { margin: 1.4em 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--surface-2); }
+.lc__bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.5em 0.85em; font-family: var(--font-mono, monospace); font-size: 12px;
+  color: var(--text-mut); background: rgba(0,0,0,0.35);
+  border-bottom: 1px solid var(--surface-2);
+}
+.lc__copy {
+  font: inherit; cursor: pointer; border: 1px solid var(--surface-2);
+  background: transparent; color: var(--text-mut); border-radius: 6px; padding: 2px 8px;
+}
+.lc__copy:hover { color: var(--text); border-color: var(--accent); }
+.lc__body pre.shiki { margin: 0; padding: 1em 1.1em; overflow-x: auto; font-family: var(--font-mono, monospace); font-size: 14px; line-height: 1.6; }
+/* Shiki transformer line states */
+.lc__body .line.highlighted { background: rgba(229,181,92,0.12); display: inline-block; width: 100%; }
+.lc__body .line.diff.add { background: rgba(16,185,129,0.14); }
+.lc__body .line.diff.remove { background: rgba(239,68,68,0.14); opacity: 0.8; }
+.lc__body.has-focused .line:not(.focused) { opacity: 0.4; filter: blur(0.4px); }
+
+/* Sticky in-lesson TOC */
+.lesson-toc { position: sticky; top: calc(var(--nav-h, 64px) + 16px); align-self: start; max-height: 80vh; overflow-y: auto; font-size: 13px; }
+.lesson-toc__h { text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; color: var(--text-mut); margin-bottom: 0.6em; }
+.lesson-toc__i { display: block; padding: 4px 0 4px 10px; color: var(--text-mut); border-left: 2px solid transparent; text-decoration: none; }
+.lesson-toc__i.lvl-3 { padding-left: 22px; }
+.lesson-toc__i:hover { color: var(--text); }
+.lesson-toc__i.active { color: var(--accent); border-left-color: var(--accent); }
+
+/* Progress bar (sidebar + syllabus + account) */
+.progressbar { display: flex; align-items: center; gap: 8px; }
+.progressbar__track { flex: 1; height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.progressbar__fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.3s; }
+.progressbar__txt { font-size: 12px; color: var(--text-mut); white-space: nowrap; }
+.side__top .progressbar { margin-top: 8px; }
+.pc-progress { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-mut); min-width: 80px; }
+.pc-progress .progressbar__track { width: 50px; flex: none; }
+.auth-progress { margin: 10px 0; }
+
+/* Completed lesson in the sidebar nav */
+.navitem.done .lbl { color: var(--text-mut); }
+.navitem.done .st .icon { color: var(--done); }
+
+/* Lesson header meta + intro lead */
+.lhead__meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+.lmeta { font-size: 13px; color: var(--text-mut); }
+.lintro .lead { font-size: 1.1em; color: var(--text); }
+.srow__time { font-size: 12px; color: var(--text-mut); }
+
+/* Mark-complete control */
+.markdone-wrap { margin-top: 2em; }
+.markdone { display: flex; align-items: center; gap: 12px; }
+.markdone__state { color: var(--done); font-weight: 600; }
+.markdone__undo { background: none; border: none; color: var(--text-mut); cursor: pointer; text-decoration: underline; font: inherit; }
