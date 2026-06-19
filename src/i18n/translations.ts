@@ -372,6 +372,23 @@ const translations = {
     'courses.lesson.start': 'Początek',
     'courses.lesson.end': 'Koniec',
 
+    // Courses — pro UX (lesson reading + progress)
+    'courses.lesson.onThisPage': 'Na tej stronie',
+    'courses.lesson.markComplete': 'Ukończ i dalej',
+    'courses.lesson.markCompleteLast': 'Oznacz jako ukończone',
+    'courses.lesson.completed': 'Ukończono',
+    'courses.lesson.undo': 'Odznacz',
+    'courses.lesson.readMin': 'min czytania',
+    'courses.lesson.copy': 'Kopiuj',
+    'courses.lesson.copied': 'Skopiowano',
+    'courses.progress.label': 'Postęp',
+    'courses.progress.unit': 'lekcji',
+    'courses.syllabus.resume': 'Wróć do nauki',
+    'courses.syllabus.allDone': 'Ukończono kurs',
+    'courses.syllabus.totalTimeUnit': 'h',
+    'courses.auth.resume': 'Wróć do nauki',
+    'courses.auth.notStarted': 'Rozpocznij',
+
     // Auth
     'courses.auth.eyebrow': 'Konto',
     'courses.auth.loginTitle': 'Zaloguj się',
@@ -777,6 +794,23 @@ const translations = {
     'courses.lesson.next': 'Next',
     'courses.lesson.start': 'Start',
     'courses.lesson.end': 'End',
+
+    // Courses — pro UX (lesson reading + progress)
+    'courses.lesson.onThisPage': 'On this page',
+    'courses.lesson.markComplete': 'Complete & continue',
+    'courses.lesson.markCompleteLast': 'Mark as complete',
+    'courses.lesson.completed': 'Completed',
+    'courses.lesson.undo': 'Mark as not done',
+    'courses.lesson.readMin': 'min read',
+    'courses.lesson.copy': 'Copy',
+    'courses.lesson.copied': 'Copied',
+    'courses.progress.label': 'Progress',
+    'courses.progress.unit': 'lessons',
+    'courses.syllabus.resume': 'Resume',
+    'courses.syllabus.allDone': 'Course completed',
+    'courses.syllabus.totalTimeUnit': 'h',
+    'courses.auth.resume': 'Resume',
+    'courses.auth.notStarted': 'Start',
 
     // Auth
     'courses.auth.eyebrow': 'Account',
