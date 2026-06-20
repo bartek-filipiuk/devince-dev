@@ -228,3 +228,169 @@ describe('PATCH /api/external/products/[idOrSlug] — accessMode', () => {
     expect(res.status).toBe(400)
   })
 })
+
+// ── locale forwarding — PATCH ──────────────────────────────────────────────
+// Localized fields (title, description, tier tagline + features) must be
+// written to the locale named by ?locale=. Without this the products route
+// silently wrote every locale to 'pl' (the bug that made the EN product page
+// fall back to the Polish-locale English copy).
+
+describe('PATCH /api/external/products/[idOrSlug] — locale', () => {
+  beforeEach(() => {
+    process.env.EXTERNAL_API_TOKEN = TOKEN
+    vi.clearAllMocks()
+  })
+
+  function setup() {
+    const update = vi.fn().mockResolvedValue({
+      id: 300,
+      title: 'Localized Product',
+      slug: 'localized-product',
+      priceCents: 4900,
+      currency: 'usd',
+      _status: 'published',
+      downloadFiles: null,
+    })
+    const findByID = vi.fn().mockResolvedValue({ id: 300 })
+    return { update, findByID }
+  }
+
+  it('forwards ?locale=en to payload.update', async () => {
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    const { update, findByID } = setup()
+    vi.mocked(getPayloadClient).mockResolvedValue({ update, findByID } as never)
+
+    const { PATCH } = await import('./[idOrSlug]/route.js')
+
+    const req = makeAuthedReq(
+      'PATCH',
+      'http://localhost/api/external/products/300?locale=en',
+      { title: 'Localized Product' },
+    )
+
+    const res = await PATCH(req, { params: Promise.resolve({ idOrSlug: '300' }) })
+    expect(res.status).toBe(200)
+    expect(update.mock.calls[0][0].locale).toBe('en')
+  })
+
+  it('defaults locale to pl when ?locale omitted', async () => {
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    const { update, findByID } = setup()
+    vi.mocked(getPayloadClient).mockResolvedValue({ update, findByID } as never)
+
+    const { PATCH } = await import('./[idOrSlug]/route.js')
+
+    const req = makeAuthedReq(
+      'PATCH',
+      'http://localhost/api/external/products/300',
+      { title: 'Localized Product' },
+    )
+
+    const res = await PATCH(req, { params: Promise.resolve({ idOrSlug: '300' }) })
+    expect(res.status).toBe(200)
+    expect(update.mock.calls[0][0].locale).toBe('pl')
+  })
+
+  it('returns 400 for an invalid ?locale', async () => {
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    const { update, findByID } = setup()
+    vi.mocked(getPayloadClient).mockResolvedValue({ update, findByID } as never)
+
+    const { PATCH } = await import('./[idOrSlug]/route.js')
+
+    const req = makeAuthedReq(
+      'PATCH',
+      'http://localhost/api/external/products/300?locale=de',
+      { title: 'Localized Product' },
+    )
+
+    const res = await PATCH(req, { params: Promise.resolve({ idOrSlug: '300' }) })
+    expect(res.status).toBe(400)
+    expect(update).not.toHaveBeenCalled()
+  })
+})
+
+// ── tiers row-id preservation — PATCH ──────────────────────────────────────
+// `tiers` is a non-localized array with localized subfields. Writing it at a
+// second locale WITHOUT row ids makes Payload replace the array and drop the
+// other locale's tagline/features. The route carries existing ids forward by
+// position so per-locale writes update only this locale's text.
+
+describe('PATCH /api/external/products/[idOrSlug] — tier id preservation', () => {
+  beforeEach(() => {
+    process.env.EXTERNAL_API_TOKEN = TOKEN
+    vi.clearAllMocks()
+  })
+
+  it('injects existing tier row ids by position when writing tiers', async () => {
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    const update = vi.fn().mockResolvedValue({
+      id: 400,
+      title: 'Tiered',
+      slug: 'tiered',
+      priceCents: 4900,
+      currency: 'usd',
+      _status: 'published',
+      downloadFiles: null,
+    })
+    // resolveDocId + the tier-id lookup both call findByID; return the existing
+    // rows so position 0 -> 'row-a', position 1 -> 'row-b'.
+    const findByID = vi.fn().mockResolvedValue({
+      id: 400,
+      tiers: [{ id: 'row-a' }, { id: 'row-b' }],
+    })
+    vi.mocked(getPayloadClient).mockResolvedValue({ update, findByID } as never)
+
+    const { PATCH } = await import('./[idOrSlug]/route.js')
+
+    const req = makeAuthedReq(
+      'PATCH',
+      'http://localhost/api/external/products/400?locale=en',
+      {
+        tiers: [
+          { name: 'Starter', priceCents: 4900, currency: 'usd', tagline: 'EN a' },
+          { name: 'Pro', priceCents: 9900, currency: 'usd', tagline: 'EN b' },
+        ],
+      },
+    )
+
+    const res = await PATCH(req, { params: Promise.resolve({ idOrSlug: '400' }) })
+    expect(res.status).toBe(200)
+
+    const sentTiers = update.mock.calls[0][0].data.tiers
+    expect(sentTiers[0].id).toBe('row-a')
+    expect(sentTiers[1].id).toBe('row-b')
+    // non-localized values still forwarded from the request body
+    expect(sentTiers[0].priceCents).toBe(4900)
+    expect(update.mock.calls[0][0].locale).toBe('en')
+  })
+
+  it('does not inject ids when there are no existing tier rows', async () => {
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    const update = vi.fn().mockResolvedValue({
+      id: 401,
+      title: 'Fresh',
+      slug: 'fresh',
+      priceCents: 4900,
+      currency: 'usd',
+      _status: 'published',
+      downloadFiles: null,
+    })
+    const findByID = vi.fn().mockResolvedValue({ id: 401 }) // no tiers yet
+    vi.mocked(getPayloadClient).mockResolvedValue({ update, findByID } as never)
+
+    const { PATCH } = await import('./[idOrSlug]/route.js')
+
+    const req = makeAuthedReq(
+      'PATCH',
+      'http://localhost/api/external/products/401?locale=pl',
+      { tiers: [{ name: 'Starter', priceCents: 4900, currency: 'usd', tagline: 'PL a' }] },
+    )
+
+    const res = await PATCH(req, { params: Promise.resolve({ idOrSlug: '401' }) })
+    expect(res.status).toBe(200)
+
+    const sentTiers = update.mock.calls[0][0].data.tiers
+    expect(sentTiers[0]).not.toHaveProperty('id')
+  })
+})

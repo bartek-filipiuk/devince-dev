@@ -132,11 +132,13 @@ export const Products: CollectionConfig = {
                 {
                   name: 'tagline',
                   type: 'text',
+                  localized: true,
                   admin: { description: 'Np. "1 projekt", "Do 5 projektów"' },
                 },
                 {
                   name: 'features',
                   type: 'array',
+                  localized: true,
                   labels: { singular: 'Cecha', plural: 'Cechy' },
                   fields: [{ name: 'item', type: 'text', required: true }],
                 },

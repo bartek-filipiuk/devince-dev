@@ -4,6 +4,7 @@ import { createErrorResponse, createSuccessResponse, handleRouteError } from '..
 import {
   getPayloadClient,
   isErrorResponse,
+  parseLocale,
   resolveContent,
   resolveDocId,
   validateContentFormat,
@@ -48,10 +49,16 @@ export async function PATCH(
 
   try {
     const { idOrSlug } = await params
+    // Locale governs WHERE localized fields (title, description, tier tagline +
+    // features) are written. `?locale=en` writes the English values; absent it
+    // defaults to 'pl'. Non-localized fields (price, currency, recommended,
+    // tier name) are locale-independent and write the same row regardless.
+    const locale = parseLocale(request)
+    if (isErrorResponse(locale)) return locale
+
     const payload = await getPayloadClient()
 
-    // products' main fields are not localized; pass 'pl' to satisfy the helper.
-    const productId = await resolveDocId(payload, 'products', idOrSlug, 'pl')
+    const productId = await resolveDocId(payload, 'products', idOrSlug, locale)
     if (isErrorResponse(productId)) return productId
 
     const data: Record<string, unknown> = {}
@@ -102,7 +109,32 @@ export async function PATCH(
       if (body.tiers !== null && !Array.isArray(body.tiers)) {
         return createErrorResponse('VALIDATION_ERROR', 'tiers must be an array of pricing-tier objects (or null)')
       }
-      data.tiers = body.tiers
+      if (Array.isArray(body.tiers) && body.tiers.length > 0) {
+        // `tiers` is a NON-localized array with localized subfields (tagline +
+        // features). Writing the array at one locale WITHOUT each row's id makes
+        // Payload replace the whole array, silently dropping the OTHER locale's
+        // tagline + features (verified). Carry the existing rows' ids forward BY
+        // POSITION so a per-locale write only updates THIS locale's text on the
+        // shared rows. Non-localized values (price, currency, name, recommended)
+        // come from the request body and are written explicitly either way.
+        const existing = await payload.findByID({
+          collection: 'products',
+          id: productId,
+          depth: 0,
+          locale,
+          overrideAccess: true,
+        })
+        const existingTiers = Array.isArray(existing?.tiers) ? existing.tiers : []
+        data.tiers = body.tiers.map((tier, i) => {
+          const prev = existingTiers[i]
+          const prevId = prev && typeof prev === 'object' ? (prev as { id?: unknown }).id : undefined
+          return tier && typeof tier === 'object' && prevId != null
+            ? { ...(tier as Record<string, unknown>), id: prevId }
+            : tier
+        })
+      } else {
+        data.tiers = body.tiers
+      }
     }
     if (body._status !== undefined) {
       if (body._status !== 'draft' && body._status !== 'published') {
@@ -144,6 +176,7 @@ export async function PATCH(
       collection: 'products',
       id: productId,
       data: data as never,
+      locale,
       draft: false,
     })
 
