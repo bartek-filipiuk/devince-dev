@@ -24,6 +24,12 @@ export type EventKind =
   // substitution / unverifiable price). The grant is REFUSED; this fires so the
   // owner can investigate. Payload: { item, paid, expected, email }.
   | 'payment_mismatch'
+  // An ASYNC payment (P24 / BLIK / bank transfer) was initiated but ultimately
+  // FAILED (`checkout.session.async_payment_failed`). No grant was ever created
+  // (the `completed` event arrived `unpaid` and was skipped), so there is nothing
+  // to revoke — this is purely informational so the owner sees the abandoned
+  // attempt. Payload: { item, email }.
+  | 'payment_failed'
 
 /**
  * Build the human-readable Discord line for an event. Pure + total: it reads
@@ -87,6 +93,10 @@ export function formatDiscord(kind: EventKind, payload: Record<string, unknown>)
       const expStr = expected !== undefined ? `oczekiwano ${fmt(expected)}` : undefined
       return join(['🚨 **Płatność nie zgadza się z ceną**', item, paidStr, expStr, email])
     }
+    case 'payment_failed':
+      // Async payment (P24/BLIK/bank transfer) attempt that did not settle. No
+      // grant existed, so this is informational only.
+      return join(['❌ **Płatność async nieudana**', item, email])
     default:
       return join([String(kind), item, money, email])
   }

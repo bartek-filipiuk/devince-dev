@@ -108,6 +108,14 @@ function refundedEvent(charge: Record<string, unknown>, id = 'evt_refund_1') {
   return { id, type: 'charge.refunded', data: { object: charge } }
 }
 
+function asyncSucceededEvent(session: Record<string, unknown>, id = 'evt_async_ok') {
+  return { id, type: 'checkout.session.async_payment_succeeded', data: { object: session } }
+}
+
+function asyncFailedEvent(session: Record<string, unknown>, id = 'evt_async_fail') {
+  return { id, type: 'checkout.session.async_payment_failed', data: { object: session } }
+}
+
 const BUYER = 'buyer@example.com'
 
 function courseSession(over: Record<string, unknown> = {}): Record<string, unknown> {
@@ -596,5 +604,89 @@ describe('NDQS branch — payment_status gate only', () => {
 
     expect(res.status).toBe(200)
     expect(enrollNdqsByEmail).not.toHaveBeenCalled()
+  })
+})
+
+// ── Async payment lifecycle (Przelewy24 / BLIK) ──────────────────────────────
+// Delayed-notification methods settle AFTER `checkout.session.completed`. The
+// real success arrives as `checkout.session.async_payment_succeeded`; it must
+// flow through the SAME fulfillment. A non-settling attempt arrives as
+// `checkout.session.async_payment_failed` and must NOT grant.
+
+describe('async payment lifecycle (P24/BLIK)', () => {
+  it('fulfills an app on checkout.session.async_payment_succeeded (paid)', async () => {
+    const { POST } = await import('./route')
+    setFind({})
+    setFindByID({ 'products:7': PRODUCT_7 })
+    stageEvent(asyncSucceededEvent(appsSession()))
+
+    const res = await POST(makeReq())
+
+    expect(res.status).toBe(200)
+    expect(fulfillAppPurchase).toHaveBeenCalledOnce()
+    expect(fulfillAppPurchase.mock.calls[0][1]).toMatchObject({ productId: 7, sessionId: 'cs_app_1' })
+  })
+
+  it('grants a course on checkout.session.async_payment_succeeded (paid)', async () => {
+    const { POST } = await import('./route')
+    setFind({ user: { id: 5, email: BUYER, purchases: [] } })
+    setFindByID({ 'program:16': PROGRAM_16 })
+    stageEvent(asyncSucceededEvent(courseSession()))
+
+    const res = await POST(makeReq())
+
+    expect(res.status).toBe(200)
+    // course grant = users.update with the program added to purchases
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({ collection: 'users', data: expect.objectContaining({ purchases: [16] }) }),
+    )
+  })
+
+  it('does NOT fulfill on checkout.session.async_payment_failed; alerts payment_failed', async () => {
+    const { POST } = await import('./route')
+    setFind({})
+    stageEvent(asyncFailedEvent(appsSession()))
+
+    const res = await POST(makeReq())
+
+    expect(res.status).toBe(200)
+    expect(fulfillAppPurchase).not.toHaveBeenCalled()
+    expect(update).not.toHaveBeenCalled()
+    expect(notifyEvent).toHaveBeenCalledWith(
+      'payment_failed',
+      expect.objectContaining({ item: 'product 7', email: BUYER }),
+    )
+  })
+
+  it('full async flow: completed(unpaid) skips, then async_succeeded(paid) fulfills', async () => {
+    const { POST } = await import('./route')
+    setFind({})
+    setFindByID({ 'products:7': PRODUCT_7 })
+
+    // 1) completed arrives unpaid (money not settled) → no grant
+    stageEvent(completedEvent(appsSession({ payment_status: 'unpaid' }), 'evt_seq_completed'))
+    await POST(makeReq())
+    expect(fulfillAppPurchase).not.toHaveBeenCalled()
+
+    // 2) async success (distinct event id) settles → fulfills exactly once
+    stageEvent(asyncSucceededEvent(appsSession({ payment_status: 'paid' }), 'evt_seq_async'))
+    await POST(makeReq())
+    expect(fulfillAppPurchase).toHaveBeenCalledOnce()
+  })
+
+  it('records the async_payment_succeeded event for idempotency', async () => {
+    const { POST } = await import('./route')
+    setFind({})
+    setFindByID({ 'products:7': PRODUCT_7 })
+    stageEvent(asyncSucceededEvent(appsSession(), 'evt_async_idem'))
+
+    await POST(makeReq())
+
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'stripe-events',
+        data: expect.objectContaining({ eventId: 'evt_async_idem', type: 'checkout.session.async_payment_succeeded' }),
+      }),
+    )
   })
 })

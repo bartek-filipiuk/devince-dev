@@ -167,18 +167,31 @@ export async function POST(req: NextRequest) {
   })
   if (dup.docs.length) return NextResponse.json({ received: true, duplicate: true })
 
-  if (event.type === 'checkout.session.completed') {
+  // Fulfillment runs for BOTH the synchronous completion AND the asynchronous
+  // settlement of a delayed-notification payment method:
+  //   • checkout.session.completed — card/instant: arrives `paid` → fulfill now.
+  //     Async (Przelewy24/BLIK/bank transfer): arrives `unpaid`/`processing`, so
+  //     the payment_status gate below skips it, and Stripe later re-fires…
+  //   • checkout.session.async_payment_succeeded — the async money settled →
+  //     arrives `paid`. Same object shape (Checkout.Session) + same metadata, so
+  //     it flows through the IDENTICAL fulfillment below (no duplicated logic).
+  // The two events carry distinct ids, each recorded once in `stripe-events`; the
+  // fulfillment side-effects are themselves idempotent (a download-grant is unique
+  // per session; course purchases dedupe by programId), so even an unexpected
+  // double-fire cannot double-grant.
+  if (
+    event.type === 'checkout.session.completed' ||
+    event.type === 'checkout.session.async_payment_succeeded'
+  ) {
     const session = event.data.object as Stripe.Checkout.Session
     const email = session.customer_details?.email ?? session.customer_email ?? undefined
 
     // ── Fix 1: payment_status gate (MONEY-CRITICAL) ─────────────────────────
-    // `checkout.session.completed` fires even when the money has NOT settled:
-    // async payment methods (P24/BLIK/przelewy) complete the session in a
-    // `processing`/`unpaid` state, and a $0 / mis-configured session can also
-    // arrive here. Granting on any of those = free access. Require `paid`
-    // BEFORE any fulfillment branch runs. Async flows that genuinely succeed
-    // re-fire as `checkout.session.async_payment_succeeded` (not handled yet —
-    // we simply refuse to grant on unpaid here, never the inverse).
+    // Require `paid` before ANY fulfillment branch runs. `completed` fires even
+    // when the money has NOT settled (async P24/BLIK in `processing`/`unpaid`, or
+    // a $0/mis-configured session) — granting on those = free access. The async
+    // success path re-enters here already `paid`, so the SAME gate admits it. We
+    // only ever refuse to grant on unpaid, never the inverse.
     const paymentOk = session.payment_status === 'paid'
     if (!paymentOk) {
       console.warn(
@@ -502,6 +515,34 @@ export async function POST(req: NextRequest) {
         })
       }
     }
+  }
+
+  // ── Async payment failed (Przelewy24 / BLIK / bank transfer) ────────────────
+  // The buyer started a delayed-notification payment that ultimately did NOT
+  // settle. Its `completed` event arrived `unpaid` and was skipped by the gate
+  // above, so NO grant was ever created — there is nothing to revoke. Record +
+  // alert only, so the owner sees the abandoned attempt. Best-effort + never
+  // throws, same policy as the fulfillment branches; the stripe-events row + 200
+  // still happen below.
+  if (event.type === 'checkout.session.async_payment_failed') {
+    const session = event.data.object as Stripe.Checkout.Session
+    const email = session.customer_details?.email ?? session.customer_email ?? undefined
+    const itemLabel = session.metadata?.productId
+      ? `product ${session.metadata.productId}`
+      : session.metadata?.programId
+        ? `program ${session.metadata.programId}`
+        : session.metadata?.ndqsCourseId
+          ? `course ${session.metadata.ndqsCourseId}`
+          : 'unknown'
+    console.warn(
+      JSON.stringify({
+        event: 'async_payment_failed',
+        item: itemLabel,
+        session: session.id,
+        email: email ?? null,
+      }),
+    )
+    await notifyEvent('payment_failed', { item: itemLabel, email })
   }
 
   // Refund → access revocation. A `charge.refunded` event does NOT carry the
