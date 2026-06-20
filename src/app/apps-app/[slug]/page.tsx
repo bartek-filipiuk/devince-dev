@@ -12,6 +12,7 @@ import { t } from '@/i18n'
 import RichText from '@/components/RichText'
 import { BuyButton } from '../_components/BuyButton'
 import { AppLeadMagnet } from '../_components/AppLeadMagnet'
+import { ProductTierSelector } from '../_components/ProductTierSelector'
 
 export const dynamic = 'force-dynamic'
 
@@ -85,6 +86,20 @@ export default async function ProductPage({
               <div className="product-buy">
                 {leadMagnet ? (
                   <AppLeadMagnet slug={product.slug} locale={locale} />
+                ) : product.tiers && product.tiers.length > 0 ? (
+                  <ProductTierSelector
+                    slug={product.slug}
+                    tiers={product.tiers}
+                    disabled={files.length === 0}
+                    chooseLicenseLabel={t(locale, 'apps.product.chooseLicense')}
+                    recommendedLabel={t(locale, 'apps.product.recommended')}
+                    buyLabel={t(locale, 'apps.product.buy')}
+                    processingLabel={t(locale, 'apps.product.processing')}
+                    errorLabel={t(locale, 'apps.product.error')}
+                    consentLabel={t(locale, 'apps.product.consent')}
+                    newsletterLabel={t(locale, 'apps.checkout.newsletter')}
+                    noteLabel={t(locale, 'apps.product.note')}
+                  />
                 ) : (
                   <>
                     <p className="product-price">

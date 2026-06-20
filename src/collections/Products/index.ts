@@ -99,6 +99,54 @@ export const Products: CollectionConfig = {
               hasMany: true,
               admin: { description: 'Prywatne pliki dostarczane po zakupie.' },
             },
+            {
+              name: 'tiers',
+              type: 'array',
+              label:
+                'Poziomy cenowe (opcjonalne — gdy ustawione, strona produktu pokazuje selektor licencji zamiast pojedynczej ceny)',
+              labels: { singular: 'Poziom', plural: 'Poziomy' },
+              fields: [
+                {
+                  name: 'name',
+                  type: 'text',
+                  required: true,
+                  admin: { description: 'Np. "Starter", "Pro", "Agency"' },
+                },
+                {
+                  name: 'priceCents',
+                  type: 'number',
+                  required: true,
+                  min: 0,
+                  admin: { description: 'Cena w groszach/centach (np. 4900 = 49,00)' },
+                },
+                {
+                  name: 'currency',
+                  type: 'select',
+                  defaultValue: 'usd',
+                  options: [
+                    { label: 'USD', value: 'usd' },
+                    { label: 'EUR', value: 'eur' },
+                    { label: 'PLN', value: 'pln' },
+                  ],
+                },
+                {
+                  name: 'tagline',
+                  type: 'text',
+                  admin: { description: 'Np. "1 projekt", "Do 5 projektów"' },
+                },
+                {
+                  name: 'features',
+                  type: 'array',
+                  labels: { singular: 'Cecha', plural: 'Cechy' },
+                  fields: [{ name: 'item', type: 'text', required: true }],
+                },
+                {
+                  name: 'recommended',
+                  type: 'checkbox',
+                  admin: { description: 'Oznacz ten poziom jako polecany (wyróżnienie na stronie)' },
+                },
+              ],
+            },
           ],
         },
         {

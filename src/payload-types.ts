@@ -1369,6 +1369,34 @@ export interface Product {
    * Prywatne pliki dostarczane po zakupie.
    */
   downloadFiles?: (number | AppAsset)[] | null;
+  tiers?:
+    | {
+        /**
+         * Np. "Starter", "Pro", "Agency"
+         */
+        name: string;
+        /**
+         * Cena w groszach/centach (np. 4900 = 49,00)
+         */
+        priceCents: number;
+        currency?: ('usd' | 'eur' | 'pln') | null;
+        /**
+         * Np. "1 projekt", "Do 5 projektów"
+         */
+        tagline?: string | null;
+        features?:
+          | {
+              item: string;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Oznacz ten poziom jako polecany (wyróżnienie na stronie)
+         */
+        recommended?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
   meta?: {
     title?: string | null;
     /**
@@ -2291,6 +2319,22 @@ export interface ProductsSelect<T extends boolean = true> {
   currency?: T;
   stripePriceId?: T;
   downloadFiles?: T;
+  tiers?:
+    | T
+    | {
+        name?: T;
+        priceCents?: T;
+        currency?: T;
+        tagline?: T;
+        features?:
+          | T
+          | {
+              item?: T;
+              id?: T;
+            };
+        recommended?: T;
+        id?: T;
+      };
   meta?:
     | T
     | {
