@@ -32,8 +32,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid body' }, { status: 400 })
   }
   if (typeof slug !== 'string' || !slug) return NextResponse.json({ error: 'invalid body' }, { status: 400 })
-  // Drives only the language of the download/confirmation email — not a trust
-  // boundary, so a bad value harmlessly falls back to 'pl'.
+  // Drives the language of the download/confirmation email AND the locale the
+  // product is read at (tier price + currency are localized — PL/EN can be
+  // priced independently). Coerced to a valid locale, so a bad/absent value
+  // safely falls back to 'pl'. NOT a privilege boundary — a buyer can request
+  // either locale's price (regional pricing is intentionally soft); the price
+  // is still ALWAYS a server-side DB value, never client-supplied.
   const emailLocale = locale === 'en' ? 'en' : 'pl'
 
   // Art. 38 pkt 13 ustawy o prawach konsumenta: a digital download is supplied
@@ -50,12 +54,17 @@ export async function POST(req: NextRequest) {
 
   const payload = await getPayload({ config: configPromise })
   // overrideAccess: false + no user => only published products are findable.
+  // locale: emailLocale => tier priceCents/currency are read for the buyer's
+  // language, so the amount charged matches the price shown on that locale's
+  // page. (Root single-price fields are non-localized, so this is a no-op for
+  // non-tiered products.)
   const found = await payload.find({
     collection: 'products',
     where: { slug: { equals: slug } },
     limit: 1,
     depth: 1,
     overrideAccess: false,
+    locale: emailLocale,
   })
   const product = found.docs[0]
   if (!product) return NextResponse.json({ error: 'not found' }, { status: 404 })

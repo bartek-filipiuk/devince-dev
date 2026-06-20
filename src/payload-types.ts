@@ -1376,7 +1376,7 @@ export interface Product {
          */
         name: string;
         /**
-         * Cena w groszach/centach (np. 4900 = 49,00)
+         * Cena w groszach/centach (np. 4900 = 49,00). Niezależna per język (PL/EN).
          */
         priceCents: number;
         currency?: ('usd' | 'eur' | 'pln') | null;

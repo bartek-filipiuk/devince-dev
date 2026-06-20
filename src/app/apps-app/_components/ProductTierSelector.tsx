@@ -15,6 +15,7 @@ type Tier = {
 export function ProductTierSelector({
   slug,
   tiers,
+  locale,
   disabled,
   // i18n strings passed from the RSC page
   chooseLicenseLabel,
@@ -28,6 +29,7 @@ export function ProductTierSelector({
 }: {
   slug: string
   tiers: Tier[]
+  locale: 'pl' | 'en'
   disabled?: boolean
   chooseLicenseLabel: string
   recommendedLabel: string
@@ -67,7 +69,9 @@ export function ProductTierSelector({
       const res = await fetch('/api/apps/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug, tierIndex: selected, consent: true, locale: undefined, newsletter }),
+        // Send the page locale: the server reads the tier price/currency for
+        // this language (PL/EN priced independently) and charges accordingly.
+        body: JSON.stringify({ slug, tierIndex: selected, consent: true, locale, newsletter }),
       })
       const data = await res.json()
       if (!res.ok || !data.url) throw new Error(data.error ?? 'checkout failed')
@@ -79,11 +83,13 @@ export function ProductTierSelector({
     }
   }
 
-  // Format price inline (no server import in client component)
+  // Format price inline (no server import in client component). Format in the
+  // page locale so PLN reads "599,00 zł" on PL and USD reads "$49.00" on EN.
+  const intlLocale = locale === 'pl' ? 'pl-PL' : 'en-US'
   function fmtPrice(cents: number, currency: string | null | undefined): string {
     const curr = (currency ?? 'usd').toUpperCase()
     try {
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: curr }).format(cents / 100)
+      return new Intl.NumberFormat(intlLocale, { style: 'currency', currency: curr }).format(cents / 100)
     } catch {
       return `${(cents / 100).toFixed(2)} ${curr}`
     }
