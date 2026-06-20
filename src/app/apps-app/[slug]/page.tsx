@@ -70,6 +70,10 @@ export default async function ProductPage({
   // paid buy control + price. The free-claim/confirm routes re-validate this
   // server-side from the DB record — the client can't make a paid item free.
   const leadMagnet = product.accessMode === 'lead-magnet'
+  // Tiered products show a multi-card license selector. It needs the FULL page
+  // width to lay the cards out in one row, so it renders in its own full-width
+  // section BELOW the hero — not cramped inside the hero's left column.
+  const tiered = !leadMagnet && Array.isArray(product.tiers) && product.tiers.length > 0
 
   return (
     <article>
@@ -83,42 +87,30 @@ export default async function ProductPage({
               </span>
               <h1>{product.title}</h1>
 
-              <div className="product-buy">
-                {leadMagnet ? (
-                  <AppLeadMagnet slug={product.slug} locale={locale} />
-                ) : product.tiers && product.tiers.length > 0 ? (
-                  <ProductTierSelector
-                    slug={product.slug}
-                    tiers={product.tiers}
-                    disabled={files.length === 0}
-                    chooseLicenseLabel={t(locale, 'apps.product.chooseLicense')}
-                    recommendedLabel={t(locale, 'apps.product.recommended')}
-                    buyLabel={t(locale, 'apps.product.buy')}
-                    processingLabel={t(locale, 'apps.product.processing')}
-                    errorLabel={t(locale, 'apps.product.error')}
-                    consentLabel={t(locale, 'apps.product.consent')}
-                    newsletterLabel={t(locale, 'apps.checkout.newsletter')}
-                    noteLabel={t(locale, 'apps.product.note')}
-                  />
-                ) : (
-                  <>
-                    <p className="product-price">
-                      {formatPrice(product.priceCents, product.currency)}
-                    </p>
-                    <BuyButton
-                      slug={product.slug}
-                      locale={locale}
-                      label={t(locale, 'apps.product.buy')}
-                      processingLabel={t(locale, 'apps.product.processing')}
-                      errorLabel={t(locale, 'apps.product.error')}
-                      consentLabel={t(locale, 'apps.product.consent')}
-                      newsletterLabel={t(locale, 'apps.checkout.newsletter')}
-                      disabled={files.length === 0}
-                    />
-                    <p className="product-note">{t(locale, 'apps.product.note')}</p>
-                  </>
-                )}
-              </div>
+              {!tiered ? (
+                <div className="product-buy">
+                  {leadMagnet ? (
+                    <AppLeadMagnet slug={product.slug} locale={locale} />
+                  ) : (
+                    <>
+                      <p className="product-price">
+                        {formatPrice(product.priceCents, product.currency)}
+                      </p>
+                      <BuyButton
+                        slug={product.slug}
+                        locale={locale}
+                        label={t(locale, 'apps.product.buy')}
+                        processingLabel={t(locale, 'apps.product.processing')}
+                        errorLabel={t(locale, 'apps.product.error')}
+                        consentLabel={t(locale, 'apps.product.consent')}
+                        newsletterLabel={t(locale, 'apps.checkout.newsletter')}
+                        disabled={files.length === 0}
+                      />
+                      <p className="product-note">{t(locale, 'apps.product.note')}</p>
+                    </>
+                  )}
+                </div>
+              ) : null}
             </div>
 
             {coverUrl ? (
@@ -139,6 +131,24 @@ export default async function ProductPage({
           </div>
         </div>
       </header>
+
+      {tiered ? (
+        <section className="shell tier-section">
+          <ProductTierSelector
+            slug={product.slug}
+            tiers={product.tiers!}
+            disabled={files.length === 0}
+            chooseLicenseLabel={t(locale, 'apps.product.chooseLicense')}
+            recommendedLabel={t(locale, 'apps.product.recommended')}
+            buyLabel={t(locale, 'apps.product.buy')}
+            processingLabel={t(locale, 'apps.product.processing')}
+            errorLabel={t(locale, 'apps.product.error')}
+            consentLabel={t(locale, 'apps.product.consent')}
+            newsletterLabel={t(locale, 'apps.checkout.newsletter')}
+            noteLabel={t(locale, 'apps.product.note')}
+          />
+        </section>
+      ) : null}
 
       {product.description ? (
         <section className="shell product-detail">
