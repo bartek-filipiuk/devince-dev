@@ -137,6 +137,7 @@ export default async function ProductPage({
           <ProductTierSelector
             slug={product.slug}
             tiers={product.tiers!}
+            locale={locale}
             disabled={files.length === 0}
             chooseLicenseLabel={t(locale, 'apps.product.chooseLicense')}
             recommendedLabel={t(locale, 'apps.product.recommended')}

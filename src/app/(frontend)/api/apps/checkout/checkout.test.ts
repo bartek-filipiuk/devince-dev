@@ -199,3 +199,61 @@ describe('POST /api/apps/checkout — tier-price validation', () => {
     expect(sessionsCreate).not.toHaveBeenCalled()
   })
 })
+
+// ── per-locale pricing ───────────────────────────────────────────────────────
+// Tier priceCents + currency are localized: PL and EN can be priced
+// independently. The checkout must read the product at the BUYER's locale so the
+// amount charged matches the price shown on that locale's page.
+
+describe('POST /api/apps/checkout — per-locale tier pricing', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    process.env.STRIPE_SECRET_KEY = 'sk_test_x'
+    sessionsCreate.mockResolvedValue({ url: 'https://checkout.stripe.com/x' })
+  })
+
+  // find() resolves a product whose tier price/currency depend on the locale it
+  // was read at — mirroring how Payload returns localized values.
+  function mockLocalizedProduct() {
+    find.mockImplementation(async (args: { locale?: string }) => {
+      const pln = [{ name: 'Starter', priceCents: 14900, currency: 'pln', id: 'tier-1' }]
+      const usd = [{ name: 'Starter', priceCents: 4900, currency: 'usd', id: 'tier-1' }]
+      const tiers = args?.locale === 'pl' ? pln : usd
+      return { docs: [{ ...TIERED_PRODUCT, tiers }] }
+    })
+  }
+
+  it('reads the product at locale=pl and charges the PLN tier price', async () => {
+    const { POST } = await import('./route')
+    mockLocalizedProduct()
+    const res = await POST(makeReq({ slug: 'my-tiered-app', consent: true, tierIndex: 0, locale: 'pl' }))
+    expect(res.status).toBe(200)
+    expect(find.mock.calls[0][0].locale).toBe('pl')
+    const arg = sessionsCreate.mock.calls[0][0]
+    expect(arg.line_items[0].price_data.unit_amount).toBe(14900)
+    expect(arg.line_items[0].price_data.currency).toBe('pln')
+    expect(arg.metadata.expectedCents).toBe('14900')
+    expect(arg.metadata.expectedCurrency).toBe('pln')
+  })
+
+  it('reads the product at locale=en and charges the USD tier price', async () => {
+    const { POST } = await import('./route')
+    mockLocalizedProduct()
+    const res = await POST(makeReq({ slug: 'my-tiered-app', consent: true, tierIndex: 0, locale: 'en' }))
+    expect(res.status).toBe(200)
+    expect(find.mock.calls[0][0].locale).toBe('en')
+    const arg = sessionsCreate.mock.calls[0][0]
+    expect(arg.line_items[0].price_data.unit_amount).toBe(4900)
+    expect(arg.line_items[0].price_data.currency).toBe('usd')
+    expect(arg.metadata.expectedCurrency).toBe('usd')
+  })
+
+  it('defaults to locale=pl when locale is absent', async () => {
+    const { POST } = await import('./route')
+    mockLocalizedProduct()
+    const res = await POST(makeReq({ slug: 'my-tiered-app', consent: true, tierIndex: 0 }))
+    expect(res.status).toBe(200)
+    expect(find.mock.calls[0][0].locale).toBe('pl')
+    expect(sessionsCreate.mock.calls[0][0].line_items[0].price_data.unit_amount).toBe(14900)
+  })
+})

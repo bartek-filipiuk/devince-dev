@@ -117,12 +117,14 @@ export const Products: CollectionConfig = {
                   type: 'number',
                   required: true,
                   min: 0,
-                  admin: { description: 'Cena w groszach/centach (np. 4900 = 49,00)' },
+                  localized: true,
+                  admin: { description: 'Cena w groszach/centach (np. 4900 = 49,00). Niezależna per język (PL/EN).' },
                 },
                 {
                   name: 'currency',
                   type: 'select',
                   defaultValue: 'usd',
+                  localized: true,
                   options: [
                     { label: 'USD', value: 'usd' },
                     { label: 'EUR', value: 'eur' },
