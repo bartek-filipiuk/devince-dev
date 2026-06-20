@@ -71,7 +71,19 @@ async function verifyAmount(
     let expected: number | null = null
     let expectedCurrency: string | null = null
 
-    if (typeof item.priceCents === 'number') {
+    // Prefer the server-stamped metadata values (set by /api/apps/checkout for
+    // both single-price and tiered products). These are authoritative because
+    // they capture the EXACT amount the checkout route chose — including tier
+    // prices (the root `priceCents` is 0 for tiered products, so falling through
+    // to `item.priceCents` would make this gate a no-op for every tier purchase).
+    // Falls back to the item fields for back-compat with old sessions (pre-stamp)
+    // and Payment Links that don't go through our checkout route.
+    const metaCents = Number(session.metadata?.expectedCents)
+    const metaCurrency = session.metadata?.expectedCurrency
+    if (Number.isFinite(metaCents) && metaCents > 0 && typeof metaCurrency === 'string' && metaCurrency) {
+      expected = metaCents
+      expectedCurrency = metaCurrency
+    } else if (typeof item.priceCents === 'number') {
       expected = item.priceCents
       expectedCurrency = typeof item.currency === 'string' ? item.currency : 'pln'
     } else if (typeof item.stripePriceId === 'string' && item.stripePriceId) {

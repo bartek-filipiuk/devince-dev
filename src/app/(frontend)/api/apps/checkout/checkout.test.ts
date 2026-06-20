@@ -103,6 +103,10 @@ describe('POST /api/apps/checkout — tier-price validation', () => {
     expect(arg.metadata.tier).toBeUndefined()
     // Price derived from product record, not client
     expect(arg.line_items[0].price_data.unit_amount).toBe(4900)
+    // Hardening: server-chosen amount stamped into metadata so the webhook can
+    // reconcile single-price purchases without re-deriving from root fields.
+    expect(arg.metadata.expectedCents).toBe('4900')
+    expect(arg.metadata.expectedCurrency).toBe('usd')
   })
 
   it('single-price: 404 for unknown product', async () => {
@@ -161,6 +165,10 @@ describe('POST /api/apps/checkout — tier-price validation', () => {
     expect(arg.metadata.tier).toBe('Pro')
     expect(arg.metadata.productId).toBe('2')
     expect(arg.metadata.withdrawalConsent).toBe('true')
+    // Hardening: tier's exact price stamped so the webhook reconciles against the
+    // CHOSEN tier, not the root priceCents (which is 0 for tiered products).
+    expect(arg.metadata.expectedCents).toBe('9900')
+    expect(arg.metadata.expectedCurrency).toBe('usd')
   })
 
   it('tiered: index 0 = Starter tier price (4900)', async () => {

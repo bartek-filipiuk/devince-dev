@@ -378,6 +378,96 @@ describe('Fix 2 — amount/currency reconciliation', () => {
     expect(update).not.toHaveBeenCalled()
     expect(notifyEvent).toHaveBeenCalledWith('payment_mismatch', expect.any(Object))
   })
+
+  // ── Hardening: metadata.expectedCents / expectedCurrency path ─────────────
+  // Covers the scenario where the checkout route stamps the tier price into the
+  // session metadata, and the webhook must use THAT value (not root priceCents).
+
+  it('TIERED: blocks grant when amount_total < expectedCents in metadata (root priceCents=0 would pass)', async () => {
+    const { POST } = await import('./route')
+    setFind({ user: { id: 5, email: BUYER, purchases: [] } })
+    // Root priceCents is 0 (tiered product) — old logic would grant anything ≥ 0.
+    setFindByID({ 'products:7': { id: 7, slug: 'my-tiered-app', priceCents: 0, currency: 'usd' } })
+    stageEvent(
+      completedEvent(
+        appsSession({
+          amount_total: 100, // paid 1¢ — less than the tier price
+          currency: 'usd',
+          metadata: {
+            productId: '7',
+            withdrawalConsentAt: '2026-06-19T00:00:00Z',
+            expectedCents: '9900', // Pro tier
+            expectedCurrency: 'usd',
+          },
+        }),
+      ),
+    )
+
+    const res = await POST(makeReq())
+
+    expect(res.status).toBe(200)
+    // Must block the grant — expectedCents (9900) > amount_total (100).
+    expect(fulfillAppPurchase).not.toHaveBeenCalled()
+    expect(notifyEvent).toHaveBeenCalledWith(
+      'payment_mismatch',
+      expect.objectContaining({ paid: 100, expected: 9900 }),
+    )
+  })
+
+  it('TIERED: grants when amount_total >= expectedCents in metadata', async () => {
+    const { POST } = await import('./route')
+    setFind({})
+    // Root priceCents is 0 — must use metadata.expectedCents instead.
+    setFindByID({ 'products:7': { id: 7, slug: 'my-tiered-app', priceCents: 0, currency: 'usd' } })
+    stageEvent(
+      completedEvent(
+        appsSession({
+          amount_total: 9900, // exact Pro tier price
+          currency: 'usd',
+          metadata: {
+            productId: '7',
+            withdrawalConsentAt: '2026-06-19T00:00:00Z',
+            expectedCents: '9900',
+            expectedCurrency: 'usd',
+          },
+        }),
+      ),
+    )
+
+    const res = await POST(makeReq())
+
+    expect(res.status).toBe(200)
+    expect(fulfillAppPurchase).toHaveBeenCalledWith(
+      payloadStub,
+      expect.objectContaining({ productId: 7, email: BUYER }),
+    )
+  })
+
+  it('OLD SESSION (no expectedCents): falls back to root priceCents for back-compat', async () => {
+    const { POST } = await import('./route')
+    setFind({})
+    // A session without expectedCents — created before the hardening was deployed.
+    setFindByID({ 'products:7': PRODUCT_7 }) // priceCents: 4900, currency: 'pln'
+    stageEvent(
+      completedEvent(
+        appsSession({
+          amount_total: 4900,
+          currency: 'pln',
+          // metadata has NO expectedCents/expectedCurrency — old session shape.
+          metadata: { productId: '7', withdrawalConsentAt: '2026-06-19T00:00:00Z' },
+        }),
+      ),
+    )
+
+    const res = await POST(makeReq())
+
+    expect(res.status).toBe(200)
+    // Must still grant — falls back to root priceCents (4900) and currency ('pln').
+    expect(fulfillAppPurchase).toHaveBeenCalledWith(
+      payloadStub,
+      expect.objectContaining({ productId: 7 }),
+    )
+  })
 })
 
 // ── Fix 3: refund revokes courses + apps ─────────────────────────────────────

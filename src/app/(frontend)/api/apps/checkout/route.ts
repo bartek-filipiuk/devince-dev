@@ -124,6 +124,19 @@ export async function POST(req: NextRequest) {
       // The downloadable file is the same for all tiers; this is how we know
       // which license the buyer purchased. Never used to re-derive the price.
       ...(tierName ? { tier: tierName } : {}),
+      // Server-chosen price stamped into the session so the webhook can reconcile
+      // the exact amount (including tier prices) without re-deriving it from the
+      // root product fields. The root `priceCents` is 0 for tiered products, which
+      // would make the old webhook gate a no-op for any tier purchase.
+      // Only set when we have an inline amount (not a Stripe Price ID path — see
+      // comment in the single-price branch); the webhook falls back to its prior
+      // root-priceCents / stripePriceId logic when these keys are absent.
+      ...(typeof lineItemPriceCents === 'number' && !lineItemStripePriceId
+        ? {
+            expectedCents: String(lineItemPriceCents),
+            expectedCurrency: lineItemCurrency,
+          }
+        : {}),
       // Newsletter opt-in (separate from the Art. 38 consent above, never gates
       // the purchase, never affects price). Stamped only when the buyer ticked
       // the box; the webhook reads it post-grant to fire a Brevo double opt-in.
