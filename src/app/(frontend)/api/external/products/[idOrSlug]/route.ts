@@ -4,6 +4,7 @@ import { createErrorResponse, createSuccessResponse, handleRouteError } from '..
 import {
   getPayloadClient,
   isErrorResponse,
+  parseLocale,
   resolveContent,
   resolveDocId,
   validateContentFormat,
@@ -48,10 +49,16 @@ export async function PATCH(
 
   try {
     const { idOrSlug } = await params
+    // Locale governs WHERE localized fields (title, description, tier tagline +
+    // features) are written. `?locale=en` writes the English values; absent it
+    // defaults to 'pl'. Non-localized fields (price, currency, recommended,
+    // tier name) are locale-independent and write the same row regardless.
+    const locale = parseLocale(request)
+    if (isErrorResponse(locale)) return locale
+
     const payload = await getPayloadClient()
 
-    // products' main fields are not localized; pass 'pl' to satisfy the helper.
-    const productId = await resolveDocId(payload, 'products', idOrSlug, 'pl')
+    const productId = await resolveDocId(payload, 'products', idOrSlug, locale)
     if (isErrorResponse(productId)) return productId
 
     const data: Record<string, unknown> = {}
@@ -144,6 +151,7 @@ export async function PATCH(
       collection: 'products',
       id: productId,
       data: data as never,
+      locale,
       draft: false,
     })
 
