@@ -304,6 +304,9 @@ const translations = {
     'courses.store.phases': 'faz',
     'courses.store.stages': 'etapów',
     'courses.store.details': 'Szczegóły',
+    'courses.store.statusInProgress': 'W trakcie',
+    'courses.store.statusCompleted': 'Ukończony',
+    'courses.store.featured': 'Polecany',
 
     // Syllabus
     'courses.syllabus.metaNotFound': 'Kurs nie znaleziony · Devince',
@@ -727,6 +730,9 @@ const translations = {
     'courses.store.phases': 'phases',
     'courses.store.stages': 'stages',
     'courses.store.details': 'Details',
+    'courses.store.statusInProgress': 'In progress',
+    'courses.store.statusCompleted': 'Completed',
+    'courses.store.featured': 'Featured',
 
     // Syllabus
     'courses.syllabus.metaNotFound': 'Course not found · Devince',

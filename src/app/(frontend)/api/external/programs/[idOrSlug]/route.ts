@@ -120,6 +120,7 @@ export async function PATCH(
         : body.requirements
     }
     if (body.level !== undefined) data.level = body.level
+    if (body.featured !== undefined) data.featured = body.featured
 
     const program = await payload.update({
       collection: 'program',

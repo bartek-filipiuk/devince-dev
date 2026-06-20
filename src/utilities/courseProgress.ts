@@ -69,3 +69,29 @@ export async function getCompletedLessonIds(
     res.docs.map((d: any) => (typeof d.lesson === 'object' && d.lesson ? d.lesson.id : d.lesson)),
   )
 }
+
+export function courseStatus(done: number, total: number): 'new' | 'in-progress' | 'completed' {
+  if (total > 0 && done >= total) return 'completed'
+  if (total > 0 && done > 0) return 'in-progress'
+  return 'new'
+}
+
+type StorefrontItem = {
+  featured?: boolean | null
+  status: 'new' | 'in-progress' | 'completed'
+  publishedAt?: string | null
+}
+const STATUS_RANK: Record<StorefrontItem['status'], number> = {
+  'in-progress': 0,
+  completed: 1,
+  new: 2,
+}
+/** featured pinned first → in-progress → completed → new → newest publishedAt first. */
+export function compareStorefront(a: StorefrontItem, b: StorefrontItem): number {
+  if (!!a.featured !== !!b.featured) return a.featured ? -1 : 1
+  const r = STATUS_RANK[a.status] - STATUS_RANK[b.status]
+  if (r !== 0) return r
+  const ta = a.publishedAt ? Date.parse(a.publishedAt) : 0
+  const tb = b.publishedAt ? Date.parse(b.publishedAt) : 0
+  return tb - ta
+}

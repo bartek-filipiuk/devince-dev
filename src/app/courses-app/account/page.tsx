@@ -8,7 +8,7 @@ import { getLocale } from '@/utilities/getLocale.server'
 import { getLocalizedPath } from '@/utilities/getLocale'
 import { t } from '@/i18n'
 import { LogoutButton } from './LogoutButton'
-import { getCompletedLessonIds, progressFor, firstIncompleteLesson } from '@/utilities/courseProgress'
+import { getCompletedLessonIds, progressFor, firstIncompleteLesson, courseStatus } from '@/utilities/courseProgress'
 import type { Lesson } from '@/payload-types'
 
 /**
@@ -35,11 +35,26 @@ export default async function CoursesAccountPage() {
   }
 
   const purchasedIds = (user.purchases ?? []).map((p: any) => (typeof p === 'object' ? p.id : p))
-  const programs = purchasedIds.length
+
+  // Also include any course the user has progress on (started/completed) — this
+  // is what makes the page useful for admins (who own no purchases).
+  const progRes = await payload.find({
+    collection: 'lesson-progress',
+    where: { user: { equals: user.id } },
+    limit: 0,
+    overrideAccess: true,
+    depth: 0,
+  })
+  const progressProgramIds = progRes.docs
+    .map((r: any) => (typeof r.program === 'object' && r.program ? r.program.id : r.program))
+    .filter((x: unknown): x is number => typeof x === 'number')
+
+  const unionIds = Array.from(new Set<number>([...purchasedIds, ...progressProgramIds]))
+  const programs = unionIds.length
     ? (
         await payload.find({
           collection: 'program',
-          where: { id: { in: purchasedIds } },
+          where: { id: { in: unionIds } },
           overrideAccess: true,
           depth: 0,
           locale,
@@ -64,6 +79,14 @@ export default async function CoursesAccountPage() {
     const fi = firstIncompleteLesson(ls, completed)
     progressByProgram.set(p.id, { ...pr, resumeSlug: fi?.slug ?? ls[0]?.slug ?? null })
   }
+
+  const statusRank = (id: number): number => {
+    const pr = progressByProgram.get(id)
+    if (!pr) return 2
+    const s = courseStatus(pr.done, pr.total)
+    return s === 'in-progress' ? 0 : s === 'completed' ? 1 : 2
+  }
+  ;(programs as any[]).sort((a, b) => statusRank(a.id) - statusRank(b.id))
 
   return (
     <section className="shell auth-shell">

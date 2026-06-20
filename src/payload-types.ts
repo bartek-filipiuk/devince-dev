@@ -481,6 +481,10 @@ export interface Program {
   id: number;
   title: string;
   type: 'course' | 'workshop' | 'event';
+  /**
+   * Przypięty na górze listy kursów (storefront), niezależnie od postępu użytkownika.
+   */
+  featured?: boolean | null;
   heroImage?: (number | null) | Media;
   heroHeadline?: string | null;
   heroDescription?: string | null;
@@ -2077,6 +2081,7 @@ export interface PostsSelect<T extends boolean = true> {
 export interface ProgramSelect<T extends boolean = true> {
   title?: T;
   type?: T;
+  featured?: T;
   heroImage?: T;
   heroHeadline?: T;
   heroDescription?: T;

@@ -23,11 +23,17 @@ export function CourseCard({
   program,
   meta,
   enrolled,
+  featured,
+  status,
+  pct,
   locale,
 }: {
   program: Program
   meta: CardMeta
   enrolled: boolean
+  featured?: boolean
+  status?: 'new' | 'in-progress' | 'completed'
+  pct?: number
   locale: Locale
 }) {
   const syllabusHref = getLocalizedPath(`/${program.slug}`, locale)
@@ -44,6 +50,17 @@ export function CourseCard({
 
   return (
     <div className="course-card">
+      {featured ? <span className="course-card__featured">{t(locale, 'courses.store.featured')}</span> : null}
+      {status === 'in-progress' ? (
+        <div className="course-card__status">
+          <div className="progressbar">
+            <div className="progressbar__track"><div className="progressbar__fill" style={{ width: `${pct ?? 0}%` }} /></div>
+          </div>
+          <span>{t(locale, 'courses.store.statusInProgress')} · {pct ?? 0}%</span>
+        </div>
+      ) : status === 'completed' ? (
+        <span className="course-card__status done">✓ {t(locale, 'courses.store.statusCompleted')}</span>
+      ) : null}
       <Link className="course-card__head" href={syllabusHref}>
         <span className="eyebrow">
           <i>{t(locale, 'courses.auth.courseEyebrow')}</i>

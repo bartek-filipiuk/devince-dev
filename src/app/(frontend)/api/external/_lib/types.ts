@@ -59,6 +59,7 @@ export interface CreateProgramRequest extends BaseRequest {
   requirements?: string[]
   level?: 'beginner' | 'intermediate' | 'advanced'
   accessMode?: 'paid' | 'lead-magnet'
+  featured?: boolean
 }
 
 export interface CreateProductRequest {

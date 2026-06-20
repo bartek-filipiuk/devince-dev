@@ -3,6 +3,7 @@ import configPromise from '@payload-config'
 import { headers } from 'next/headers'
 
 import { courseMeta } from '@/utilities/courseMeta'
+import { courseStatus, compareStorefront, progressFor } from '@/utilities/courseProgress'
 import { getLocale } from '@/utilities/getLocale.server'
 import { t } from '@/i18n'
 import { CourseCard } from './_components/CourseCard'
@@ -37,22 +38,20 @@ export default async function CoursesStorefront({
     (user?.purchases ?? []).map((p) => (typeof p === 'object' && p ? p.id : p)),
   )
 
+  // Fetch ALL paid+published courses — we sort by per-user progress (not a DB
+  // column), so pagination happens in memory below.
   const res = await payload.find({
     collection: 'program',
-    where: {
-      and: [{ type: { equals: 'course' } }, { pricing: { equals: 'paid' } }],
-    },
-    limit: PER_PAGE,
-    page,
+    where: { and: [{ type: { equals: 'course' } }, { pricing: { equals: 'paid' } }] },
+    limit: 100,
     overrideAccess: false,
     depth: 0,
     locale,
   })
+  const allCourses = res.docs
 
-  // One extra query for all lessons of the courses on this page, grouped by program.
-  const programIds = res.docs.map((p) => p.id)
+  const programIds = allCourses.map((p) => p.id)
   const lessonsByProgram = new Map<number, Array<Record<string, unknown>>>()
-
   if (programIds.length > 0) {
     const lessonsRes = await payload.find({
       collection: 'lessons',
@@ -71,6 +70,45 @@ export default async function CoursesStorefront({
     }
   }
 
+  // Per-user completed-lesson counts (logged-in only).
+  const doneByProgram = new Map<number, number>()
+  if (user && programIds.length > 0) {
+    const progRes = await payload.find({
+      collection: 'lesson-progress',
+      where: { and: [{ user: { equals: user.id } }, { program: { in: programIds } }] },
+      limit: 0,
+      overrideAccess: true,
+      depth: 0,
+    })
+    for (const row of progRes.docs) {
+      const pid = typeof row.program === 'object' && row.program ? row.program.id : row.program
+      if (pid == null) continue
+      doneByProgram.set(pid as number, (doneByProgram.get(pid as number) ?? 0) + 1)
+    }
+  }
+
+  const items = allCourses.map((program) => {
+    const rawLessons = lessonsByProgram.get(program.id) ?? []
+    const lessons = rawLessons as Parameters<typeof courseMeta>[1] & Array<unknown>
+    const meta = courseMeta(program.phases ?? [], lessons)
+    const enrolled = isAdmin || purchasedIds.has(program.id)
+    const total = rawLessons.length
+    const done = doneByProgram.get(program.id) ?? 0
+    return {
+      program,
+      meta,
+      enrolled,
+      status: courseStatus(done, total),
+      pct: progressFor(total, done).pct,
+      featured: !!program.featured,
+      publishedAt: program.publishedAt ?? null,
+    }
+  })
+  items.sort(compareStorefront)
+
+  const totalPages = Math.max(1, Math.ceil(items.length / PER_PAGE))
+  const pageItems = items.slice((page - 1) * PER_PAGE, page * PER_PAGE)
+
   return (
     <section className="shell" style={{ padding: '64px 0' }}>
       <header className="store-head">
@@ -80,30 +118,26 @@ export default async function CoursesStorefront({
         <h1 className="section-title">{t(locale, 'courses.store.title')}</h1>
       </header>
 
-      {res.docs.length === 0 ? (
+      {pageItems.length === 0 ? (
         <p className="store-empty">{t(locale, 'courses.store.empty')}</p>
       ) : (
         <div className="store-grid">
-          {res.docs.map((program) => {
-            const lessons = (lessonsByProgram.get(program.id) ?? []) as Parameters<
-              typeof courseMeta
-            >[1]
-            const meta = courseMeta(program.phases ?? [], lessons)
-            const enrolled = isAdmin || purchasedIds.has(program.id)
-            return (
-              <CourseCard
-                key={program.id}
-                program={program}
-                meta={meta}
-                enrolled={enrolled}
-                locale={locale}
-              />
-            )
-          })}
+          {pageItems.map(({ program, meta, enrolled, status, pct, featured }) => (
+            <CourseCard
+              key={program.id}
+              program={program}
+              meta={meta}
+              enrolled={enrolled}
+              featured={featured}
+              status={user ? status : undefined}
+              pct={pct}
+              locale={locale}
+            />
+          ))}
         </div>
       )}
 
-      <Pagination page={res.page ?? page} totalPages={res.totalPages ?? 1} locale={locale} />
+      <Pagination page={page} totalPages={totalPages} locale={locale} />
     </section>
   )
 }
