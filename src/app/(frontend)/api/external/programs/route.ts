@@ -101,6 +101,7 @@ export async function POST(request: NextRequest) {
       }),
       ...(body.level && { level: body.level }),
       ...(body.accessMode !== undefined && { accessMode: body.accessMode }),
+      ...(body.featured !== undefined && { featured: body.featured }),
     }
 
     const program = await payload.create({

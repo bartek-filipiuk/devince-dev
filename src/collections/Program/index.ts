@@ -91,6 +91,16 @@ export const Program: CollectionConfig<'program'> = {
       },
     },
     {
+      name: 'featured',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Polecany',
+      admin: {
+        position: 'sidebar',
+        description: 'Przypięty na górze listy kursów (storefront), niezależnie od postępu użytkownika.',
+      },
+    },
+    {
       type: 'tabs',
       tabs: [
         {

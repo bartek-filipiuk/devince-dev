@@ -216,6 +216,68 @@ describe('DELETE /api/external/programs/[idOrSlug]', () => {
   })
 })
 
+// ── featured — POST ───────────────────────────────────────────────────────
+
+describe('POST /api/external/programs — featured', () => {
+  beforeEach(() => {
+    process.env.EXTERNAL_API_TOKEN = TOKEN
+    vi.clearAllMocks()
+  })
+
+  it('forwards featured to payload.create', async () => {
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    const create = vi.fn().mockResolvedValue({
+      id: 9, title: 'F', slug: 'f', _status: 'draft',
+      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+    })
+    vi.mocked(getPayloadClient).mockResolvedValue({ create } as never)
+    const { POST } = await import('./route.js')
+    const req = makeAuthedReq('POST', 'http://localhost/api/external/programs', {
+      title: 'F', type: 'course', featured: true,
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+    expect(create.mock.calls[0][0].data.featured).toBe(true)
+  })
+})
+
+// ── featured — PATCH ──────────────────────────────────────────────────────
+
+describe('PATCH /api/external/programs/[idOrSlug] — featured', () => {
+  beforeEach(() => {
+    process.env.EXTERNAL_API_TOKEN = TOKEN
+    vi.clearAllMocks()
+  })
+
+  it('forwards featured to payload.update', async () => {
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    const update = vi.fn().mockResolvedValue({
+      id: 30,
+      title: 'Featured Test',
+      slug: 'featured-test',
+      _status: 'draft',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    })
+    const findByID = vi.fn().mockResolvedValue({ id: 30 })
+    vi.mocked(getPayloadClient).mockResolvedValue({ update, findByID } as never)
+
+    const { PATCH } = await import('./[idOrSlug]/route.js')
+
+    const req = makeAuthedReq(
+      'PATCH',
+      'http://localhost/api/external/programs/30',
+      { featured: true },
+    )
+
+    const res = await PATCH(req, { params: Promise.resolve({ idOrSlug: '30' }) })
+    expect(res.status).toBe(200)
+
+    expect(update).toHaveBeenCalledOnce()
+    expect(update.mock.calls[0][0].data.featured).toBe(true)
+  })
+})
+
 // ── accessMode — POST ──────────────────────────────────────────────────────
 
 describe('POST /api/external/programs — accessMode', () => {

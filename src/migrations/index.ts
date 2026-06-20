@@ -10,6 +10,7 @@ import * as migration_20260618_200715_program_price from './20260618_200715_prog
 import * as migration_20260619_061612_course_landing from './20260619_061612_course_landing';
 import * as migration_20260619_150906_claim_grants from './20260619_150906_claim_grants';
 import * as migration_20260619_180416_lesson_progress from './20260619_180416_lesson_progress';
+import * as migration_20260620_032835_program_featured from './20260620_032835_program_featured';
 
 export const migrations = [
   {
@@ -70,6 +71,11 @@ export const migrations = [
   {
     up: migration_20260619_180416_lesson_progress.up,
     down: migration_20260619_180416_lesson_progress.down,
-    name: '20260619_180416_lesson_progress'
+    name: '20260619_180416_lesson_progress',
+  },
+  {
+    up: migration_20260620_032835_program_featured.up,
+    down: migration_20260620_032835_program_featured.down,
+    name: '20260620_032835_program_featured'
   },
 ];
