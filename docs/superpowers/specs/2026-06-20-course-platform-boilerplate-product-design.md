@@ -87,13 +87,27 @@ The project is a **genericization sprint on a copy**, then **package + list**.
   phases + a few lessons, ONE demo apps product). Keep `admin@example.com` /
   `admin123` demo creds. The demo must seed cleanly and showcase the platform.
 
-### Phase 5 — docs, license, README
+### Phase 5 — docs, license, README, installer, feature list, landing copy
 - DELETE all internal artifacts (Phase listed above).
-- Write: `README.md` (what it is, stack, quick start), `SETUP.md` (prereqs:
-  Node/pnpm/Postgres/Stripe/optional Brevo; env table; run/seed/deploy — generic
-  Docker + a short Coolify note), `LICENSE` (the locked commercial terms),
-  `LEGAL_TEMPLATE.md` (how to add your own Polityka/Regulamin), a cleaned
-  `.env.example` (every var documented, no devince values).
+- Write these buyer-facing deliverables:
+  - `README.md` — what it is, stack, a 60-second overview + quick-start pointer.
+  - `SETUP.md` — the **installer**: explicit, copy-paste **commands** start→finish
+    (clone/unzip → `pnpm install` → `cp .env.example .env` + fill → `docker
+    compose up -d` → `pnpm payload migrate` → `pnpm run seed` → `pnpm dev`),
+    prereqs (Node/pnpm/Postgres/Stripe/optional Brevo), full env-var table, deploy
+    section (generic Docker + a short Coolify note). Plus a thin `scripts/setup.sh`
+    that runs the local-bootstrap commands (install + env copy + db up + migrate +
+    seed) with friendly echoes, so "installer = one script OR the documented
+    commands".
+  - `FEATURES.md` — the **feature list** (spis funkcji): grouped, scannable
+    bullets of everything the platform does (courses: syllabus/lessons/progress/
+    Shiki/TOC/mark-complete; apps store: one-time pay → expiring download grants,
+    no accounts; Stripe checkout + consent + refunds; lead-magnets + Brevo DOI;
+    external content REST API; 3 isolated subdomain apps + host-rewrite; block-based
+    page builder; PL/EN i18n; theming via CSS vars; SEO/sitemap/preview; admin RBAC).
+  - `LICENSE` — the locked commercial terms (unlimited own projects, no resale).
+  - `LEGAL_TEMPLATE.md` — how to add your own Polityka/Regulamin.
+  - cleaned `.env.example` — every var documented, no devince values.
 
 ### Phase 6 — verify (the safety gates)
 - `pnpm install && pnpm build` succeeds in the copy.
@@ -106,8 +120,14 @@ The project is a **genericization sprint on a copy**, then **package + list**.
   the buyer-facing `*.example.com` placeholders). Confirm no `.git`, no `.env`,
   no `node_modules` will be in the zip.
 
-### Phase 7 — package + list
+### Phase 7 — package + landing copy + list
 - Produce `course-platform-starter-v1.0.0.zip` (the clean tree, excludes above).
+- Write **`LANDING.md`** — the **product landing copy** for the apps.devince.dev
+  listing: headline + subhead, who it's for, the feature list as selling points,
+  "what's included" (full source, docs, installer, license), tech stack, the live
+  demo links (`courses.devince.dev` / `apps.devince.dev`), license summary, FAQ,
+  and a price placeholder. This is the text the owner pastes into the product's
+  description (markdown → rendered on the apps product page).
 - **List on apps.devince.dev** via the external API (owner-gated content/price):
   upload the zip as a private app-asset → create a Product (title, description/
   landing, `priceCents`, `downloadFiles=[asset]`) → publish. Owner sets the final
