@@ -25,8 +25,9 @@ export async function POST(req: NextRequest) {
   let consent: unknown
   let locale: unknown
   let newsletter: unknown
+  let tierIndex: unknown
   try {
-    ;({ slug, consent, locale, newsletter } = await req.json())
+    ;({ slug, consent, locale, newsletter, tierIndex } = await req.json())
   } catch {
     return NextResponse.json({ error: 'invalid body' }, { status: 400 })
   }
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
     collection: 'products',
     where: { slug: { equals: slug } },
     limit: 1,
-    depth: 0,
+    depth: 1,
     overrideAccess: false,
   })
   const product = found.docs[0]
@@ -61,14 +62,53 @@ export async function POST(req: NextRequest) {
   const files = Array.isArray(product.downloadFiles) ? product.downloadFiles : []
   if (!files.length) return NextResponse.json({ error: 'not purchasable' }, { status: 409 })
 
+  // ── Tier-price selection (SECURITY-CRITICAL) ──────────────────────────────
+  // If the product has tiers, the price MUST be derived from the server-side
+  // tier record. We never trust a client-sent price or price ID. The client
+  // sends only `tierIndex` (an integer 0-based index); we validate it strictly
+  // and then read the price exclusively from the DB row.
+  const productTiers = Array.isArray(product.tiers) ? product.tiers : []
+  let lineItemPriceCents: number
+  let lineItemCurrency: string
+  let lineItemStripePriceId: string | null | undefined
+  let tierName: string | undefined
+
+  if (productTiers.length > 0) {
+    // Tiered product — tierIndex is required and must be a valid in-range integer.
+    const idx = typeof tierIndex === 'number' ? Math.trunc(tierIndex) : NaN
+    if (!Number.isFinite(idx) || idx < 0 || idx >= productTiers.length) {
+      return NextResponse.json(
+        { error: 'tierIndex missing or out of range' },
+        { status: 400 },
+      )
+    }
+    const tier = productTiers[idx]
+    // Defensive: tier data comes from DB, but guard anyway.
+    if (typeof tier.priceCents !== 'number' || tier.priceCents < 0) {
+      return NextResponse.json({ error: 'tier price invalid' }, { status: 500 })
+    }
+    lineItemPriceCents = tier.priceCents
+    lineItemCurrency = tier.currency ?? 'usd'
+    // Tiers do not support individual Stripe Price IDs (by design — one product
+    // ID, multiple license levels). Always build price_data so the Stripe
+    // Dashboard shows the correct per-tier amount.
+    lineItemStripePriceId = null
+    tierName = tier.name
+  } else {
+    // No tiers — single-price product, existing behavior unchanged.
+    lineItemPriceCents = product.priceCents
+    lineItemCurrency = product.currency
+    lineItemStripePriceId = product.stripePriceId
+  }
+
   const session = await getStripe().checkout.sessions.create({
     mode: 'payment',
     line_items: [
       buildLineItem({
         title: product.title,
-        priceCents: product.priceCents,
-        currency: product.currency,
-        stripePriceId: product.stripePriceId,
+        priceCents: lineItemPriceCents,
+        currency: lineItemCurrency,
+        stripePriceId: lineItemStripePriceId,
       }),
     ],
     metadata: {
@@ -80,6 +120,10 @@ export async function POST(req: NextRequest) {
       withdrawalConsent: 'true',
       withdrawalConsentAt,
       locale: emailLocale,
+      // Tier name recorded for license tracking (webhook + Stripe Dashboard).
+      // The downloadable file is the same for all tiers; this is how we know
+      // which license the buyer purchased. Never used to re-derive the price.
+      ...(tierName ? { tier: tierName } : {}),
       // Newsletter opt-in (separate from the Art. 38 consent above, never gates
       // the purchase, never affects price). Stamped only when the buyer ticked
       // the box; the webhook reads it post-grant to fire a Brevo double opt-in.
@@ -94,9 +138,9 @@ export async function POST(req: NextRequest) {
   await notifyEvent('checkout_start', {
     surface: 'apps',
     slug,
-    item: product.title,
-    amount: typeof product.priceCents === 'number' ? product.priceCents : undefined,
-    currency: product.currency ?? 'pln',
+    item: tierName ? `${product.title} · ${tierName}` : product.title,
+    amount: lineItemPriceCents,
+    currency: lineItemCurrency,
   })
 
   return NextResponse.json({ url: session.url })

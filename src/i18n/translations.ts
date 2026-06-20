@@ -212,6 +212,8 @@ const translations = {
     'apps.product.consent':
       'Wyrażam zgodę na natychmiastowe rozpoczęcie dostarczania treści cyfrowej (pobranie pliku) i przyjmuję do wiadomości, że z chwilą wykonania umowy (udostępnienia pliku) tracę prawo odstąpienia od umowy.',
     'apps.checkout.newsletter': 'Chcę dostawać newsletter (oddzielne od zakupu).',
+    'apps.product.chooseLicense': 'Wybierz licencję',
+    'apps.product.recommended': 'Polecany',
 
     // Lead magnet (free-for-email) — shared form copy (apps + courses)
     'leadMagnet.emailLabel': 'Twój e-mail',
@@ -638,6 +640,8 @@ const translations = {
     'apps.product.consent':
       'I consent to the immediate start of delivery of the digital content (file download) and acknowledge that, once the contract is performed (the file is made available), I lose the right of withdrawal.',
     'apps.checkout.newsletter': 'I want to receive the newsletter (separate from the purchase).',
+    'apps.product.chooseLicense': 'Choose a license',
+    'apps.product.recommended': 'Recommended',
 
     // Lead magnet (free-for-email) — shared form copy (apps + courses)
     'leadMagnet.emailLabel': 'Your email',
