@@ -548,24 +548,29 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
    Rendered by ProductTierSelector when a product has pricing tiers.
    Radio-card grid; selected/recommended tier highlighted with --accent. */
 
+/* Full-width pricing section, rendered below the hero (not in its cramped
+   left column) so the tier cards get the whole shell width in one row. */
+.tier-section { padding: clamp(8px, 2vw, 28px) 0 clamp(36px, 5vw, 56px); }
+
 .tier-selector { display: flex; flex-direction: column; gap: 0; }
 
 .tier-selector__label {
-  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-dim);
-  margin: 0 0 12px;
+  margin: 0 0 16px;
 }
 
-/* Responsive grid: up to 3 tiers side-by-side; shrinks to 1 column on small screens. */
+/* Pricing row: 3 tiers side-by-side at full width; auto-collapses to fewer
+   columns and finally a single column as the viewport narrows. */
 .tier-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(14px, 1.6vw, 22px);
 }
 
 .tier-card {
-  position: relative; display: flex; flex-direction: column; gap: 6px;
-  padding: 16px 18px; border-radius: var(--r-card);
+  position: relative; display: flex; flex-direction: column; gap: 8px;
+  padding: clamp(20px, 2.2vw, 28px) clamp(20px, 2vw, 26px); border-radius: var(--r-card);
   background: var(--surface-1); border: 1.5px solid var(--line-soft);
   cursor: pointer; transition: border-color .16s ease, background .16s ease, box-shadow .16s ease;
 }
@@ -590,24 +595,24 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
 }
 
 .tier-card__name {
-  font-size: 14.5px; font-weight: 650; letter-spacing: -0.01em; color: var(--text);
+  font-size: 17px; font-weight: 650; letter-spacing: -0.01em; color: var(--text);
 }
 
 .tier-card__price {
-  font-family: var(--font-mono); font-size: 22px; font-weight: 680;
-  letter-spacing: -0.03em; color: var(--text);
+  font-family: var(--font-mono); font-size: clamp(26px, 2.6vw, 32px); font-weight: 680;
+  letter-spacing: -0.03em; color: var(--text); margin-top: 2px;
 }
 .tier-card--selected .tier-card__price { color: var(--accent); }
 
 .tier-card__tagline {
-  font-size: 12px; color: var(--text-dim); margin-top: 2px;
+  font-size: 13px; color: var(--text-dim); margin-top: 2px;
 }
 
 .tier-card__features {
-  margin: 8px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px;
+  margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px;
 }
 .tier-card__features li {
-  font-size: 12.5px; color: var(--text-mut); display: flex; align-items: flex-start; gap: 7px;
+  font-size: 13.5px; color: var(--text-mut); display: flex; align-items: flex-start; gap: 8px; line-height: 1.45;
 }
 .tier-card__features li::before {
   content: ""; flex: none; width: 14px; height: 14px; margin-top: 1px;
@@ -616,11 +621,13 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
           mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>') center/contain no-repeat;
 }
 
-/* Buy block below the grid */
+/* Buy block, centered below the full-width pricing row */
 .tier-buy {
-  display: flex; flex-direction: column; align-items: flex-start; gap: 14px;
-  margin-top: 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  margin: clamp(26px, 3vw, 38px) auto 0; max-width: 460px; text-align: center;
 }
+.tier-buy .product-price { font-size: clamp(24px, 2.4vw, 30px); }
+.tier-buy .consent-check, .tier-buy .newsletter-check { text-align: left; }
 
 /* newsletter opt-in (mirrored from consent-check; not a gate) */
 .newsletter-check {
@@ -629,8 +636,13 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
 }
 .newsletter-check input { margin-top: 2px; flex: none; width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
 
+/* Below ~920px the three tier cards can no longer sit comfortably in one row,
+   so stack them cleanly into a single column instead of an asymmetric 2 + 1. */
+@media (max-width: 920px) {
+  .tier-grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 720px) {
   .product-hero { grid-template-columns: 1fr; }
   .product-hero__cover { order: -1; }
-  .tier-grid { grid-template-columns: 1fr; }
 }
