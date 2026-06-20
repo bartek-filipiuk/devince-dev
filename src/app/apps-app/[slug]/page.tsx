@@ -82,16 +82,6 @@ export default async function ProductPage({
               </span>
               <h1>{product.title}</h1>
 
-              {product.description ? (
-                <div className="product-desc">
-                  <RichText
-                    data={product.description}
-                    enableGutter={false}
-                    enableProse={false}
-                  />
-                </div>
-              ) : null}
-
               <div className="product-buy">
                 {leadMagnet ? (
                   <AppLeadMagnet slug={product.slug} locale={locale} />
@@ -134,6 +124,14 @@ export default async function ProductPage({
           </div>
         </div>
       </header>
+
+      {product.description ? (
+        <section className="shell product-detail">
+          <div className="product-desc">
+            <RichText data={product.description} enableGutter={false} enableProse={false} />
+          </div>
+        </section>
+      ) : null}
     </article>
   )
 }

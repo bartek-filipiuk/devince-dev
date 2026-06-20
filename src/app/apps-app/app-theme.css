@@ -511,10 +511,30 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
 .auth-course-cta .icon { width: 14px; height: 14px; }
 
 /* ============================================================ PRODUCT PAGE */
-.product-hero { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(28px, 5vw, 64px); align-items: center; padding: clamp(48px, 7vw, 84px) 0 clamp(40px, 5vw, 56px); }
+.product-hero { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(28px, 5vw, 64px); align-items: center; padding: clamp(48px, 7vw, 84px) 0 clamp(32px, 4vw, 48px); }
+/* No cover image → don't reserve an empty right column. */
+.product-hero:not(:has(.product-hero__cover)) { grid-template-columns: 1fr; }
 .product-hero__content { display: flex; flex-direction: column; gap: 0; }
 .product-hero__cover { }
-.product-desc { margin-top: 18px; font-size: 16px; line-height: 1.62; color: var(--text-mut); }
+
+/* Full-width, readable product description below the compact hero. */
+.product-detail { padding: clamp(4px, 1.5vw, 16px) 0 clamp(56px, 7vw, 88px); }
+.product-detail .product-desc { max-width: 800px; margin: 0; }
+.product-desc { font-size: 16px; line-height: 1.7; color: var(--text-mut); }
+.product-desc > :first-child { margin-top: 0; }
+.product-desc h2 { margin: 2em 0 0.55em; padding-top: 1.15em; border-top: 1px solid var(--line-soft); font-size: clamp(20px, 2.4vw, 26px); line-height: 1.2; letter-spacing: -0.01em; color: var(--text); }
+.product-desc h2:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.product-desc h3 { margin: 1.5em 0 0.4em; font-size: 17px; color: var(--text); }
+.product-desc p { margin: 0.9em 0; }
+.product-desc ul { margin: 0.7em 0; padding-left: 1.35em; }
+.product-desc li { margin: 0.35em 0; }
+.product-desc strong { color: var(--text); font-weight: 650; }
+.product-desc a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.product-desc code { font-family: var(--font-mono); font-size: 0.92em; background: var(--surface-2); padding: 1px 5px; border-radius: 5px; }
+/* Defensive table styling (if a markdown table is ever used in a description). */
+.product-desc table { width: 100%; border-collapse: collapse; margin: 1.1em 0; font-size: 14px; }
+.product-desc th, .product-desc td { border: 1px solid var(--line-soft); padding: 8px 12px; text-align: left; vertical-align: top; }
+.product-desc th { background: var(--surface-2); color: var(--text); font-weight: 620; }
 .product-buy { margin-top: 28px; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
 .product-price { font-family: var(--font-mono); font-size: 28px; font-weight: 680; letter-spacing: -0.02em; color: var(--text); margin: 0; }
 .product-note { font-size: 13px; color: var(--text-dim); margin: 0; }
