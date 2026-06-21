@@ -18,7 +18,7 @@ export const Header: GlobalConfig = {
           localizedLabel: true,
         }),
       ],
-      maxRows: 8,
+      maxRows: 10,
       admin: {
         initCollapsed: true,
         components: {
