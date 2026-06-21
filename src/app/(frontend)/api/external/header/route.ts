@@ -56,29 +56,18 @@ export async function PATCH(request: NextRequest) {
 
     const payload = await getPayloadClient()
 
-    // navItems is an array whose `link.label` is LOCALIZED; the URL/type/target
-    // are shared. Writing the array at one locale WITHOUT each row's id makes
-    // Payload replace it and drop the OTHER locale's labels. Carry the existing
-    // rows' ids forward BY POSITION so a per-locale write only updates this
-    // language's labels on the shared rows (same approach as product tiers).
-    const existing = await payload.findGlobal({
-      slug: 'header',
-      locale,
-      depth: 0,
-      overrideAccess: true,
-    })
-    const existingItems = Array.isArray(existing?.navItems) ? existing.navItems : []
-    const navItems = body.navItems.map((item, i) => {
-      const prev = existingItems[i]
-      const prevId = prev && typeof prev === 'object' ? (prev as { id?: unknown }).id : undefined
-      return item && typeof item === 'object' && prevId != null
-        ? { ...(item as Record<string, unknown>), id: prevId }
-        : item
-    })
-
+    // navItems' `link.label` is LOCALIZED; the URL/type/target are shared. To
+    // update one locale WITHOUT dropping the other locale's labels, the caller
+    // carries each existing item's `id` (from a prior GET) — Payload then matches
+    // array rows by id and only writes this language's label onto them. Items
+    // sent WITHOUT an id are created fresh. So we pass navItems through as-is and
+    // let Payload's native id-matching do the right thing; this also makes
+    // reordering and mid-list inserts work (a position-based id rewrite would
+    // mis-map them). Recipe: GET ?locale=pl -> edit -> PATCH ?locale=pl, then GET
+    // ?locale=en -> edit -> PATCH ?locale=en (the second GET sees any new ids).
     const updated = await payload.updateGlobal({
       slug: 'header',
-      data: { navItems } as never,
+      data: { navItems: body.navItems } as never,
       locale,
       overrideAccess: true,
     })

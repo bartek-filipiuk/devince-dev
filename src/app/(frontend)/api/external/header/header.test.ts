@@ -67,21 +67,24 @@ describe('PATCH /api/external/header', () => {
     expect(updateGlobal.mock.calls[0][0].data.navItems).toHaveLength(1)
   })
 
-  it('carries existing item ids forward by position (preserves other-locale labels)', async () => {
+  it('passes navItems through, honoring caller-provided ids and leaving id-less items new', async () => {
+    // The caller carries existing ids (from a prior GET) so Payload matches rows
+    // by id and preserves the other locale's labels; items without an id are new.
+    // This is what makes mid-list inserts / reorders work.
     const { getPayloadClient } = await import('../_lib/payload.js')
-    const { findGlobal, updateGlobal } = setup([NAV('Kursy'), NAV('Apps')])
+    const { findGlobal, updateGlobal } = setup()
     vi.mocked(getPayloadClient).mockResolvedValue({ findGlobal, updateGlobal } as never)
 
     const { PATCH } = await import('./route.js')
     const items = [
-      { link: { type: 'custom', url: 'https://courses.devince.dev', label: 'Courses' } },
-      { link: { type: 'custom', url: 'https://apps.devince.dev', label: 'Apps' } },
+      { id: 'existing-kursy', link: { type: 'custom', url: 'https://courses.devince.dev', label: 'Courses' } },
+      { link: { type: 'custom', url: 'https://apps.devince.dev', label: 'Apps' } }, // new — no id
     ]
     const res = await PATCH(makeAuthedReq('PATCH', 'http://localhost/api/external/header?locale=en', { navItems: items }))
     expect(res.status).toBe(200)
     const sent = updateGlobal.mock.calls[0][0].data.navItems
-    expect(sent[0].id).toBe('iKursy')
-    expect(sent[1].id).toBe('iApps')
+    expect(sent[0].id).toBe('existing-kursy')
+    expect(sent[1].id).toBeUndefined()
   })
 
   it('returns 400 when navItems is not an array', async () => {
