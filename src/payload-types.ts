@@ -1454,6 +1454,18 @@ export interface DownloadGrant {
   token: string;
   product: number | Product;
   email: string;
+  /**
+   * Wybrana licencja (np. Starter/Pro/Agency); puste dla produktów bez progów.
+   */
+  tier?: string | null;
+  /**
+   * Kwota zapłacona w groszach/centach (np. 14900 = 149,00).
+   */
+  amountPaid?: number | null;
+  /**
+   * Waluta płatności (np. pln, usd).
+   */
+  currency?: string | null;
   expiresAt: string;
   maxUses: number;
   uses: number;
@@ -2542,6 +2554,9 @@ export interface DownloadGrantsSelect<T extends boolean = true> {
   token?: T;
   product?: T;
   email?: T;
+  tier?: T;
+  amountPaid?: T;
+  currency?: T;
   expiresAt?: T;
   maxUses?: T;
   uses?: T;

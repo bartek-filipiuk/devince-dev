@@ -61,6 +61,21 @@ describe('fulfillAppPurchase', () => {
     const data = payload.create.mock.calls[0][0].data
     expect(data.withdrawalConsentAt).toBeUndefined()
   })
+  it('persists tier/amountPaid/currency on the grant (sales panel record)', async () => {
+    const payload = makePayload()
+    await fulfillAppPurchase(payload as never, {
+      productId: 7,
+      email: 'a@b.pl',
+      sessionId: 'cs_record',
+      tier: 'Pro',
+      amountPaid: 29900,
+      currency: 'pln',
+    })
+    const data = payload.create.mock.calls[0][0].data
+    expect(data.tier).toBe('Pro')
+    expect(data.amountPaid).toBe(29900)
+    expect(data.currency).toBe('pln')
+  })
   it('is idempotent per stripeSessionId (existing grant => no create)', async () => {
     const payload = makePayload([grantRow])
     const res = await fulfillAppPurchase(payload as never, {
