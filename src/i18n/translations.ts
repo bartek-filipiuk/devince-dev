@@ -201,6 +201,8 @@ const translations = {
     'apps.store.title': 'Aplikacje i pliki',
     'apps.store.lead': 'Gotowe narzędzia, szablony i pliki do pobrania — kup raz, korzystaj bez limitu.',
     'apps.store.empty': 'Wkrótce — pracujemy nad pierwszymi produktami.',
+    'apps.store.from': 'od',
+    'apps.store.view': 'Zobacz',
 
     // Product page
     'apps.product.metaNotFound': 'Produkt nie znaleziony · Devince',
@@ -629,6 +631,8 @@ const translations = {
     'apps.store.title': 'Apps & files',
     'apps.store.lead': 'Ready-made tools, templates and downloadable files — buy once, use without limits.',
     'apps.store.empty': 'Coming soon — we are working on our first products.',
+    'apps.store.from': 'from',
+    'apps.store.view': 'View',
 
     // Product page
     'apps.product.metaNotFound': 'Product not found · Devince',
