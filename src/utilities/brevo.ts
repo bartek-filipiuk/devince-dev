@@ -125,6 +125,54 @@ export async function sendDownloadLinkEmail(args: {
   })
 }
 
+/**
+ * Seller sale notification — a "you made a sale" receipt to the shop owner,
+ * fired (best-effort) from the Stripe webhook after a durable grant. Separate
+ * from the buyer's download/access email and from the Discord pulse; many
+ * sellers prefer an email record of each sale.
+ *
+ * Recipient: SELLER_NOTIFY_EMAIL, else the Brevo sender, else bartek@devince.dev
+ * (a verified sender), so it works out of the box. NEVER throws — a failure here
+ * must not affect fulfillment; it swallows its own errors (like notifyEvent).
+ */
+export async function sendSellerSaleNotification(args: {
+  surface: 'apps' | 'courses'
+  item: string
+  tier?: string
+  amountCents?: number
+  currency?: string
+  buyerEmail: string
+}): Promise<void> {
+  try {
+    const to = process.env.SELLER_NOTIFY_EMAIL ?? process.env.BREVO_SENDER_EMAIL ?? 'bartek@devince.dev'
+    const curr = (args.currency ?? 'pln').toUpperCase()
+    let money = '—'
+    if (typeof args.amountCents === 'number') {
+      try {
+        money = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: curr }).format(args.amountCents / 100)
+      } catch {
+        money = `${(args.amountCents / 100).toFixed(2)} ${curr}`
+      }
+    }
+    const subject = `Nowa sprzedaż: ${args.item}${args.tier ? ` · ${args.tier}` : ''} (${money})`
+    const rows = [
+      `<li><strong>Produkt:</strong> ${esc(args.item)}</li>`,
+      args.tier ? `<li><strong>Pakiet:</strong> ${esc(args.tier)}</li>` : '',
+      `<li><strong>Kwota:</strong> ${esc(money)}</li>`,
+      `<li><strong>Kupujący:</strong> ${esc(args.buyerEmail)}</li>`,
+      `<li><strong>Sklep:</strong> ${args.surface === 'apps' ? 'Aplikacje (download)' : 'Kursy'}</li>`,
+    ].join('')
+    await sendTransactionalEmail({
+      to,
+      subject,
+      htmlContent: `<p>🎉 <strong>Nowa sprzedaż</strong></p><ul>${rows}</ul><p style="font-size:13px;color:#555">Szczegóły i pełna lista zamówień: panel admina (Download Grants).</p>`,
+    })
+  } catch (err) {
+    // Best-effort: an owner-notification failure must never break fulfillment.
+    console.error('[brevo] seller sale notification failed (fulfillment unaffected):', err)
+  }
+}
+
 export async function sendCourseAccessEmail(args: {
   to: string
   token: string

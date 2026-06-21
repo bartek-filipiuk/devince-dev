@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { addProgramToPurchases } from '@/utilities/purchases'
-import { sendCourseAccessEmail, sendDownloadLinkEmail } from '@/utilities/brevo'
+import { sendCourseAccessEmail, sendDownloadLinkEmail, sendSellerSaleNotification } from '@/utilities/brevo'
 import { fulfillAppPurchase } from '@/utilities/appsFulfillment'
 import { notifyEvent } from '@/utilities/notify'
 
@@ -286,6 +286,14 @@ export async function POST(req: NextRequest) {
         currency: session.currency ?? 'pln',
         email,
       })
+      // Seller "you made a sale" email (best-effort, never throws).
+      await sendSellerSaleNotification({
+        surface: 'courses',
+        item: programDoc?.slug ?? `program ${programIdRaw}`,
+        amountCents: session.amount_total ?? undefined,
+        currency: session.currency ?? undefined,
+        buyerEmail: email,
+      })
 
       // Newsletter opt-in (Part A): if the buyer ticked the newsletter box at
       // checkout (metadata.newsletter==='true'), trigger Brevo's native double
@@ -439,6 +447,17 @@ export async function POST(req: NextRequest) {
           amount: session.amount_total ?? undefined,
           currency: session.currency ?? 'pln',
           email,
+        })
+        // Seller "you made a sale" email (best-effort, never throws). Gated on
+        // `created` like the pulse ping above, so a re-delivered webhook does not
+        // re-notify. Mirrors the buyer's download email but goes to the owner.
+        await sendSellerSaleNotification({
+          surface: 'apps',
+          item: productDoc?.slug ?? `product ${productIdRaw}`,
+          tier: typeof session.metadata?.tier === 'string' ? session.metadata.tier : undefined,
+          amountCents: session.amount_total ?? undefined,
+          currency: session.currency ?? undefined,
+          buyerEmail: email,
         })
         // Newsletter opt-in (Part A): if the buyer ticked the newsletter box,
         // fire Brevo's double opt-in to add them to the list. Placed AFTER the

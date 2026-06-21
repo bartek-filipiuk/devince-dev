@@ -71,7 +71,12 @@ vi.mock('@/utilities/notify', () => ({ notifyEvent }))
 
 const sendCourseAccessEmail = vi.fn(async () => {})
 const sendDownloadLinkEmail = vi.fn(async () => {})
-vi.mock('@/utilities/brevo', () => ({ sendCourseAccessEmail, sendDownloadLinkEmail }))
+const sendSellerSaleNotification = vi.fn(async () => {})
+vi.mock('@/utilities/brevo', () => ({
+  sendCourseAccessEmail,
+  sendDownloadLinkEmail,
+  sendSellerSaleNotification,
+}))
 
 const fulfillAppPurchase = vi.fn(async () => ({ created: true, token: 'tok_x' }))
 vi.mock('@/utilities/appsFulfillment', () => ({ fulfillAppPurchase }))
@@ -730,5 +735,60 @@ describe('purchase record passed to fulfillment', () => {
     expect(arg.tier).toBeUndefined()
     expect(arg.amountPaid).toBe(4900)
     expect(arg.currency).toBe('pln')
+  })
+})
+
+// ── Seller sale notification (owner email) ───────────────────────────────────
+describe('seller sale notification', () => {
+  it('emails the seller on a successful app purchase (tier + amount + buyer)', async () => {
+    const { POST } = await import('./route')
+    setFind({})
+    setFindByID({ 'products:7': PRODUCT_7 })
+    stageEvent(
+      completedEvent(
+        appsSession({
+          amount_total: 29900,
+          currency: 'pln',
+          metadata: { productId: '7', tier: 'Pro', withdrawalConsentAt: '2026-06-19T00:00:00Z' },
+        }),
+      ),
+    )
+
+    const res = await POST(makeReq())
+
+    expect(res.status).toBe(200)
+    expect(sendSellerSaleNotification).toHaveBeenCalledWith(
+      expect.objectContaining({
+        surface: 'apps',
+        tier: 'Pro',
+        amountCents: 29900,
+        currency: 'pln',
+        buyerEmail: BUYER,
+      }),
+    )
+  })
+
+  it('does NOT email the seller on a re-delivered (idempotent) app purchase', async () => {
+    const { POST } = await import('./route')
+    setFind({})
+    setFindByID({ 'products:7': PRODUCT_7 })
+    fulfillAppPurchase.mockResolvedValueOnce({ created: false }) // already fulfilled
+    stageEvent(completedEvent(appsSession()))
+
+    const res = await POST(makeReq())
+
+    expect(res.status).toBe(200)
+    expect(sendSellerSaleNotification).not.toHaveBeenCalled()
+  })
+
+  it('does NOT email the seller on an UNPAID session', async () => {
+    const { POST } = await import('./route')
+    setFind({})
+    stageEvent(completedEvent(appsSession({ payment_status: 'unpaid' })))
+
+    const res = await POST(makeReq())
+
+    expect(res.status).toBe(200)
+    expect(sendSellerSaleNotification).not.toHaveBeenCalled()
   })
 })
