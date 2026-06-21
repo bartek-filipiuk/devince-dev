@@ -690,3 +690,45 @@ describe('async payment lifecycle (P24/BLIK)', () => {
     )
   })
 })
+
+// ── Sales record on the grant (admin panel) ──────────────────────────────────
+describe('purchase record passed to fulfillment', () => {
+  it('passes tier + amountPaid + currency from the session to fulfillAppPurchase', async () => {
+    const { POST } = await import('./route')
+    setFind({})
+    setFindByID({ 'products:7': PRODUCT_7 })
+    stageEvent(
+      completedEvent(
+        appsSession({
+          amount_total: 29900,
+          currency: 'pln',
+          metadata: { productId: '7', tier: 'Pro', withdrawalConsentAt: '2026-06-19T00:00:00Z' },
+        }),
+      ),
+    )
+
+    const res = await POST(makeReq())
+
+    expect(res.status).toBe(200)
+    expect(fulfillAppPurchase).toHaveBeenCalledWith(
+      payloadStub,
+      expect.objectContaining({ productId: 7, tier: 'Pro', amountPaid: 29900, currency: 'pln' }),
+    )
+  })
+
+  it('omits tier for a single-price (non-tiered) purchase', async () => {
+    const { POST } = await import('./route')
+    setFind({})
+    setFindByID({ 'products:7': PRODUCT_7 })
+    // appsSession default metadata has productId but no tier
+    stageEvent(completedEvent(appsSession()))
+
+    const res = await POST(makeReq())
+
+    expect(res.status).toBe(200)
+    const arg = fulfillAppPurchase.mock.calls[0][1]
+    expect(arg.tier).toBeUndefined()
+    expect(arg.amountPaid).toBe(4900)
+    expect(arg.currency).toBe('pln')
+  })
+})

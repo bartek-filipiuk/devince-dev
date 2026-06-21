@@ -424,6 +424,10 @@ export async function POST(req: NextRequest) {
         email,
         sessionId: session.id,
         withdrawalConsentAt,
+        // Purchase record for the sales panel (which license, how much, currency).
+        tier: typeof session.metadata?.tier === 'string' ? session.metadata.tier : undefined,
+        amountPaid: session.amount_total ?? undefined,
+        currency: session.currency ?? undefined,
       })
       // Observability: the download grant is durable once fulfillAppPurchase
       // returns. Fire the sales-pulse ping AFTER it (best-effort, never throws).

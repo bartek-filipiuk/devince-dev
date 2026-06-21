@@ -56,6 +56,13 @@ export async function fulfillAppPurchase(
     // download email (durable medium) can confirm it. Undefined for legacy
     // sessions created before the consent gate existed.
     withdrawalConsentAt?: string
+    // Purchase record for the sales panel (admin). From the Stripe session:
+    // tier = chosen license name (metadata.tier; absent for single-price
+    // products), amountPaid = amount_total (minor units), currency = session
+    // currency. All optional — a missing value just leaves the column blank.
+    tier?: string
+    amountPaid?: number
+    currency?: string
   },
 ): Promise<{ created: boolean; token?: string }> {
   const existing = await payload.find({
@@ -77,6 +84,9 @@ export async function fulfillAppPurchase(
         token,
         product: args.productId,
         email: args.email,
+        tier: args.tier,
+        amountPaid: args.amountPaid,
+        currency: args.currency,
         expiresAt: new Date(Date.now() + GRANT_TTL_MS).toISOString(),
         maxUses: GRANT_MAX_USES,
         uses: 0,
