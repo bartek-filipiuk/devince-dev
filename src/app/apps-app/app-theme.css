@@ -212,7 +212,32 @@ a { color: inherit; text-decoration: none; }
 .ph-video .play .icon { width: 22px; height: 22px; margin-left: 3px; }
 
 /* ============================================================ STOREFRONT */
-.store-head { margin-bottom: 30px; }
+.store-head {
+  display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(28px, 5vw, 64px);
+  align-items: center; margin-bottom: 40px; padding: clamp(8px, 2vw, 24px) 0;
+}
+.store-head__lead {
+  margin: 14px 0 0; font-size: 15px; color: var(--text-mut); line-height: 1.6; max-width: 46ch;
+}
+
+/* Decorative teaser: three staggered abstract tiles (same visual language as the
+   product-card placeholders) — fills the hero, catches the eye, needs no photos. */
+.store-head__visual { position: relative; aspect-ratio: 16 / 10; min-height: 200px; }
+.store-head__tile {
+  position: absolute; border-radius: var(--r-card);
+  border: 1px solid var(--line-soft); box-shadow: var(--shadow-2);
+  background:
+    radial-gradient(circle at 1.5px 1.5px, rgba(255, 255, 255, 0.06) 1px, transparent 0) 0 0 / 16px 16px,
+    linear-gradient(140deg, oklch(0.52 0.14 var(--t-hue)), oklch(0.28 0.10 calc(var(--t-hue) + 60)));
+}
+.store-head__tile--a { --t-hue: 258; inset: 6% 30% 30% 0; z-index: 1; }
+.store-head__tile--b { --t-hue: 320; inset: 22% 8% 10% 34%; z-index: 3; }
+.store-head__tile--c { --t-hue: 168; inset: 46% 46% 2% 14%; z-index: 2; opacity: 0.92; }
+
+@media (max-width: 760px) {
+  .store-head { grid-template-columns: 1fr; gap: 24px; }
+  .store-head__visual { display: none; }
+}
 
 .store-empty {
   margin-top: 24px; font-family: var(--font-mono); font-size: 14px;
