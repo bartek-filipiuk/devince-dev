@@ -51,20 +51,19 @@ export default async function AppsStorefront({
   return (
     <section className="shell" style={{ padding: '64px 0' }}>
       <header className="store-head">
-        <span className="eyebrow">
-          <i>{t(locale, 'apps.store.eyebrow')}</i>
-        </span>
-        <h1 className="section-title">{t(locale, 'apps.store.title')}</h1>
-        <p
-          style={{
-            margin: '10px 0 0',
-            fontSize: '15px',
-            color: 'var(--text-mut)',
-            maxWidth: '52ch',
-          }}
-        >
-          {t(locale, 'apps.store.lead')}
-        </p>
+        <div className="store-head__text">
+          <span className="eyebrow">
+            <i>{t(locale, 'apps.store.eyebrow')}</i>
+          </span>
+          <h1 className="section-title">{t(locale, 'apps.store.title')}</h1>
+          <p className="store-head__lead">{t(locale, 'apps.store.lead')}</p>
+        </div>
+        {/* Decorative teaser: staggered abstract tiles echoing the product cards. */}
+        <div className="store-head__visual" aria-hidden>
+          <span className="store-head__tile store-head__tile--a" />
+          <span className="store-head__tile store-head__tile--b" />
+          <span className="store-head__tile store-head__tile--c" />
+        </div>
       </header>
 
       {res.docs.length === 0 ? (
