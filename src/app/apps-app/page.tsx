@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import type { CSSProperties } from 'react'
 import Link from 'next/link'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
@@ -10,6 +11,7 @@ import { getLocale } from '@/utilities/getLocale.server'
 import { getLocalizedPath } from '@/utilities/getLocale'
 import { t } from '@/i18n'
 import { Pagination } from '../courses-app/_components/Pagination'
+import { hueFromString, monogram, cheapestTier, firstLineFromLexical } from './_lib/storeCard'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,33 +78,46 @@ export default async function AppsStorefront({
                 : null
             const coverUrl = cover ? getMediaUrl(cover.url) : null
 
+            const lead = product.accessMode === 'lead-magnet'
+            const tier = cheapestTier(product)
+            const priceLabel = lead
+              ? t(locale, 'leadMagnet.freeBadge')
+              : tier
+                ? `${t(locale, 'apps.store.from')} ${formatPrice(tier.priceCents, tier.currency ?? product.currency)}`
+                : formatPrice(product.priceCents, product.currency)
+            const tagline = firstLineFromLexical(product.description)
+            const hue = hueFromString(product.slug ?? String(product.id))
+
             return (
               <Link
                 key={product.id}
-                className="course-card"
+                className="product-card"
                 href={getLocalizedPath(`/${product.slug}`, locale)}
               >
-                {coverUrl ? (
-                  <img
-                    src={coverUrl}
-                    alt={cover?.alt ?? product.title}
-                    style={{
-                      width: '100%',
-                      aspectRatio: '16 / 9',
-                      objectFit: 'cover',
-                      borderRadius: 'calc(var(--r-card) - 2px)',
-                      display: 'block',
-                      marginBottom: '4px',
-                    }}
-                  />
-                ) : null}
-                <h3 className="course-card__title">{product.title}</h3>
-                <div className="course-card__meta mono">
-                  <span className="course-card__paid">
-                    {product.accessMode === 'lead-magnet'
-                      ? t(locale, 'leadMagnet.freeBadge')
-                      : formatPrice(product.priceCents, product.currency)}
-                  </span>
+                <div
+                  className={`product-card__cover${coverUrl ? '' : ' product-card__cover--placeholder'}`}
+                  style={
+                    coverUrl
+                      ? { backgroundImage: `url(${coverUrl})` }
+                      : ({ '--ph-hue': hue } as CSSProperties)
+                  }
+                >
+                  {!coverUrl ? (
+                    <span className="product-card__mono" aria-hidden>
+                      {monogram(product.title)}
+                    </span>
+                  ) : null}
+                  {lead ? <span className="product-card__badge">{t(locale, 'leadMagnet.freeBadge')}</span> : null}
+                </div>
+                <div className="product-card__body">
+                  <h3 className="product-card__title">{product.title}</h3>
+                  {tagline ? <p className="product-card__tagline">{tagline}</p> : null}
+                  <div className="product-card__foot">
+                    <span className="product-card__price mono">{priceLabel}</span>
+                    <span className="product-card__cta" aria-hidden>
+                      {t(locale, 'apps.store.view')} →
+                    </span>
+                  </div>
                 </div>
               </Link>
             )
