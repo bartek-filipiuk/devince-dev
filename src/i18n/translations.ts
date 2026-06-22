@@ -431,6 +431,20 @@ const translations = {
     // Not found
     'courses.notFound.title': 'Kurs nie znaleziony · Devince',
     'courses.notFound.cta': 'Wróć do kursów',
+
+    // Roadmap
+    'roadmap.meta': 'Roadmapa',
+    'roadmap.title': 'Roadmapa produktu',
+    'roadmap.lead': 'Co już działa i co budujemy dalej.',
+    'roadmap.empty': 'Wkrótce pojawią się tu plany rozwoju.',
+    'roadmap.status.planned': 'Planowane',
+    'roadmap.status.in_progress': 'W trakcie',
+    'roadmap.status.done': 'Gotowe',
+    'roadmap.track.general': 'Ogólne',
+    'roadmap.track.apps': 'Apps',
+    'roadmap.track.courses': 'Kursy',
+    'apps.nav.roadmap': 'Roadmap',
+    'courses.nav.roadmap': 'Roadmap',
   },
   en: {
     // Navigation
@@ -861,6 +875,20 @@ const translations = {
     // Not found
     'courses.notFound.title': 'Course not found · Devince',
     'courses.notFound.cta': 'Back to courses',
+
+    // Roadmap
+    'roadmap.meta': 'Roadmap',
+    'roadmap.title': 'Product roadmap',
+    'roadmap.lead': "What's live and what we're building next.",
+    'roadmap.empty': 'Plans will appear here soon.',
+    'roadmap.status.planned': 'Planned',
+    'roadmap.status.in_progress': 'In progress',
+    'roadmap.status.done': 'Done',
+    'roadmap.track.general': 'General',
+    'roadmap.track.apps': 'Apps',
+    'roadmap.track.courses': 'Courses',
+    'apps.nav.roadmap': 'Roadmap',
+    'courses.nav.roadmap': 'Roadmap',
   },
 } as const
 

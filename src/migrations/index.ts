@@ -15,6 +15,7 @@ import * as migration_20260620_194217_products_tiers from './20260620_194217_pro
 import * as migration_20260620_202922_products_tiers_i18n from './20260620_202922_products_tiers_i18n';
 import * as migration_20260620_212722_tier_price_localized from './20260620_212722_tier_price_localized';
 import * as migration_20260621_093105_grant_purchase_record from './20260621_093105_grant_purchase_record';
+import * as migration_20260622_164046_roadmap_global from './20260622_164046_roadmap_global';
 
 export const migrations = [
   {
@@ -100,6 +101,11 @@ export const migrations = [
   {
     up: migration_20260621_093105_grant_purchase_record.up,
     down: migration_20260621_093105_grant_purchase_record.down,
-    name: '20260621_093105_grant_purchase_record'
+    name: '20260621_093105_grant_purchase_record',
+  },
+  {
+    up: migration_20260622_164046_roadmap_global.up,
+    down: migration_20260622_164046_roadmap_global.down,
+    name: '20260622_164046_roadmap_global'
   },
 ];

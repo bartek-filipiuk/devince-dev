@@ -25,6 +25,7 @@ export function CoursesNav({ locale }: { locale: Locale }) {
       </Link>
       <div className="nav__links">
         <Link href={getLocalizedPath('/', locale)}>{t(locale, 'courses.nav.courses')}</Link>
+        <Link href={getLocalizedPath('/roadmap', locale)}>{t(locale, 'courses.nav.roadmap')}</Link>
         <Link href={getLocalizedPath('/account', locale)}>{t(locale, 'courses.nav.account')}</Link>
       </div>
       <div className="nav__spacer" />

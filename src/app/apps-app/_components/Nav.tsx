@@ -23,6 +23,9 @@ export function AppsNav({ locale }: { locale: Locale }) {
           {t(locale, 'apps.nav.brand')} <span>{t(locale, 'apps.nav.suffix')}</span>
         </b>
       </Link>
+      <div className="nav__links">
+        <Link href={getLocalizedPath('/roadmap', locale)}>{t(locale, 'apps.nav.roadmap')}</Link>
+      </div>
       <div className="nav__spacer" />
       <div className="nav__actions">
         <LanguageSwitch locale={locale} />
