@@ -43,6 +43,9 @@ describe('i18n dictionary', () => {
       'courses.lesson.why',
       'courses.auth.loginTitle',
       'courses.notFound.cta',
+      'roadmap.status.in_progress',
+      'apps.nav.roadmap',
+      'courses.nav.roadmap',
     ]
     for (const key of required) {
       expect(plKeys, `missing key "${key}"`).toContain(key)
