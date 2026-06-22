@@ -133,11 +133,13 @@ export interface Config {
     header: Header;
     footer: Footer;
     'site-settings': SiteSetting;
+    roadmap: Roadmap;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    roadmap: RoadmapSelect<false> | RoadmapSelect<true>;
   };
   locale: 'pl' | 'en';
   user: User & {
@@ -2967,6 +2969,24 @@ export interface SiteSetting {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "roadmap".
+ */
+export interface Roadmap {
+  id: number;
+  items?:
+    | {
+        title: string;
+        description?: string | null;
+        status: 'planned' | 'in_progress' | 'done';
+        track: 'general' | 'apps' | 'courses';
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -3042,6 +3062,24 @@ export interface SiteSettingsSelect<T extends boolean = true> {
     | {
         platform?: T;
         url?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "roadmap_select".
+ */
+export interface RoadmapSelect<T extends boolean = true> {
+  items?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        status?: T;
+        track?: T;
         id?: T;
       };
   updatedAt?: T;
