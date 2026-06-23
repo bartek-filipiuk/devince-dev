@@ -139,6 +139,39 @@ export async function sendDownloadLinkEmail(args: {
 }
 
 /**
+ * Product-update / re-download email to a past buyer (e.g. a security update).
+ * Service communication about a product they purchased — bilingual PL/EN (the
+ * grant doesn't store the buyer's locale). Returns the Brevo messageId for
+ * delivery tracking. Optional `note` carries the reason (e.g. "Security fix v1.0.7").
+ */
+export async function sendProductUpdateEmail(args: {
+  to: string
+  link: string
+  productTitle: string
+  note?: string
+}): Promise<string | null> {
+  const noteBlock = args.note
+    ? `<p style="margin:14px 0;padding:10px 14px;background:#f4f4f6;border-radius:6px">${esc(args.note)}</p>`
+    : ''
+  const pl =
+    `<p>Cześć! Produkt, który kupiłeś — <strong>${esc(args.productTitle)}</strong> — ma nową wersję do pobrania.</p>` +
+    noteBlock +
+    `<p><a href="${esc(args.link)}">Pobierz najnowszą wersję</a></p>` +
+    `<p style="font-size:13px;color:#555">Link wygaśnie po 7 dniach i ma limit pobrań. To wiadomość serwisowa dotycząca zakupionego produktu — jeśli nie chcesz takich powiadomień, odpisz na tego maila.</p>`
+  const en =
+    `<hr/><p>Hi! The product you purchased — <strong>${esc(args.productTitle)}</strong> — has a new version available.</p>` +
+    noteBlock +
+    `<p><a href="${esc(args.link)}">Download the latest version</a></p>` +
+    `<p style="font-size:13px;color:#555">The link expires after 7 days and has a download limit. This is a service message about a product you purchased — to stop these, just reply to this email.</p>`
+  const res = await sendTransactionalEmail({
+    to: args.to,
+    subject: `Aktualizacja: ${args.productTitle} — nowa wersja / Update available`,
+    htmlContent: pl + en,
+  })
+  return messageIdOf(res)
+}
+
+/**
  * Seller sale notification — a "you made a sale" receipt to the shop owner,
  * fired (best-effort) from the Stripe webhook after a durable grant. Separate
  * from the buyer's download/access email and from the Discord pulse; many
