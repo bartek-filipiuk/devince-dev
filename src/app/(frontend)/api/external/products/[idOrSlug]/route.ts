@@ -24,6 +24,7 @@ type UpdateProductRequest = Partial<CreateProductRequest> & {
   stripePriceId?: unknown
   downloadFiles?: unknown
   coverImage?: unknown
+  screenshots?: unknown
   tiers?: unknown
   _status?: unknown
 }
@@ -104,6 +105,12 @@ export async function PATCH(
         return createErrorResponse('VALIDATION_ERROR', 'coverImage must be a media id or null')
       }
       data.coverImage = body.coverImage
+    }
+    if (body.screenshots !== undefined) {
+      if (body.screenshots !== null && !Array.isArray(body.screenshots)) {
+        return createErrorResponse('VALIDATION_ERROR', 'screenshots must be an array (or null)')
+      }
+      data.screenshots = body.screenshots
     }
     if (body.tiers !== undefined) {
       if (body.tiers !== null && !Array.isArray(body.tiers)) {
