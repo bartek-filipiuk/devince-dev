@@ -4,6 +4,7 @@ import { slugField } from 'payload'
 import { adminOnly } from '../../access/adminOnly'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
+import { countProductBuyers, notifyProductBuyers } from '../../utilities/notifyBuyers'
 
 import {
   MetaDescriptionField,
@@ -198,6 +199,45 @@ export const Products: CollectionConfig = {
           pickerAppearance: 'dayAndTime',
         },
         position: 'sidebar',
+      },
+    },
+    {
+      name: 'notifyBuyers',
+      type: 'ui',
+      admin: {
+        position: 'sidebar',
+        components: { Field: '@/components/NotifyBuyers#NotifyBuyers' },
+      },
+    },
+  ],
+  endpoints: [
+    {
+      path: '/:id/notify-buyers/count',
+      method: 'get',
+      handler: async (req) => {
+        if (!req.user?.roles?.includes('admin')) {
+          return Response.json({ error: 'unauthorized' }, { status: 401 })
+        }
+        const buyers = await countProductBuyers(req.payload, req.routeParams?.id as string)
+        return Response.json({ buyers })
+      },
+    },
+    {
+      path: '/:id/notify-buyers',
+      method: 'post',
+      handler: async (req) => {
+        if (!req.user?.roles?.includes('admin')) {
+          return Response.json({ error: 'unauthorized' }, { status: 401 })
+        }
+        let note: string | undefined
+        try {
+          const body = (await req.json?.()) as { note?: unknown } | undefined
+          if (typeof body?.note === 'string' && body.note.trim()) note = body.note.trim()
+        } catch {
+          // note is optional
+        }
+        const result = await notifyProductBuyers(req.payload, req.routeParams?.id as string, { note })
+        return Response.json(result)
       },
     },
   ],
