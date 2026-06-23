@@ -1358,6 +1358,13 @@ export interface Product {
     [k: string]: unknown;
   } | null;
   coverImage?: (number | null) | Media;
+  screenshots?:
+    | {
+        image: number | Media;
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Cena w groszach (np. 4900 = 49,00 zł)
    */
@@ -2329,6 +2336,13 @@ export interface ProductsSelect<T extends boolean = true> {
   accessMode?: T;
   description?: T;
   coverImage?: T;
+  screenshots?:
+    | T
+    | {
+        image?: T;
+        caption?: T;
+        id?: T;
+      };
   priceCents?: T;
   currency?: T;
   stripePriceId?: T;
