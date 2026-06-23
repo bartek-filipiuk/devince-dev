@@ -1,0 +1,30 @@
+# Dependabot — keeps dependencies fresh + auto-patches known vulnerabilities.
+# Security updates (CVEs) are raised automatically and individually; the groups
+# below only batch routine minor/patch VERSION updates to cut PR noise. Major
+# bumps (Next.js, Payload, React) come as individual PRs — review + run
+# `pnpm test:int` && `pnpm build` before merging those.
+version: 2
+updates:
+  - package-ecosystem: "npm" # pnpm (pnpm-lock.yaml) is supported by this ecosystem
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels: ["dependencies"]
+    groups:
+      prod-minor-patch:
+        applies-to: version-updates
+        dependency-type: "production"
+        update-types: ["minor", "patch"]
+      dev-minor-patch:
+        applies-to: version-updates
+        dependency-type: "development"
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels: ["dependencies", "ci"]
