@@ -1480,6 +1480,18 @@ export interface DownloadGrant {
   expiresAt: string;
   maxUses: number;
   uses: number;
+  /**
+   * Status maila z linkiem do pobrania (sent → delivered → opened; bounced/failed = problem).
+   */
+  emailStatus?: ('pending' | 'sent' | 'delivered' | 'opened' | 'bounced' | 'deferred' | 'spam' | 'failed') | null;
+  /**
+   * Brevo messageId (korelacja z eventami Brevo + panelem Brevo).
+   */
+  emailMessageId?: string | null;
+  /**
+   * Kiedy wysłaliśmy mail z linkiem do pobrania.
+   */
+  emailSentAt?: string | null;
   withdrawalConsentAt?: string | null;
   stripeSessionId?: string | null;
   updatedAt: string;
@@ -2578,6 +2590,9 @@ export interface DownloadGrantsSelect<T extends boolean = true> {
   expiresAt?: T;
   maxUses?: T;
   uses?: T;
+  emailStatus?: T;
+  emailMessageId?: T;
+  emailSentAt?: T;
   withdrawalConsentAt?: T;
   stripeSessionId?: T;
   updatedAt?: T;

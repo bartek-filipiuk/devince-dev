@@ -479,6 +479,8 @@ export async function POST(req: NextRequest) {
       if (result.created && result.token) {
         // Best-effort email, same policy as course access mails: a Brevo failure
         // must NOT fail the webhook — the grant exists; admin can resend.
+        let emailMessageId: string | null = null
+        let emailStatus = 'failed'
         try {
           const product = await payload.findByID({
             collection: 'products',
@@ -488,13 +490,14 @@ export async function POST(req: NextRequest) {
           })
           const base = process.env.NEXT_PUBLIC_APPS_URL ?? 'https://apps.devince.dev'
           const emailLocale = session.metadata?.locale === 'en' ? 'en' : 'pl'
-          await sendDownloadLinkEmail({
+          emailMessageId = await sendDownloadLinkEmail({
             to: email,
             link: `${base}/download/${result.token}`,
             productTitle: (product as { title?: string } | null)?.title ?? 'Twój zakup',
             locale: emailLocale,
             withdrawalConsentAt,
           })
+          emailStatus = 'sent'
         } catch (err) {
           console.error(
             `[stripe webhook] download email failed for ${email} (product ${productId}); grant exists, continuing:`,
@@ -502,6 +505,31 @@ export async function POST(req: NextRequest) {
           )
           // Observability: grant exists, only the download-link email failed.
           await notifyEvent('email_failed', { kind: 'download', email })
+        }
+        // Record the send outcome on the grant so the admin can verify delivery in
+        // Payload (advanced later to delivered/opened/bounced by the Brevo event
+        // webhook). Best-effort — a tracking-write failure must NOT break the webhook.
+        try {
+          const g = await payload.find({
+            collection: 'download-grants',
+            where: { token: { equals: result.token } },
+            limit: 1,
+            overrideAccess: true,
+          })
+          const grant = g.docs[0] as { id: number | string } | undefined
+          if (grant) {
+            await payload.update({
+              collection: 'download-grants',
+              id: grant.id,
+              data: { emailStatus, emailSentAt: new Date().toISOString(), emailMessageId } as never,
+              overrideAccess: true,
+            })
+          }
+        } catch (trackErr) {
+          console.error(
+            `[stripe webhook] email-tracking update failed (token ${result.token}); continuing:`,
+            trackErr,
+          )
         }
       }
       } // end if (appReconciled)
