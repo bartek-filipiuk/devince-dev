@@ -30,8 +30,8 @@ export const LEGAL_TITLES: Record<LegalDoc, Record<Locale, string>> = {
 }
 
 export const LEGAL_UPDATED: Record<Locale, string> = {
-  pl: '18 czerwca 2026',
-  en: '18 June 2026',
+  pl: '23 czerwca 2026',
+  en: '23 June 2026',
 }
 
 const SELLER = {
@@ -74,6 +74,7 @@ Do korzystania ze Sklepu niezbędne są: urządzenie z dostępem do Internetu, a
 
 1. **Produkt cyfrowy:** po zaksięgowaniu płatności Sprzedawca wysyła na podany adres e-mail link do pobrania pliku. Dostarczenie następuje z chwilą udostępnienia pliku do pobrania pod tym linkiem.
 2. **Kurs:** po zakupie tworzone jest konto i wysyłany e-mail z linkiem do ustawienia hasła; dostęp do lekcji jest aktywny po zalogowaniu.
+3. **Powiadomienia o aktualizacjach (Produkty cyfrowe):** Sprzedawca może wysyłać Klientowi na podany adres e-mail wiadomości serwisowe dotyczące istotnych aktualizacji lub poprawek bezpieczeństwa zakupionego Produktu cyfrowego — w tym nowy, podpisany link umożliwiający pobranie bieżącej wersji. Są to wiadomości serwisowe związane z wykonaniem umowy i bezpieczeństwem zakupionego Produktu (podstawa: art. 6 ust. 1 lit. b i f RODO), a nie informacja handlowa/marketing. Klient może zrezygnować z takich powiadomień, odpisując na otrzymaną wiadomość.
 
 ## §6. Prawo odstąpienia od umowy (Konsument)
 
@@ -147,6 +148,7 @@ You need: a device with Internet access, a current web browser, an active e-mail
 
 1. **Digital Product:** after payment is confirmed, the Seller sends a download link to the e-mail provided. Delivery occurs when the file is made available at that link.
 2. **Course:** after purchase an account is created and an e-mail with a password-setup link is sent; lessons become accessible after logging in.
+3. **Update notifications (Digital Products):** the Seller may send the Customer service e-mails about important updates or security fixes to a purchased Digital Product — including a new, signed link to download the current version. These are service messages relating to performance of the contract and the security of the purchased Product (legal basis: Art. 6(1)(b) and (f) GDPR), not commercial/marketing communication. The Customer may opt out of such notifications by replying to the message.
 
 ## §6. Right of withdrawal (Consumer)
 
