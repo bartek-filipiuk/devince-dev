@@ -16,7 +16,7 @@ export const DownloadGrants: CollectionConfig = {
     useAsTitle: 'email',
     hidden: false,
     // Sales panel: see at a glance who bought which product + tier, for how much.
-    defaultColumns: ['email', 'product', 'tier', 'amountPaid', 'currency', 'createdAt'],
+    defaultColumns: ['email', 'product', 'tier', 'amountPaid', 'currency', 'emailStatus', 'createdAt'],
   },
   fields: [
     { name: 'token', type: 'text', required: true, unique: true },
@@ -31,6 +31,28 @@ export const DownloadGrants: CollectionConfig = {
     { name: 'expiresAt', type: 'date', required: true },
     { name: 'maxUses', type: 'number', required: true, defaultValue: 5 },
     { name: 'uses', type: 'number', required: true, defaultValue: 0 },
+    // Email delivery tracking. `emailStatus`/`emailMessageId`/`emailSentAt` are set
+    // by the Stripe webhook when it sends the download-link email (sent|failed),
+    // then advanced by the Brevo event webhook (delivered|opened|bounced|...). Lets
+    // the admin verify the email went out + was delivered WITHOUT leaving for Brevo.
+    {
+      name: 'emailStatus',
+      type: 'select',
+      defaultValue: 'pending',
+      options: [
+        { label: 'Pending', value: 'pending' },
+        { label: 'Sent', value: 'sent' },
+        { label: 'Delivered', value: 'delivered' },
+        { label: 'Opened', value: 'opened' },
+        { label: 'Bounced', value: 'bounced' },
+        { label: 'Deferred', value: 'deferred' },
+        { label: 'Spam', value: 'spam' },
+        { label: 'Failed', value: 'failed' },
+      ],
+      admin: { description: 'Status maila z linkiem do pobrania (sent → delivered → opened; bounced/failed = problem).' },
+    },
+    { name: 'emailMessageId', type: 'text', index: true, admin: { description: 'Brevo messageId (korelacja z eventami Brevo + panelem Brevo).' } },
+    { name: 'emailSentAt', type: 'date', admin: { description: 'Kiedy wysłaliśmy mail z linkiem do pobrania.' } },
     // Art. 38 pkt 13 ustawy o prawach konsumenta: timestamp of the buyer's
     // express consent (given at checkout via a separate checkbox) to begin
     // delivery immediately AND acknowledge losing the right of withdrawal.

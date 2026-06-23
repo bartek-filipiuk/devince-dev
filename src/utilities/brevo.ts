@@ -42,6 +42,18 @@ export async function sendTransactionalEmail(args: {
 }
 
 /**
+ * Brevo's transactional API returns `{ messageId }` on success. Extract it (for
+ * delivery tracking / correlating later Brevo events back to a download grant).
+ */
+export function messageIdOf(res: unknown): string | null {
+  if (res && typeof res === 'object' && 'messageId' in res) {
+    const id = (res as { messageId?: unknown }).messageId
+    return typeof id === 'string' && id.length > 0 ? id : null
+  }
+  return null
+}
+
+/**
  * Minimal HTML-escape for values interpolated into the fallback email body.
  * Product titles are admin-entered (low risk), but a title like `C++ "Guide"`
  * would otherwise produce malformed HTML — escape for correctness + defence.
@@ -93,18 +105,18 @@ export async function sendDownloadLinkEmail(args: {
   // carries the durable-medium confirmation block. Absent for legacy purchases
   // made before the consent gate existed.
   withdrawalConsentAt?: string
-}): Promise<void> {
+}): Promise<string | null> {
   const locale = args.locale === 'en' ? 'en' : 'pl'
   const consentLine = args.withdrawalConsentAt ? buildConsentLine(locale, args.withdrawalConsentAt) : ''
 
   const templateId = process.env.BREVO_DOWNLOAD_TEMPLATE_ID
   if (templateId) {
-    await sendTransactionalEmail({
+    const res = await sendTransactionalEmail({
       to: args.to,
       templateId: Number(templateId),
       params: { LINK: args.link, PRODUCT: args.productTitle, CONSENT: consentLine, LOCALE: locale },
     })
-    return
+    return messageIdOf(res)
   }
 
   const copy =
@@ -118,11 +130,12 @@ export async function sendDownloadLinkEmail(args: {
           body: `<p>Dziękujemy za zakup <strong>${esc(args.productTitle)}</strong>.</p><p><a href="${esc(args.link)}">Pobierz pliki</a></p><p>Link wygaśnie po 7 dniach i ma limit pobrań. Jeśli wygaśnie — odpisz na tego maila.</p>`,
         }
 
-  await sendTransactionalEmail({
+  const res = await sendTransactionalEmail({
     to: args.to,
     subject: copy.subject,
     htmlContent: copy.body + consentLine,
   })
+  return messageIdOf(res)
 }
 
 /**
