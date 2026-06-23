@@ -13,8 +13,8 @@ import RichText from '@/components/RichText'
 import { BuyButton } from '../_components/BuyButton'
 import { AppLeadMagnet } from '../_components/AppLeadMagnet'
 import { ProductTierSelector } from '../_components/ProductTierSelector'
-import { ProductGallery } from '../_components/ProductGallery'
-import { resolveScreenshots } from '../_lib/resolveScreenshots'
+import Link from 'next/link'
+import { getLocalizedPath } from '@/utilities/getLocale'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,7 +28,7 @@ async function getProduct(slug: string, locale: Locale): Promise<Product | null>
     },
     limit: 1,
     overrideAccess: false,
-    depth: 2,
+    depth: 1,
     locale,
   })
 
@@ -153,18 +153,16 @@ export default async function ProductPage({
         </section>
       ) : null}
 
-      {(() => {
-        const shots = resolveScreenshots(
-          product.screenshots,
-          product.title,
-          (u) => (u ? getMediaUrl(u) : null),
-        )
-        return shots.length ? (
-          <section className="shell product-gallery">
-            <ProductGallery items={shots} heading={t(locale, 'apps.product.gallery')} />
-          </section>
-        ) : null
-      })()}
+      {Array.isArray(product.screenshots) && product.screenshots.length > 0 ? (
+        <section className="shell" style={{ paddingTop: 8 }}>
+          <Link
+            className="btn btn--ghost btn--lg"
+            href={getLocalizedPath(`/${product.slug}/screenshots`, locale)}
+          >
+            {t(locale, 'apps.product.galleryLink')} ({product.screenshots.length}) →
+          </Link>
+        </section>
+      ) : null}
 
       {product.description ? (
         <section className="shell product-detail">
