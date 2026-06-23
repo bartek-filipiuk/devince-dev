@@ -13,6 +13,8 @@ import RichText from '@/components/RichText'
 import { BuyButton } from '../_components/BuyButton'
 import { AppLeadMagnet } from '../_components/AppLeadMagnet'
 import { ProductTierSelector } from '../_components/ProductTierSelector'
+import { ProductGallery } from '../_components/ProductGallery'
+import { resolveScreenshots } from '../_lib/resolveScreenshots'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,7 +28,7 @@ async function getProduct(slug: string, locale: Locale): Promise<Product | null>
     },
     limit: 1,
     overrideAccess: false,
-    depth: 1,
+    depth: 2,
     locale,
   })
 
@@ -150,6 +152,19 @@ export default async function ProductPage({
           />
         </section>
       ) : null}
+
+      {(() => {
+        const shots = resolveScreenshots(
+          product.screenshots,
+          product.title,
+          (u) => (u ? getMediaUrl(u) : null),
+        )
+        return shots.length ? (
+          <section className="shell product-gallery">
+            <ProductGallery items={shots} heading={t(locale, 'apps.product.gallery')} />
+          </section>
+        ) : null
+      })()}
 
       {product.description ? (
         <section className="shell product-detail">
