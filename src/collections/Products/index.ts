@@ -65,6 +65,16 @@ export const Products: CollectionConfig = {
             { name: 'description', type: 'richText', localized: true },
             { name: 'coverImage', type: 'upload', relationTo: 'media' },
             {
+              name: 'screenshots',
+              type: 'array',
+              labels: { singular: 'Screenshot', plural: 'Screenshots' },
+              admin: { initCollapsed: true },
+              fields: [
+                { name: 'image', type: 'upload', relationTo: 'media', required: true },
+                { name: 'caption', type: 'text' },
+              ],
+            },
+            {
               type: 'row',
               fields: [
                 {
