@@ -68,10 +68,10 @@ export async function notifyProductBuyers(
 
   const base = process.env.NEXT_PUBLIC_APPS_URL ?? 'https://apps.devince.dev'
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-  let notified = 0
-  let failed = 0
 
-  for (const email of emails) {
+  // Per-buyer work, isolated so one failure never aborts the run: fresh grant →
+  // send the update email → record the send outcome on the grant.
+  const notifyOne = async (email: string): Promise<'sent' | 'failed'> => {
     try {
       const token = createDownloadToken(secret)
       const grant = await payload.create({
@@ -80,7 +80,7 @@ export async function notifyProductBuyers(
         overrideAccess: true,
       })
       let emailMessageId: string | null = null
-      let emailStatus = 'failed'
+      let emailStatus: 'sent' | 'failed' = 'failed'
       try {
         emailMessageId = await sendProductUpdateEmail({
           to: email,
@@ -102,10 +102,26 @@ export async function notifyProductBuyers(
       } catch {
         // best-effort tracking write
       }
-      if (emailStatus === 'sent') notified++
-      else failed++
+      return emailStatus
     } catch {
-      failed++
+      return 'failed'
+    }
+  }
+
+  // Bounded concurrency: process buyers in parallel chunks rather than one-by-one.
+  // The Brevo HTTP transactional API (api.brevo.com/v3/smtp/email) is rate-limited,
+  // so ~15 in flight is comfortably within limits and ~15x faster than sequential
+  // — keeps the admin "Notify" request well under timeout for tens/low-hundreds of
+  // buyers. (For thousands, move to a background job — see Apps-C notes.)
+  const CONCURRENCY = 15
+  let notified = 0
+  let failed = 0
+  for (let i = 0; i < emails.length; i += CONCURRENCY) {
+    const chunk = emails.slice(i, i + CONCURRENCY)
+    const results = await Promise.allSettled(chunk.map(notifyOne))
+    for (const r of results) {
+      if (r.status === 'fulfilled' && r.value === 'sent') notified++
+      else failed++
     }
   }
 
