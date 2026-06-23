@@ -34,6 +34,7 @@ describe('i18n dictionary', () => {
       'apps.nav.suffix',
       'apps.store.empty',
       'apps.product.buy',
+      'apps.product.gallery',
       'apps.download.remaining',
       'apps.notFound.cta',
       'courses.nav.suffix',
