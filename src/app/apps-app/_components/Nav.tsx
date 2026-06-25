@@ -25,6 +25,7 @@ export function AppsNav({ locale }: { locale: Locale }) {
       </Link>
       <div className="nav__links">
         <Link href={getLocalizedPath('/roadmap', locale)}>{t(locale, 'apps.nav.roadmap')}</Link>
+        <Link href={getLocalizedPath('/changelog', locale)}>{t(locale, 'apps.nav.changelog')}</Link>
       </div>
       <div className="nav__spacer" />
       <div className="nav__actions">
