@@ -47,6 +47,11 @@ describe('i18n dictionary', () => {
       'roadmap.status.in_progress',
       'apps.nav.roadmap',
       'courses.nav.roadmap',
+      'changelog.title',
+      'changelog.empty',
+      'changelog.tag.security',
+      'apps.nav.changelog',
+      'courses.nav.changelog',
     ]
     for (const key of required) {
       expect(plKeys, `missing key "${key}"`).toContain(key)
