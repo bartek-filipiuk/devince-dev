@@ -17,19 +17,12 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"_parent_id" varchar NOT NULL
   );
   
-  CREATE TABLE "changelog_entries_pr_refs" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" varchar NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"number" numeric
-  );
-  
   CREATE TABLE "changelog_entries" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
   	"id" varchar PRIMARY KEY NOT NULL,
   	"date" timestamp(3) with time zone NOT NULL,
-  	"to_sha" varchar
+  	"source_id" varchar
   );
   
   CREATE TABLE "changelog" (
@@ -40,13 +33,10 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   
   ALTER TABLE "changelog_entries_notes" ADD CONSTRAINT "changelog_entries_notes_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."changelog_entries"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "changelog_entries_notes_locales" ADD CONSTRAINT "changelog_entries_notes_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."changelog_entries_notes"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "changelog_entries_pr_refs" ADD CONSTRAINT "changelog_entries_pr_refs_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."changelog_entries"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "changelog_entries" ADD CONSTRAINT "changelog_entries_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."changelog"("id") ON DELETE cascade ON UPDATE no action;
   CREATE INDEX "changelog_entries_notes_order_idx" ON "changelog_entries_notes" USING btree ("_order");
   CREATE INDEX "changelog_entries_notes_parent_id_idx" ON "changelog_entries_notes" USING btree ("_parent_id");
   CREATE UNIQUE INDEX "changelog_entries_notes_locales_locale_parent_id_unique" ON "changelog_entries_notes_locales" USING btree ("_locale","_parent_id");
-  CREATE INDEX "changelog_entries_pr_refs_order_idx" ON "changelog_entries_pr_refs" USING btree ("_order");
-  CREATE INDEX "changelog_entries_pr_refs_parent_id_idx" ON "changelog_entries_pr_refs" USING btree ("_parent_id");
   CREATE INDEX "changelog_entries_order_idx" ON "changelog_entries" USING btree ("_order");
   CREATE INDEX "changelog_entries_parent_id_idx" ON "changelog_entries" USING btree ("_parent_id");`)
 }
@@ -55,7 +45,6 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   await db.execute(sql`
    DROP TABLE "changelog_entries_notes" CASCADE;
   DROP TABLE "changelog_entries_notes_locales" CASCADE;
-  DROP TABLE "changelog_entries_pr_refs" CASCADE;
   DROP TABLE "changelog_entries" CASCADE;
   DROP TABLE "changelog" CASCADE;
   DROP TYPE "public"."enum_changelog_entries_notes_tag";`)

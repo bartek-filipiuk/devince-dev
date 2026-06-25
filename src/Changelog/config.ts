@@ -1,12 +1,12 @@
 import type { GlobalConfig } from 'payload'
 
 /**
- * Public platform changelog (sibling of the `roadmap` global). Entries are
- * auto-published from a deploy webhook (`/api/changelog/generate`): PRs since the
- * last entry are summarized by Claude into short PL/EN notes. `text` is localized
- * (PL/EN); `tag`/`date`/`toSha` are shared. `toSha` records the HEAD commit a
- * given entry covers — it is the idempotency pointer the generator reads back as
- * `lastSha`. Editable via the admin and `GET/PATCH /api/external/changelog`.
+ * Public platform changelog (sibling of the `roadmap` global). Entries are authored
+ * at work-time as repo fragments (`src/changelog/fragments`) and ingested into this
+ * global on boot — no runtime LLM, no API keys. `text` is localized (PL/EN);
+ * `tag`/`date`/`sourceId` are shared. `sourceId` is the fragment id an entry was
+ * ingested from, so each fragment lands at most once (idempotent ingest). Editable
+ * via the admin and `GET/PATCH /api/external/changelog`.
  */
 export const Changelog: GlobalConfig = {
   slug: 'changelog',
@@ -45,19 +45,12 @@ export const Changelog: GlobalConfig = {
           ],
         },
         {
-          name: 'toSha',
+          name: 'sourceId',
           type: 'text',
           admin: {
             readOnly: true,
-            description: 'HEAD commit sha covered by this entry (idempotency pointer).',
+            description: 'Fragment id this entry was ingested from (idempotency).',
           },
-        },
-        {
-          name: 'prRefs',
-          type: 'array',
-          admin: { readOnly: true },
-          labels: { singular: 'PR', plural: 'PRs' },
-          fields: [{ name: 'number', type: 'number' }],
         },
       ],
     },

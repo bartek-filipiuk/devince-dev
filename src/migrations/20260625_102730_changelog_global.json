@@ -28358,88 +28358,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.changelog_entries_pr_refs": {
-      "name": "changelog_entries_pr_refs",
-      "schema": "",
-      "columns": {
-        "_order": {
-          "name": "_order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "_parent_id": {
-          "name": "_parent_id",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "id": {
-          "name": "id",
-          "type": "varchar",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "number": {
-          "name": "number",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "changelog_entries_pr_refs_order_idx": {
-          "name": "changelog_entries_pr_refs_order_idx",
-          "columns": [
-            {
-              "expression": "_order",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "changelog_entries_pr_refs_parent_id_idx": {
-          "name": "changelog_entries_pr_refs_parent_id_idx",
-          "columns": [
-            {
-              "expression": "_parent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "changelog_entries_pr_refs_parent_id_fk": {
-          "name": "changelog_entries_pr_refs_parent_id_fk",
-          "tableFrom": "changelog_entries_pr_refs",
-          "tableTo": "changelog_entries",
-          "columnsFrom": [
-            "_parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.changelog_entries": {
       "name": "changelog_entries",
       "schema": "",
@@ -28468,8 +28386,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "to_sha": {
-          "name": "to_sha",
+        "source_id": {
+          "name": "source_id",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
@@ -29631,6 +29549,6 @@
     "tables": {},
     "columns": {}
   },
-  "id": "e2b85148-bacf-491c-86f3-713c20927a9c",
+  "id": "04db47ce-b0fa-480a-b6c6-4e7640f8d500",
   "prevId": "00000000-0000-0000-0000-000000000000"
 }

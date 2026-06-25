@@ -18,7 +18,7 @@ import * as migration_20260621_093105_grant_purchase_record from './20260621_093
 import * as migration_20260622_164046_roadmap_global from './20260622_164046_roadmap_global';
 import * as migration_20260623_060439_product_screenshots from './20260623_060439_product_screenshots';
 import * as migration_20260623_094459_email_tracking from './20260623_094459_email_tracking';
-import * as migration_20260625_071831_changelog_global from './20260625_071831_changelog_global';
+import * as migration_20260625_102730_changelog_global from './20260625_102730_changelog_global';
 
 export const migrations = [
   {
@@ -122,8 +122,8 @@ export const migrations = [
     name: '20260623_094459_email_tracking',
   },
   {
-    up: migration_20260625_071831_changelog_global.up,
-    down: migration_20260625_071831_changelog_global.down,
-    name: '20260625_071831_changelog_global'
+    up: migration_20260625_102730_changelog_global.up,
+    down: migration_20260625_102730_changelog_global.down,
+    name: '20260625_102730_changelog_global'
   },
 ];

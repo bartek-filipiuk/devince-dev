@@ -3033,15 +3033,9 @@ export interface Changelog {
           id?: string | null;
         }[];
         /**
-         * HEAD commit sha covered by this entry (idempotency pointer).
+         * Fragment id this entry was ingested from (idempotency).
          */
-        toSha?: string | null;
-        prRefs?:
-          | {
-              number?: number | null;
-              id?: string | null;
-            }[]
-          | null;
+        sourceId?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -3165,13 +3159,7 @@ export interface ChangelogSelect<T extends boolean = true> {
               tag?: T;
               id?: T;
             };
-        toSha?: T;
-        prRefs?:
-          | T
-          | {
-              number?: T;
-              id?: T;
-            };
+        sourceId?: T;
         id?: T;
       };
   updatedAt?: T;
