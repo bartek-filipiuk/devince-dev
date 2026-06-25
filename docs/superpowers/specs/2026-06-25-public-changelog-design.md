@@ -130,3 +130,18 @@ Narzędzia: `pnpm test:int`, `pnpm build`, smoke stron przez Playwright (DevTool
 ## Polityka boilerplate
 
 Build w **devince first**; backport do `course-platform-starter` później i selektywnie. Nic do paczki teraz.
+
+---
+
+## PIVOT (2026-06-25, po review właściciela) — fragmenty zamiast runtime-LLM
+
+Po zbudowaniu wariantu B właściciel zakwestionował architekturę: po co klucz Anthropic w prodzie i re-derywacja treści z tytułów PR, skoro **agent, który robi robotę, ma pełny kontekst „co + dlaczego" w momencie pracy**? Słusznie. Przepięte na:
+
+- **Autorstwo w czasie pracy**: notka to wpis w **`src/changelog/fragments.ts`** (`{ id, date, notes:[{tag, pl, en}] }`). Moduł w grafie (bundlowany), bo standalone-kontener nie ma surowych plików repo (ten sam powód, co brak `.git`).
+- **Publikacja na deploy**: Payload **`onInit`** → `ingestChangelogFragments` wciąga nieopublikowane fragmenty do globala `changelog`, **idempotentnie po `id`** (zapis jako `sourceId`). Guard `NEXT_PHASE==='phase-production-build'` (bez zapisu do DB podczas `next build`).
+- **Usunięte**: summarizer (Claude), endpoint `/api/changelog/generate`, GitHub compare/pulls, filtr PR, zależność `@anthropic-ai/sdk`, sekrety `ANTHROPIC_API_KEY`+`GITHUB_TOKEN`+`CHANGELOG_WEBHOOK_SECRET`.
+- **Zostaje** (z oryginalnego designu): global, `ChangelogView`+strony, i18n, **`/api/external/changelog`** (korekty).
+- **Schemat**: `entry.toSha` → `sourceId`, bez `prRefs` (świeża migracja `20260625_102730_changelog_global`; prod nigdy nie widział poprzedniej).
+- **Bug złapany w review**: zapis dwuprzebiegowy pl/en musi **UPDATE'ować wiersze po `id`** (przebieg pl tworzy, en re-czyta i aktualizuje), nie dopisywać — inaczej kolizja `id` (Payload „Value must be unique: id") i duplikaty. Test używa teraz **stateful** stubu Payloda (per-locale text, reconcile po id), który to łapie.
+
+**Akcje właściciela: brak nowych sekretów** — wystarczy merge. Dodanie notki = dopisanie obiektu do `src/changelog/fragments.ts`.
