@@ -116,7 +116,6 @@ export const FeaturesBlock: React.FC<FeaturesProps & { locale?: Locale }> = ({
                   <CMSLink
                     type="custom"
                     url={feature.linkUrl}
-                    label={feature.linkLabel}
                     appearance="inline"
                     locale={locale}
                     className="feature-link text-primary font-medium inline-flex items-center gap-1"
