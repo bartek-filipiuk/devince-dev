@@ -22,6 +22,7 @@ import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { Roadmap } from './Roadmap/config'
+import { Changelog } from './Changelog/config'
 import { SiteSettings } from './SiteSettings/config'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
@@ -108,7 +109,7 @@ export default buildConfig({
     LessonProgress,
   ],
   cors: [getServerSideURL(), process.env.NEXT_PUBLIC_COURSES_URL, process.env.NEXT_PUBLIC_APPS_URL].filter(Boolean) as string[],
-  globals: [Header, Footer, SiteSettings, Roadmap],
+  globals: [Header, Footer, SiteSettings, Roadmap, Changelog],
   plugins,
   secret: process.env.PAYLOAD_SECRET,
   sharp,
