@@ -10,6 +10,13 @@ Model Context Protocol (MCP) server that exposes devince.dev content management 
 | `update_post` | Update a post by ID or slug (publish drafts, edit content) |
 | `create_project` | Create a portfolio project (technologies, GitHub/production URLs) |
 | `update_project` | Update a project by ID or slug |
+| `create_lesson` | Create a lesson within a program/course (markdown body, order, free preview, dependencies) |
+| `update_lesson` | Update a lesson by ID or slug |
+| `create_product` | Create an apps-store product (price in minor units, cover image, download files) |
+| `update_product` | Update a product by ID or slug (incl. per-locale price tiers, screenshots) |
+| `get_manifest` | Fetch the self-describing content API manifest (resources, methods, fields, enums) — call first |
+| `list_content` | List a resource (programs, lessons, products, posts, projects, media, app-assets) with pagination/filters |
+| `get_content` | Fetch a single item (program, lesson, product, post, project) by ID or slug to read/verify |
 | `upload_media` | Upload an image via URL or base64 (returns media ID for posts/projects) |
 
 ## Connect from Claude Code
