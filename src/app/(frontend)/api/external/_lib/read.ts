@@ -92,7 +92,7 @@ export async function readOne(
     if (found.docs.length === 0) {
       return createErrorResponse('NOT_FOUND', `${collection} not found: ${idOrSlug}`)
     }
-    id = found.docs[0].id as number
+    id = (found.docs[0] as { id: number }).id
   }
 
   try {
