@@ -3,6 +3,18 @@ import type { File } from 'payload'
 import { validateAuth } from '../_lib/auth.js'
 import { createErrorResponse, createSuccessResponse, handleRouteError } from '../_lib/errors.js'
 import { getPayloadClient } from '../_lib/payload.js'
+import { readList } from '../_lib/read.js'
+
+export async function GET(request: NextRequest) {
+  const authError = validateAuth(request)
+  if (authError) return authError
+  try {
+    const payload = await getPayloadClient()
+    return readList(payload, 'app-assets', request)
+  } catch (error) {
+    return handleRouteError('List app-assets', error)
+  }
+}
 
 // Downloadable products can be large (bundles, archives) — allow up to 200MB.
 // Unlike /media (images only), no mimetype allow-list: app-assets are private,

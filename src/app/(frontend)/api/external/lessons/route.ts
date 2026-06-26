@@ -8,9 +8,21 @@ import {
   resolveDocId,
   validateContentFormat,
 } from '../_lib/payload.js'
+import { readList } from '../_lib/read.js'
 
 const VALID_KINDS = ['normal', 'decision'] as const
 const VALID_TYPES = ['text', 'embed', 'video', 'download'] as const
+
+export async function GET(request: NextRequest) {
+  const authError = validateAuth(request)
+  if (authError) return authError
+  try {
+    const payload = await getPayloadClient()
+    return readList(payload, 'lessons', request)
+  } catch (error) {
+    return handleRouteError('List lessons', error)
+  }
+}
 
 type CreateLessonRequest = {
   title?: unknown

@@ -9,12 +9,25 @@ import {
   toDocSummary,
   validateUrl,
 } from '../../_lib/payload.js'
+import { readOne } from '../../_lib/read.js'
 import type { CreateProgramRequest } from '../../_lib/types.js'
 
 const VALID_TYPES = ['course', 'workshop', 'event'] as const
 const VALID_FORMATS = ['online', 'physical', 'hybrid'] as const
 const VALID_PRICING = ['free', 'paid'] as const
 const VALID_ACCESS_MODES = ['paid', 'lead-magnet'] as const
+
+export async function GET(request: NextRequest, { params }: { params: Promise<{ idOrSlug: string }> }) {
+  const authError = validateAuth(request)
+  if (authError) return authError
+  try {
+    const { idOrSlug } = await params
+    const payload = await getPayloadClient()
+    return readOne(payload, 'program', idOrSlug, request)
+  } catch (error) {
+    return handleRouteError('Read program', error)
+  }
+}
 
 export async function PATCH(
   request: NextRequest,

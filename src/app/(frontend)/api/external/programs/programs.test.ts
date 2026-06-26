@@ -510,3 +510,89 @@ describe('PATCH /api/external/programs/[idOrSlug] — accessMode', () => {
     expect(res.status).toBe(400)
   })
 })
+
+// ── GET /api/external/programs (list) ──────────────────────────────────────
+
+describe('GET /api/external/programs', () => {
+  beforeEach(() => {
+    process.env.EXTERNAL_API_TOKEN = TOKEN
+    vi.clearAllMocks()
+  })
+
+  function makeGetReq(url: string, authed = true): NextRequest {
+    return new NextRequest(url, {
+      method: 'GET',
+      headers: authed ? { authorization: `Bearer ${TOKEN}` } : {},
+    })
+  }
+
+  it('returns 200 with data.items', async () => {
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    const find = vi.fn().mockResolvedValue({
+      docs: [{ id: 1 }],
+      page: 1,
+      limit: 20,
+      totalDocs: 1,
+      totalPages: 1,
+    })
+    vi.mocked(getPayloadClient).mockResolvedValue({ find } as never)
+
+    const { GET } = await import('./route.js')
+
+    const res = await GET(makeGetReq('http://localhost/api/external/programs'))
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.data.items).toEqual([{ id: 1 }])
+    expect(find).toHaveBeenCalledWith(expect.objectContaining({ collection: 'program' }))
+  })
+
+  it('returns 401 without a Bearer token', async () => {
+    const { GET } = await import('./route.js')
+    const res = await GET(makeGetReq('http://localhost/api/external/programs', false))
+    expect(res.status).toBe(401)
+  })
+})
+
+// ── GET /api/external/programs/[idOrSlug] ──────────────────────────────────
+
+describe('GET /api/external/programs/[idOrSlug]', () => {
+  beforeEach(() => {
+    process.env.EXTERNAL_API_TOKEN = TOKEN
+    vi.clearAllMocks()
+  })
+
+  function makeGetReq(url: string): NextRequest {
+    return new NextRequest(url, {
+      method: 'GET',
+      headers: { authorization: `Bearer ${TOKEN}` },
+    })
+  }
+
+  it('returns 200 with data.id for a numeric id', async () => {
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    const findByID = vi.fn().mockResolvedValue({ id: 7 })
+    vi.mocked(getPayloadClient).mockResolvedValue({ findByID } as never)
+
+    const { GET } = await import('./[idOrSlug]/route.js')
+
+    const res = await GET(makeGetReq('http://localhost/api/external/programs/7'), {
+      params: Promise.resolve({ idOrSlug: '7' }),
+    })
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.data.id).toBe(7)
+  })
+
+  it('returns 404 for a missing slug', async () => {
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    const find = vi.fn().mockResolvedValue({ docs: [] })
+    vi.mocked(getPayloadClient).mockResolvedValue({ find } as never)
+
+    const { GET } = await import('./[idOrSlug]/route.js')
+
+    const res = await GET(makeGetReq('http://localhost/api/external/programs/nope'), {
+      params: Promise.resolve({ idOrSlug: 'nope' }),
+    })
+    expect(res.status).toBe(404)
+  })
+})

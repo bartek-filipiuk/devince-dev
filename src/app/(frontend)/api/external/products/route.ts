@@ -7,11 +7,23 @@ import {
   resolveContent,
   validateContentFormat,
 } from '../_lib/payload.js'
+import { readList } from '../_lib/read.js'
 
 import type { CreateProductRequest } from '../_lib/types.js'
 
 const VALID_CURRENCIES = ['pln', 'eur', 'usd'] as const
 const VALID_ACCESS_MODES = ['paid', 'lead-magnet'] as const
+
+export async function GET(request: NextRequest) {
+  const authError = validateAuth(request)
+  if (authError) return authError
+  try {
+    const payload = await getPayloadClient()
+    return readList(payload, 'products', request)
+  } catch (error) {
+    return handleRouteError('List products', error)
+  }
+}
 
 /**
  * POST /api/external/products — create a downloadable apps-store product.
