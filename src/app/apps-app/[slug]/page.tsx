@@ -114,22 +114,6 @@ export default async function ProductPage({
                 </div>
               ) : null}
             </div>
-
-            {coverUrl ? (
-              <div className="product-hero__cover">
-                <img
-                  src={coverUrl}
-                  alt={cover?.alt ?? product.title}
-                  style={{
-                    width: '100%',
-                    aspectRatio: '16 / 9',
-                    objectFit: 'cover',
-                    borderRadius: 'var(--r-card)',
-                    display: 'block',
-                  }}
-                />
-              </div>
-            ) : null}
           </div>
         </div>
       </header>
@@ -149,6 +133,23 @@ export default async function ProductPage({
             consentLabel={t(locale, 'apps.product.consent')}
             newsletterLabel={t(locale, 'apps.checkout.newsletter')}
             noteLabel={t(locale, 'apps.product.note')}
+          />
+        </section>
+      ) : null}
+
+      {coverUrl ? (
+        <section className="shell" style={{ paddingTop: 8 }}>
+          <img
+            src={coverUrl}
+            alt={cover?.alt ?? product.title}
+            style={{
+              width: '100%',
+              maxWidth: 540,
+              height: 'auto',
+              margin: '0 auto',
+              borderRadius: 'var(--r-card)',
+              display: 'block',
+            }}
           />
         </section>
       ) : null}
