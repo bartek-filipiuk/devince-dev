@@ -13,6 +13,7 @@ import RichText from '@/components/RichText'
 import { BuyButton } from '../_components/BuyButton'
 import { AppLeadMagnet } from '../_components/AppLeadMagnet'
 import { ProductTierSelector } from '../_components/ProductTierSelector'
+import { PipelineDiagram } from '../_components/PipelineDiagram'
 import Link from 'next/link'
 import { getLocalizedPath } from '@/utilities/getLocale'
 
@@ -114,22 +115,6 @@ export default async function ProductPage({
                 </div>
               ) : null}
             </div>
-
-            {coverUrl ? (
-              <div className="product-hero__cover">
-                <img
-                  src={coverUrl}
-                  alt={cover?.alt ?? product.title}
-                  style={{
-                    width: '100%',
-                    aspectRatio: '16 / 9',
-                    objectFit: 'cover',
-                    borderRadius: 'var(--r-card)',
-                    display: 'block',
-                  }}
-                />
-              </div>
-            ) : null}
           </div>
         </div>
       </header>
@@ -153,6 +138,27 @@ export default async function ProductPage({
         </section>
       ) : null}
 
+      {product.slug === 'idea-to-mvp' ? (
+        <section className="shell" style={{ paddingTop: 8 }}>
+          <PipelineDiagram locale={locale} variant="compact" />
+        </section>
+      ) : coverUrl ? (
+        <section className="shell" style={{ paddingTop: 8 }}>
+          <img
+            src={coverUrl}
+            alt={cover?.alt ?? product.title}
+            style={{
+              width: '100%',
+              maxWidth: 540,
+              height: 'auto',
+              margin: '0 auto',
+              borderRadius: 'var(--r-card)',
+              display: 'block',
+            }}
+          />
+        </section>
+      ) : null}
+
       {Array.isArray(product.screenshots) && product.screenshots.length > 0 ? (
         <section className="shell" style={{ paddingTop: 8 }}>
           <Link
@@ -167,6 +173,7 @@ export default async function ProductPage({
       {product.description ? (
         <section className="shell product-detail">
           <div className="product-desc">
+            {product.slug === 'idea-to-mvp' ? <PipelineDiagram locale={locale} /> : null}
             <RichText data={product.description} enableGutter={false} enableProse={false} />
           </div>
         </section>
