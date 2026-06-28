@@ -13,6 +13,7 @@ import RichText from '@/components/RichText'
 import { BuyButton } from '../_components/BuyButton'
 import { AppLeadMagnet } from '../_components/AppLeadMagnet'
 import { ProductTierSelector } from '../_components/ProductTierSelector'
+import { PipelineDiagram } from '../_components/PipelineDiagram'
 import Link from 'next/link'
 import { getLocalizedPath } from '@/utilities/getLocale'
 
@@ -137,7 +138,11 @@ export default async function ProductPage({
         </section>
       ) : null}
 
-      {coverUrl ? (
+      {product.slug === 'idea-to-mvp' ? (
+        <section className="shell" style={{ paddingTop: 8 }}>
+          <PipelineDiagram locale={locale} variant="compact" />
+        </section>
+      ) : coverUrl ? (
         <section className="shell" style={{ paddingTop: 8 }}>
           <img
             src={coverUrl}
@@ -168,6 +173,7 @@ export default async function ProductPage({
       {product.description ? (
         <section className="shell product-detail">
           <div className="product-desc">
+            {product.slug === 'idea-to-mvp' ? <PipelineDiagram locale={locale} /> : null}
             <RichText data={product.description} enableGutter={false} enableProse={false} />
           </div>
         </section>
