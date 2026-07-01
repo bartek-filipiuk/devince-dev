@@ -17,14 +17,19 @@ import type {
   BannerBlock as BannerBlockProps,
   CallToActionBlock as CTABlockProps,
   MediaBlock as MediaBlockProps,
+  PipelineDiagramBlock as PipelineDiagramBlockProps,
 } from '@/payload-types'
 import { BannerBlock } from '@/blocks/Banner/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
+import { PipelineDiagram } from '@/app/apps-app/_components/PipelineDiagram'
+import type { Locale } from '@/i18n'
 import { cn } from '@/utilities/ui'
 
 type NodeTypes =
   | DefaultNodeTypes
-  | SerializedBlockNode<CTABlockProps | MediaBlockProps | BannerBlockProps | CodeBlockProps>
+  | SerializedBlockNode<
+      CTABlockProps | MediaBlockProps | BannerBlockProps | CodeBlockProps | PipelineDiagramBlockProps
+    >
 
 const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
   const { value, relationTo } = linkNode.fields.doc!
@@ -35,40 +40,44 @@ const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
   return relationTo === 'posts' ? `/posts/${slug}` : `/${slug}`
 }
 
-const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) => ({
-  ...defaultConverters,
-  ...LinkJSXConverter({ internalDocToHref }),
-  blocks: {
-    banner: ({ node }) => <BannerBlock className="col-start-2 mb-4" {...node.fields} />,
-    mediaBlock: ({ node }) => (
-      <MediaBlock
-        className="col-start-1 col-span-3"
-        imgClassName="m-0"
-        {...node.fields}
-        captionClassName="mx-auto max-w-[48rem]"
-        enableGutter={false}
-        disableInnerContainer={true}
-      />
-    ),
-    code: ({ node }) => <CodeBlock className="col-start-2" {...node.fields} />,
-    Code: ({ node }: { node: SerializedBlockNode<CodeBlockProps> }) => (
-      <CodeBlock className="col-start-2" {...node.fields} />
-    ),
-    cta: ({ node }) => <CallToActionBlock {...node.fields} />,
-  },
-})
+const buildConverters =
+  (locale: Locale): JSXConvertersFunction<NodeTypes> =>
+  ({ defaultConverters }) => ({
+    ...defaultConverters,
+    ...LinkJSXConverter({ internalDocToHref }),
+    blocks: {
+      banner: ({ node }) => <BannerBlock className="col-start-2 mb-4" {...node.fields} />,
+      mediaBlock: ({ node }) => (
+        <MediaBlock
+          className="col-start-1 col-span-3"
+          imgClassName="m-0"
+          {...node.fields}
+          captionClassName="mx-auto max-w-[48rem]"
+          enableGutter={false}
+          disableInnerContainer={true}
+        />
+      ),
+      code: ({ node }) => <CodeBlock className="col-start-2" {...node.fields} />,
+      Code: ({ node }: { node: SerializedBlockNode<CodeBlockProps> }) => (
+        <CodeBlock className="col-start-2" {...node.fields} />
+      ),
+      cta: ({ node }) => <CallToActionBlock {...node.fields} />,
+      pipelineDiagram: () => <PipelineDiagram variant="full" locale={locale} />,
+    },
+  })
 
 type Props = {
   data: DefaultTypedEditorState
   enableGutter?: boolean
   enableProse?: boolean
+  locale?: Locale
 } & React.HTMLAttributes<HTMLDivElement>
 
 export default function RichText(props: Props) {
-  const { className, enableProse = true, enableGutter = true, ...rest } = props
+  const { className, enableProse = true, enableGutter = true, locale = 'pl', ...rest } = props
   return (
     <ConvertRichText
-      converters={jsxConverters}
+      converters={buildConverters(locale)}
       className={cn(
         'payload-richtext',
         {

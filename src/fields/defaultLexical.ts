@@ -14,6 +14,8 @@ import {
 } from '@payloadcms/richtext-lexical'
 import { CodeBlock } from '@payloadcms/richtext-lexical'
 
+import { PipelineDiagram } from '../blocks/PipelineDiagram/config'
+
 export const defaultLexical = lexicalEditor({
   features: [
     ParagraphFeature(),
@@ -23,7 +25,7 @@ export const defaultLexical = lexicalEditor({
     UnderlineFeature(),
     BoldFeature(),
     ItalicFeature(),
-    BlocksFeature({ blocks: [CodeBlock()] }),
+    BlocksFeature({ blocks: [CodeBlock(), PipelineDiagram] }),
     LinkFeature({
       enabledCollections: ['pages', 'posts'],
       fields: ({ defaultFields }) => {
