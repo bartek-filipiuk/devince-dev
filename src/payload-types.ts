@@ -3163,6 +3163,19 @@ export interface TaskSchedulePublish {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PipelineDiagramBlock".
+ */
+export interface PipelineDiagramBlock {
+  /**
+   * Which pipeline to render.
+   */
+  variant?: 'idea-to-mvp' | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'pipelineDiagram';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "BannerBlock".
  */
 export interface BannerBlock {

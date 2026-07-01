@@ -173,8 +173,12 @@ export default async function ProductPage({
       {product.description ? (
         <section className="shell product-detail">
           <div className="product-desc">
-            {product.slug === 'idea-to-mvp' ? <PipelineDiagram locale={locale} /> : null}
-            <RichText data={product.description} enableGutter={false} enableProse={false} />
+            <RichText
+              data={product.description}
+              locale={locale}
+              enableGutter={false}
+              enableProse={false}
+            />
           </div>
         </section>
       ) : null}
