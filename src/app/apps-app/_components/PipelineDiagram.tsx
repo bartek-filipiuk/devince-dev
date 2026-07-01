@@ -39,8 +39,8 @@ const MINI: Node[] = [
 ]
 
 const T = {
-  pl: { eyebrow: 'PIPELINE', sub: '24 etapy · 9 faz · 2 twarde bramki', gate: 'TWARDA BRAMKA' },
-  en: { eyebrow: 'PIPELINE', sub: '24 stages · 9 phases · 2 hard gates', gate: 'HARD GATE' },
+  pl: { eyebrow: 'PIPELINE', sub: '24 etapy · 10 faz · 2 twarde bramki', gate: 'TWARDA BRAMKA' },
+  en: { eyebrow: 'PIPELINE', sub: '24 stages · 10 phases · 2 hard gates', gate: 'HARD GATE' },
 } as const
 
 const lbl = (n: Node, locale: Locale) => (locale === 'en' ? n.en : n.pl)
