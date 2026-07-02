@@ -130,7 +130,11 @@ export async function PATCH(
       // API-key-authenticated server route, no Payload user session. Bypass
       // collection access explicitly so admin-only Program write access allows it.
       overrideAccess: true,
-      ...(body._status !== undefined ? { draft: body._status === 'draft' } : {}),
+      // Always write the MAIN doc (draft:false) so `_status` actually toggles
+      // publish state. Passing draft:true would save a draft version BESIDE the
+      // still-published one — `_status:'draft'` would NOT unpublish (same bug the
+      // products route avoids). `_status` in `data` governs publish/unpublish.
+      draft: false,
     })
 
     return createSuccessResponse(toDocSummary(program))
