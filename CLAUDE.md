@@ -1,298 +1,161 @@
-# CLAUDE.md - Payload CMS Boilerplate
+# CLAUDE.md — devince.dev platform
 
-This file provides guidance to Claude Code (claude.ai/code) when working with this boilerplate.
+Live production platform (started from a Payload boilerplate, no longer a blank
+canvas): ONE Next.js 15 + Payload CMS 3.x + PostgreSQL app in one container
+serving three faces, routed by host in `src/middleware.ts`:
 
-## Project Overview
+| Host | What | Route tree |
+|---|---|---|
+| devince.dev | marketing site (pages/posts/projects, pl/en) | `src/app/(frontend)/[locale]/` |
+| courses.devince.dev | course store + player (accounts, paywall) | `src/app/courses-app/` |
+| apps.devince.dev | downloadable products store (no accounts) | `src/app/apps-app/` |
+| /admin (shared) | Payload admin + REST/GraphQL | `src/app/(payload)/` |
 
-This is a **Payload CMS 3.x Website Boilerplate** - a clean starting point for building websites with:
-- **Backend**: Payload CMS v3.67.0 with PostgreSQL
-- **Frontend**: Next.js 15 with App Router
-- **Styling**: TailwindCSS + shadcn/ui components
-- **Editor**: Lexical rich text editor
+Latest state + deploy details: `docs/HANDOFF.md`. Sales flows across all
+products (incl. the separate NDQS repo behind learn.devince.dev):
+`docs/PLATFORM-OVERVIEW.md`.
 
-## Core Principle: Blank Canvas
-
-```
-BOILERPLATE = Structure (HTML, semantic classes, layout)
-YOU = Visual Identity (colors, effects, animations, component styles)
-```
-
-This boilerplate provides **STRUCTURE ONLY** - minimal HTML with semantic CSS classes.
-**YOU** create the visual identity based on PAGE_DESIGN.md.
-
-Every site you generate should look **genuinely unique** because:
-- Components have no hardcoded styles (no glass, gradients, or animations)
-- All visual effects are created by you in `theme.css`
-- PAGE_DESIGN.md drives all aesthetic decisions
-
-## Documentation Files
-
-| File | Purpose |
-|------|---------|
-| **CLAUDE.md** | Overview and quick reference (you are here) |
-| **SETUP_PROMPT.md** | Step-by-step customization workflow |
-| **PAGE_BOILERPLATE.md** | Technical reference - blocks, globals, seed data |
-| **PAGE_DEVTIPS.md** | Common issues, gotchas, quick fixes |
-| **PAGE_DESCRIPTION.md** | Business info example (replace with actual data) |
-| **PAGE_DESIGN.md** | Visual design example (replace with actual specs) |
-
-## Reading Order
-
-When customizing this boilerplate, read files in this order:
-
-1. **CLAUDE.md** (this file) - Understand the project structure
-2. **PAGE_DESCRIPTION.md** - Read/replace business info
-3. **PAGE_DESIGN.md** - Read/replace visual specifications
-4. **SETUP_PROMPT.md** - Follow the 5-step workflow
-5. **PAGE_BOILERPLATE.md** - Reference as needed for technical details
-6. **PAGE_DEVTIPS.md** - Check if you encounter issues
-
-## Customization Process
-
-1. Fill out `PAGE_DESCRIPTION.md` with business details
-2. Fill out `PAGE_DESIGN.md` with design preferences
-3. Run Claude Code with the prompt from `SETUP_PROMPT.md`
-4. Claude Code will:
-   - **Generate theme.css** with colors, effects, animations
-   - Create seed data with compelling content
-   - Configure navigation and site settings
-
-### CRITICAL: Theme Generation
-
-The `theme.css` file contains placeholders that MUST be replaced:
-
-1. **Interpret Colors** - Read PAGE_DESIGN.md color descriptions → HSL values
-2. **Create Effects** - If design calls for glass/glow/gradients, CREATE them
-3. **Add Animations** - If design specifies animations, CREATE @keyframes
-4. **Style Components** - Add CSS for semantic classes to match design
-
-All `INTERPRET_FROM_PAGE_DESIGN` markers must be replaced with actual values.
-
-### CRITICAL: Verification & Accessibility
-
-After customization, **ALWAYS verify**:
-
-1. **Design Match** - Re-read PAGE_DESIGN.md and check EVERY element is implemented
-2. **Image Overlays** - Text over images MUST have dark overlay (min 50% opacity)
-3. **Contrast** - Text must meet WCAG AA (4.5:1 body, 3:1 large text)
-4. **Font Sizes** - Body min 16px, H1 min 32px, never below 14px
-5. **Effects** - All specified animations, glows, gradients are implemented
-
-See `SETUP_PROMPT.md` Step 5 for full verification checklist.
-
-## Common Commands
+## Commands
 
 ```bash
-docker compose up -d        # Start PostgreSQL database (port 5433)
-pnpm install                # Install dependencies
-pnpm dev                    # Start dev server (localhost:3000)
-pnpm build                  # Production build
-pnpm lint                   # ESLint check
-pnpm generate:types         # Regenerate TypeScript types from CMS schema
-pnpm payload migrate        # Run database migrations
+docker compose up -d       # local Postgres (host port 5436 -> 5432)
+pnpm dev                   # dev server on http://localhost:3010
+pnpm build                 # production build (this is also the type gate)
+pnpm lint                  # ESLint
+pnpm test:int              # vitest unit/route tests (src/**/*.test.ts)
+pnpm test:e2e              # Playwright (needs a running app)
+pnpm generate:types        # regenerate src/payload-types.ts after schema edits
+pnpm payload migrate       # run DB migrations (deploy does this fail-fast)
+pnpm check:security        # pnpm audit + outdated + osv-scanner snapshot
 ```
 
-## Docker & Database
+Env vars: local `.env` (template `.env.example`); Stripe/Brevo/external-API
+secrets live in Coolify, not in the repo.
 
-- **PostgreSQL runs on port 5433** (not 5432) to avoid conflicts
-- Start database: `docker compose up -d`
-- Each project instance uses its own Docker container and volume
+## Mapa terenu (2026-07-06)
 
-## Architecture
+### Architektura
+- Host routing + locale: `src/middleware.ts` rewrites courses.* → `/courses-app`,
+  apps.* → `/apps-app`; main host gets `[locale]` handling (pl default, en —
+  `src/i18n/config.ts`).
+- Data schema = collections in `src/collections/` (registered in
+  `src/payload.config.ts`): `Program` + `Lessons` (courses), `Products` +
+  `DownloadGrants` + `ClaimGrants` (apps store), `Users` (auth + `purchases`),
+  `Pages`/`Posts`/`Projects` + `Categories.ts`, `Media.ts` + private
+  `AppAssets`/`CourseAssets`, `StripeEvents` (webhook idempotency),
+  `LessonProgress.ts`.
+- Globals: `src/Header/`, `src/Footer/`, `src/SiteSettings/`, `src/Changelog/`,
+  `src/Roadmap/`.
+- Page building: blocks in `src/blocks/<Name>/config.ts` (schema) +
+  `Component.tsx` (structural render), assembled by `src/blocks/RenderBlocks.tsx`.
+  ALL visual identity lives in theme files: `src/app/(frontend)/theme.css`,
+  `src/app/courses-app/course-theme.css`, `src/app/apps-app/app-theme.css`.
+- Access control: `src/access/` (`enrolledOrAdmin.ts`, `adminOnly.ts`,
+  `authenticatedOrPublished.ts`).
+- Services/business logic: `src/utilities/` (fulfillment, Brevo email, claim &
+  download tokens, course progress, checkout line items).
+- External content API (Bearer `EXTERNAL_API_TOKEN`):
+  `src/app/(frontend)/api/external/` — route table in `docs/EXTERNAL-CONTENT-API.md`.
+- MCP server (separate deployable wrapping that API as MCP tools): `mcp-server/`
+  — see `docs/MCP_SERVER.md`.
+- DB schema changes ONLY via migrations in `src/migrations/`
+  (`push: false` in `src/payload.config.ts`); deploy = Coolify from `main`,
+  runs `npx payload migrate && node server.js`.
+- Private product files live in `private-media-apps/` (outside `public/`),
+  reachable only through the grant-gated download route.
 
-### Route Groups
-- `src/app/(frontend)/` - Public website routes
-- `src/app/(payload)/` - Payload CMS admin panel and API
+### Przepływy krytyczne
+1. **Content pipeline (agent-driven publishing)**: HTTP client with token →
+   `src/app/(frontend)/api/external/programs/route.ts` (same shape for
+   posts/products/lessons/pages/projects/media/roadmap/changelog) → auth
+   `api/external/_lib/auth.ts` (timing-safe Bearer) → validation +
+   `_lib/payload.ts` → Payload local API (`collection: 'program'`) → Postgres →
+   JSON via `_lib/errors.ts`.
+2. **Apps store purchase**: product page → `POST
+   src/app/(frontend)/api/apps/checkout/route.ts` (consent gate, price ALWAYS
+   from DB tier record) → Stripe Checkout →
+   `src/app/(frontend)/api/stripe/webhook/route.ts` (`constructEvent` signature
+   check, `stripe-events` idempotency, `verifyAmount` reconciliation) →
+   `src/utilities/appsFulfillment.ts` creates a DownloadGrant → email via
+   `src/utilities/brevo.ts` → `src/app/(frontend)/api/apps/download/[token]/route.ts`
+   (`src/utilities/resolveGrant.ts`) streams the file from `private-media-apps/`.
+3. **Course purchase + playback**: course page → `POST
+   src/app/(frontend)/api/courses/checkout/route.ts` → Stripe → same webhook →
+   `src/utilities/purchases.ts` (`addProgramToPurchases`) + set-password email →
+   login → `src/app/courses-app/[slug]/learn/[lesson]/page.tsx` queries lessons
+   with `overrideAccess: false` so `src/access/enrolledOrAdmin.ts` enforces the
+   paywall; progress: `src/app/(frontend)/api/courses/progress/route.ts` →
+   `LessonProgress`.
+4. **MCP content tools**: MCP client → `mcp-server/src/index.ts` (Express +
+   StreamableHTTP, `MCP_AUTH_TOKEN`) → `mcp-server/src/server.ts` registers
+   `mcp-server/src/tools/*.ts` → `mcp-server/src/lib/api-client.ts` → this
+   app's `/api/external/*` with `EXTERNAL_API_TOKEN`.
+5. **Marketing page render**: request → `src/middleware.ts` (host + locale) →
+   `src/app/(frontend)/[locale]/[slug]/page.tsx` → Payload query on `pages` →
+   `src/blocks/RenderBlocks.tsx` → block components styled by
+   `src/app/(frontend)/theme.css`.
 
-### Block-Based Page Building
-Pages are built from modular blocks. Each block has:
-- `src/blocks/[BlockName]/config.ts` - Payload field schema
-- `src/blocks/[BlockName]/Component.tsx` - React component (minimal structure)
+### Konwencje (faktyczne, z kodu)
+- Tests are colocated `*.test.ts` next to the source, vitest node env
+  (`vitest.config.mts`); models: `src/utilities/downloadToken.test.ts` (util),
+  `src/app/(frontend)/api/apps/checkout/checkout.test.ts` (route).
+- External API errors go through
+  `src/app/(frontend)/api/external/_lib/errors.ts`; other routes return plain
+  `NextResponse.json({ error }, { status })`. Security-sensitive routes return a
+  uniform 403 without leaking state (model:
+  `src/app/(frontend)/api/apps/download/[token]/route.ts`).
+- Input handling: parse body as `unknown`, narrow each field explicitly;
+  price/authz values come from the DB, never the client (model:
+  `src/app/(frontend)/api/apps/checkout/route.ts`).
+- Types are generated (`src/payload-types.ts`) — never hand-edit; rerun
+  `pnpm generate:types` after any collection/block change.
+- PAGE docs are the styling/content conventions — linked, not duplicated here:
+  `PAGE_BOILERPLATE.md` (technical reference: blocks, globals, seed data),
+  `PAGE_DESIGN.md` (visual spec that drives theme.css),
+  `PAGE_DEVTIPS.md` (known issues + quick fixes),
+  `PAGE_DESCRIPTION.md` (business info source). `SETUP_PROMPT.md` is the
+  boilerplate-era customization workflow — historical for this repo.
 
-**Available Blocks**:
-- **GlassHero** - Hero section (minimal structure, style via theme.css)
-- **Features** - Feature grid (minimal cards, style via theme.css)
-- **Testimonials** - Customer quotes (minimal cards, style via theme.css)
-- **ContactCTA** - Contact information (minimal layout, style via theme.css)
-- **CallToAction** - CTA section
-- **Content** - Rich text content
-- **MediaBlock** - Media display
-- **Archive** - Post listing
-- **FormBlock** - CMS forms
+### Pułapki
+- The courses collection slug is `program` (singular —
+  `src/collections/Program/index.ts`) while the external route is
+  `/api/external/programs` and the UI says "courses".
+- There is NO `typecheck` script; `pnpm exec tsc --noEmit` is RED (21 errors,
+  all in `*.test.ts` mocks + stale `.next/types`). The real type gate is
+  `pnpm build`. Runtime tests all pass.
+- Dev port is **3010**, local Postgres is **5436** — older docs claiming
+  3000/5433 are stale.
+- Never auto-push schema: `push: false`. Any schema change needs a committed
+  migration in `src/migrations/` or the fail-fast deploy migrate breaks.
+- `src/changelog/` (lowercase: ingest lib, `src/utilities/changelogIngest.ts`
+  friends) and `src/Changelog/` (capitalized: global config) both exist — case
+  matters.
+- Download tokens contain a literal dot (`uuid.hex`); the `PUBLIC_FILE` regex in
+  `src/middleware.ts` is deliberately shaped to not treat them as static files —
+  do not "simplify" it.
+- Tier prices are localized (PL/EN priced independently); checkout reads the
+  product at the buyer's locale (`src/app/(frontend)/api/apps/checkout/route.ts`).
 
-### Semantic CSS Classes
+### Jak dodać feature (playbook)
+1. Read `docs/HANDOFF.md` + the relevant flow above; find the two most similar
+   existing features and copy their structure.
+2. Schema change → edit/add collection in `src/collections/` (register in
+   `src/payload.config.ts`) → `pnpm generate:types` → create a migration.
+3. Pick the right surface: marketing → `src/app/(frontend)/[locale]/`, courses
+   face → `src/app/courses-app/`, apps face → `src/app/apps-app/`; shared API →
+   `src/app/(frontend)/api/`.
+4. New block → `src/blocks/X/config.ts` + `Component.tsx`, register in
+   `src/collections/Pages/index.ts` + `src/blocks/RenderBlocks.tsx`; style via
+   theme.css semantic classes.
+5. Content that agents should manage → extend `api/external/` + mirror a tool in
+   `mcp-server/src/tools/` + update `docs/EXTERNAL-CONTENT-API.md`.
+6. Colocate `*.test.ts`; run Weryfikacja below before claiming done.
 
-Components expose semantic classes for styling in theme.css:
-
-**Hero Block:**
-- `.hero-section`, `.hero-background`, `.hero-content`
-- `.hero-headline`, `.hero-subheadline`
-- `.hero-cta-primary`, `.hero-cta-secondary`, `.hero-overlay`
-
-**Features Block:**
-- `.features-section`, `.features-header`, `.features-grid`
-- `.features-title`, `.features-description`
-- `.feature-card`, `.feature-icon`, `.feature-title`
-- `.feature-description`, `.feature-link`
-
-**Testimonials Block:**
-- `.testimonials-section`, `.testimonials-header`, `.testimonials-grid`
-- `.testimonial-card`, `.testimonial-rating`, `.testimonial-star`
-- `.testimonial-quote`, `.testimonial-author`
-- `.testimonial-avatar`, `.testimonial-name`, `.testimonial-role`
-
-**Contact CTA Block:**
-- `.contact-section`, `.contact-background`, `.contact-content`
-- `.contact-headline`, `.contact-description`
-- `.contact-info`, `.contact-link`
-- `.contact-social`, `.contact-social-link`, `.contact-cta`
-
-### Collections
-- **Pages** - Layout builder with blocks, drafts, SEO
-- **Posts** - Blog content with categories
-- **Categories** - Nested taxonomy
-- **Media** - Image uploads with focal point
-- **Users** - Authentication-enabled
-
-### Key Files for Customization
-
-| Purpose | File |
-|---------|------|
-| **Theme (ALL visual styling)** | `src/app/(frontend)/theme.css` **(MUST CUSTOMIZE!)** |
-| Base structure (don't modify) | `src/app/(frontend)/globals.css` |
-| SEO site name | `src/plugins/index.ts` (SITE_NAME constant) |
-| Seed data | `src/endpoints/seed/index.ts` |
-| Header nav | `src/Header/config.ts` |
-| Footer nav | `src/Footer/config.ts` |
-| Site settings | `src/SiteSettings/config.ts` |
-
-## Styling Architecture
-
-### File Purposes
-
-- **globals.css** - Neutral base styles, CSS variable structure (don't modify)
-- **theme.css** - ALL visual identity goes here (colors, effects, animations, component styles)
-
-### Theme.css Sections
-
-1. **Color Palette** - HSL values for light/dark modes
-2. **Custom Effects** - Glass, gradients, glows (only if design requires)
-3. **Custom Animations** - Keyframes (only if design requires)
-4. **Component Overrides** - Style semantic classes
-5. **Typography** - Font customizations
-6. **Responsive** - Breakpoint adjustments
-
-### Example Theme Styles
-
-```css
-/* Racing theme example */
-:root {
-  --primary: 0 85% 45%;      /* Racing red */
-  --secondary: 0 0% 10%;     /* Carbon black */
-}
-
-.hero-background {
-  background: url('/carbon-pattern.svg') repeat,
-    linear-gradient(135deg, hsl(0 0% 5%), hsl(0 0% 10%));
-}
-
-.feature-card {
-  border-left: 4px solid hsl(var(--primary));
-}
-```
-
-## Adding New Features
-
-### New Block
-1. Create `src/blocks/MyBlock/config.ts` with Payload field schema
-2. Create `src/blocks/MyBlock/Component.tsx` with minimal React component
-3. Add semantic CSS classes for styling hooks
-4. Add block to `src/collections/Pages/index.ts` blocks array
-5. Add block to `src/blocks/RenderBlocks.tsx`
-6. Run `pnpm generate:types`
-
-### New Collection
-1. Create `src/collections/MyCollection.ts`
-2. Add to `collections` array in `src/payload.config.ts`
-3. Run `pnpm generate:types`
-
-## Extension Philosophy
-
-This boilerplate is **intentionally minimal** but **designed to be extended**.
-
-### Golden Rule
-
-> If PAGE_DESIGN.md describes a feature, **implement it** - don't simplify the design to fit the boilerplate.
-
-### You CAN and SHOULD:
-
-- Install npm packages (carousels, animation libraries)
-- Create new React components
-- Create new Payload blocks
-- Extend existing components
-- Add CSS animations and effects
-
-### Common Extensions
-
-| Need | Solution |
-|------|----------|
-| Carousel/Slider | `pnpm add embla-carousel-react` |
-| Scroll animations | Implement ScrollReveal with IntersectionObserver |
-| Animated numbers | Create AnimatedCounter component |
-| New block type | Create config.ts + Component.tsx in src/blocks/ |
-| More icons | Import from lucide-react (already installed) |
-| Video backgrounds | Extend GlassHero component |
-
-### Extension Priority
-
-When PAGE_DESIGN.md requires features not in boilerplate:
-1. **First**: Check if component exists but needs implementation (e.g., ScrollReveal)
-2. **Second**: Create new component following existing patterns
-3. **Third**: Install package if needed (Embla, Framer Motion)
-4. **Always**: Add semantic CSS classes for theme.css styling
-
-See `PAGE_BOILERPLATE.md` for detailed component code examples.
-
-## Environment Variables
-
-```bash
-DATABASE_URI=postgresql://...       # PostgreSQL connection (port 5433)
-PAYLOAD_SECRET=...                  # JWT encryption key (min 32 chars)
-NEXT_PUBLIC_SERVER_URL=...          # Public site URL
-NEXT_PUBLIC_SITE_NAME=...           # Site name for logo and SEO
-PREVIEW_SECRET=...                  # Draft preview authentication
-```
-
-## Default Admin Login
-
-After running seed:
-- Email: admin@example.com
-- Password: admin123
-
-## TypeScript
-
-Types are auto-generated in `src/payload-types.ts`. After modifying any collection or block config, run `pnpm generate:types` to update types.
-
-## Localization
-
-Pre-configured for:
-- Polish (pl) - default
-- English (en)
-
-Modify in `src/payload.config.ts` localization settings.
-
-## Troubleshooting
-
-| Problem | Solution |
-|---------|----------|
-| Site looks plain/unstyled | theme.css not generated - see SETUP_PROMPT.md Step 0 |
-| Default grayscale colors | Replace INTERPRET_FROM_PAGE_DESIGN placeholders |
-| No effects/animations | Add them in theme.css based on PAGE_DESIGN.md |
-| Components look too basic | Style component classes in theme.css |
-| TypeScript errors | Run `pnpm generate:types` |
-
-## Additional Resources
-
-- **Seed data examples** - See `PAGE_BOILERPLATE.md`
-- **Rich Text helper** - See `PAGE_BOILERPLATE.md`
-- **Troubleshooting** - See `PAGE_DEVTIPS.md`
+### Weryfikacja
+- `pnpm test:int` → **43 files, 308 tests passed** (run 2026-07-06, ~3 s).
+- `pnpm lint` → **exit 0** (warnings only: `no-explicit-any` / unused vars,
+  mostly in tests).
+- `pnpm exec tsc --noEmit` → **exit 1, 21 errors** (test-file mocks + stale
+  `.next/types`) — known red, see Pułapki; not a regression signal by itself.
+- Not run in this pass: `pnpm build`, `pnpm test:e2e` (needs running server),
+  `pnpm check:security`.
