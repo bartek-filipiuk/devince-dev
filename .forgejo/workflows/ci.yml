@@ -1,0 +1,20 @@
+# CI gate for devince.dev. INERT until a Forgejo Actions runner is registered
+# for this repo (activation = morning checklist, not this commit).
+# Deliberately NO `tsc --noEmit` (21 known test-mock errors — the type gate is
+# `pnpm build`) and NO `test:e2e` (needs a running server).
+name: ci
+on:
+  push: {}
+  pull_request: {}
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable && pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm test:int
+      - run: node scripts/lint-security.mjs
