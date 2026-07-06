@@ -448,6 +448,16 @@ const translations = {
     'roadmap.track.courses': 'Kursy',
     'apps.nav.roadmap': 'Roadmap',
     'courses.nav.roadmap': 'Roadmap',
+    'changelog.meta': 'Changelog',
+    'changelog.title': 'Co nowego',
+    'changelog.lead': 'Najnowsze zmiany na platformie.',
+    'changelog.empty': 'Wkrótce pojawią się tu zmiany.',
+    'changelog.tag.apps': 'Apps',
+    'changelog.tag.courses': 'Kursy',
+    'changelog.tag.platform': 'Platforma',
+    'changelog.tag.security': 'Bezpieczeństwo',
+    'apps.nav.changelog': 'Co nowego',
+    'courses.nav.changelog': 'Co nowego',
   },
   en: {
     // Navigation
@@ -895,6 +905,16 @@ const translations = {
     'roadmap.track.courses': 'Courses',
     'apps.nav.roadmap': 'Roadmap',
     'courses.nav.roadmap': 'Roadmap',
+    'changelog.meta': 'Changelog',
+    'changelog.title': "What's new",
+    'changelog.lead': 'The latest changes on the platform.',
+    'changelog.empty': 'Changes will appear here soon.',
+    'changelog.tag.apps': 'Apps',
+    'changelog.tag.courses': 'Courses',
+    'changelog.tag.platform': 'Platform',
+    'changelog.tag.security': 'Security',
+    'apps.nav.changelog': "What's new",
+    'courses.nav.changelog': "What's new",
   },
 } as const
 

@@ -22,6 +22,7 @@ import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { Roadmap } from './Roadmap/config'
+import { Changelog } from './Changelog/config'
 import { SiteSettings } from './SiteSettings/config'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
@@ -108,7 +109,19 @@ export default buildConfig({
     LessonProgress,
   ],
   cors: [getServerSideURL(), process.env.NEXT_PUBLIC_COURSES_URL, process.env.NEXT_PUBLIC_APPS_URL].filter(Boolean) as string[],
-  globals: [Header, Footer, SiteSettings, Roadmap],
+  globals: [Header, Footer, SiteSettings, Roadmap, Changelog],
+  onInit: async (payload) => {
+    // Publish any not-yet-ingested changelog fragments into the `changelog` global.
+    // Skip during `next build` (no runtime DB writes); idempotent on every runtime boot.
+    if (process.env.NEXT_PHASE === 'phase-production-build') return
+    try {
+      const { ingestChangelogFragments } = await import('./utilities/changelogIngest.js')
+      const { ingested } = await ingestChangelogFragments({ payload })
+      if (ingested.length) payload.logger.info(`Changelog: ingested ${ingested.length} fragment(s)`)
+    } catch (err) {
+      payload.logger.error({ err }, 'Changelog fragment ingest failed')
+    }
+  },
   plugins,
   secret: process.env.PAYLOAD_SECRET,
   sharp,

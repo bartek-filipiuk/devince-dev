@@ -1,0 +1,36 @@
+.changelog { padding: 64px 0; }
+.changelog__head { margin-bottom: 40px; }
+.changelog__lead { color: var(--text-mut); margin-top: 8px; max-width: 60ch; }
+
+.changelog__entries { display: flex; flex-direction: column; gap: 36px; }
+
+.changelog__date {
+  font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--text-mut); margin: 0 0 14px;
+}
+
+.changelog__list {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+.changelog__note { display: flex; align-items: baseline; gap: 12px; }
+.changelog__text { color: var(--text); font-size: 15px; line-height: 1.5; }
+
+.changelog__chip {
+  flex: none; display: inline-block; font-size: 11px; letter-spacing: 0.03em;
+  padding: 2px 8px; border-radius: var(--r-chip);
+  color: var(--text-mut); background: var(--line-soft);
+  min-width: 92px; text-align: center;
+}
+.changelog__chip--apps { color: var(--accent); background: var(--accent-soft); }
+.changelog__chip--courses { color: var(--hybrid); background: var(--hybrid-soft); }
+.changelog__chip--platform { color: var(--decision); background: var(--decision-soft); }
+.changelog__chip--security { color: var(--gate); background: var(--gate-soft, var(--line-soft)); }
+
+.changelog__empty { color: var(--text-mut); }
+
+@media (max-width: 640px) {
+  .changelog__note { flex-direction: column; gap: 4px; }
+  .changelog__chip { text-align: left; min-width: 0; }
+}

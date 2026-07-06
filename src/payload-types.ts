@@ -134,12 +134,14 @@ export interface Config {
     footer: Footer;
     'site-settings': SiteSetting;
     roadmap: Roadmap;
+    changelog: Changelog;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     roadmap: RoadmapSelect<false> | RoadmapSelect<true>;
+    changelog: ChangelogSelect<false> | ChangelogSelect<true>;
   };
   locale: 'pl' | 'en';
   widgets: {
@@ -3018,6 +3020,30 @@ export interface Roadmap {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "changelog".
+ */
+export interface Changelog {
+  id: number;
+  entries?:
+    | {
+        date: string;
+        notes: {
+          text: string;
+          tag: 'apps' | 'courses' | 'platform' | 'security';
+          id?: string | null;
+        }[];
+        /**
+         * Fragment id this entry was ingested from (idempotency).
+         */
+        sourceId?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -3111,6 +3137,29 @@ export interface RoadmapSelect<T extends boolean = true> {
         description?: T;
         status?: T;
         track?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "changelog_select".
+ */
+export interface ChangelogSelect<T extends boolean = true> {
+  entries?:
+    | T
+    | {
+        date?: T;
+        notes?:
+          | T
+          | {
+              text?: T;
+              tag?: T;
+              id?: T;
+            };
+        sourceId?: T;
         id?: T;
       };
   updatedAt?: T;
