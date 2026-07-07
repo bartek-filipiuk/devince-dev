@@ -6,6 +6,10 @@ name: ci
 on:
   push: {}
   pull_request: {}
+  # standing goals: skończona praca jest re-weryfikowana codziennie, nie tylko
+  # przy pushu — failure = mail z Forgejo (odpowiednik verify-goals + alert)
+  schedule:
+    - cron: '30 5 * * *'
 jobs:
   ci:
     runs-on: ubuntu-latest
