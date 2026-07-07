@@ -1,0 +1,25 @@
+# CI gate for devince.dev — GitHub Actions (this repo deploys from GitHub
+# main, see deploy.yml; a .forgejo/ workflow would never run here). Activates
+# automatically once merged+pushed to GitHub — no runner registration needed.
+# Deliberately NO `tsc --noEmit` (21 known test-mock errors — the type gate is
+# `pnpm build`) and NO `test:e2e` (needs a running server).
+name: ci
+on:
+  push: {}
+  pull_request: {}
+  # standing goals: skończona praca jest re-weryfikowana codziennie, nie tylko
+  # przy pushu — failure = mail z GitHuba (odpowiednik verify-goals + alert)
+  schedule:
+    - cron: '30 5 * * *'
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable && pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm test:int
+      - run: node scripts/lint-security.mjs
