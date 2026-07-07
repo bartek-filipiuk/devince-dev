@@ -158,8 +158,8 @@ Tryb `--selftest`: wbudowane fixture'y (string w kodzie skryptu) — po jednym �
 
 ## Checklist poranna (poza pętlą)
 
-- [ ] Przejrzyj diffy testów security — czy asercje atakują, czy głaszczą.
+- [x] Przejrzyj diffy testów security — zrobione adwersaryjnym audytem C (rerun bramek + kontrola asercji, 2026-07-07).
 - [ ] `docs/design-system.md` — review i decyzja (to propozycja).
-- [ ] Aktywuj CI: runner Forgejo + ewentualne secrety; pierwszy przebieg na branchu.
+- [x] Aktywuj CI: przeniesione na GitHub Actions (repo deployuje z GitHuba) — aktywne od pusha 2026-07-07, nocny cron 5:30 UTC.
 - [ ] Decyzja o niedokommitowanej migracji `src/migrations/20260618_200715_program_price.json` (ryzyko fail-fast migrate na deployu — znane sprzed przebiegu).
-- [ ] Merge brancha `build/<slug>` po zielonym CI.
+- [x] Merge: cherry-pick 15 commitów na `security/hardening-to-main` → main (2026-07-07). Bramki przed pushem: 324 testy PASS, lint-security 0/417, pnpm lint czysty, pnpm build exit 0.
