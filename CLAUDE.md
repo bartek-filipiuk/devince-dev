@@ -32,7 +32,7 @@ pnpm check:security        # pnpm audit + outdated + osv-scanner snapshot
 Env vars: local `.env` (template `.env.example`); Stripe/Brevo/external-API
 secrets live in Coolify, not in the repo.
 
-## Mapa terenu (2026-07-06)
+## Mapa terenu (2026-07-07)
 
 ### Architektura
 - Host routing + locale: `src/middleware.ts` rewrites courses.* → `/courses-app`,
@@ -61,6 +61,12 @@ secrets live in Coolify, not in the repo.
 - DB schema changes ONLY via migrations in `src/migrations/`
   (`push: false` in `src/payload.config.ts`); deploy = Coolify from `main`,
   runs `npx payload migrate && node server.js`.
+- Security net (fable-hardening): regression tests in `src/security/*.test.ts`
+  (Stripe signature + idempotency, download token, paywall, external-API auth,
+  checkout amount), mechanical rules in `scripts/lint-security.mjs`, CI gate
+  `.forgejo/workflows/ci.yml` (INERT until a Forgejo runner is registered).
+- Design tokens codified in `docs/design-system.md` (status: PROPOSAL — factual
+  state of the three theme.css files); night-run plans live in `docs/plans/`.
 - Private product files live in `private-media-apps/` (outside `public/`),
   reachable only through the grant-gated download route.
 
@@ -98,7 +104,8 @@ secrets live in Coolify, not in the repo.
 ### Konwencje (faktyczne, z kodu)
 - Tests are colocated `*.test.ts` next to the source, vitest node env
   (`vitest.config.mts`); models: `src/utilities/downloadToken.test.ts` (util),
-  `src/app/(frontend)/api/apps/checkout/checkout.test.ts` (route).
+  `src/app/(frontend)/api/apps/checkout/checkout.test.ts` (route); cross-cutting
+  security invariants go in `src/security/`.
 - External API errors go through
   `src/app/(frontend)/api/external/_lib/errors.ts`; other routes return plain
   `NextResponse.json({ error }, { status })`. Security-sensitive routes return a
@@ -149,13 +156,21 @@ secrets live in Coolify, not in the repo.
    theme.css semantic classes.
 5. Content that agents should manage → extend `api/external/` + mirror a tool in
    `mcp-server/src/tools/` + update `docs/EXTERNAL-CONTENT-API.md`.
-6. Colocate `*.test.ts`; run Weryfikacja below before claiming done.
+6. Colocate `*.test.ts`; graduate invariants — finished work leaves a test or a
+   `scripts/lint-security.mjs` rule that CI re-verifies, not just a green
+   session. Run Weryfikacja below before claiming done.
 
 ### Weryfikacja
-- `pnpm test:int` → **43 files, 308 tests passed** (run 2026-07-06, ~3 s).
+- `pnpm test:int` → **49 files, 336 tests passed** (run 2026-07-07, ~3 s;
+  includes `src/security/`).
+- `node scripts/lint-security.mjs` → **exit 0** (run 2026-07-07).
 - `pnpm lint` → **exit 0** (warnings only: `no-explicit-any` / unused vars,
   mostly in tests).
 - `pnpm exec tsc --noEmit` → **exit 1, 21 errors** (test-file mocks + stale
-  `.next/types`) — known red, see Pułapki; not a regression signal by itself.
+  `.next/types`) — known red (re-confirmed 2026-07-07), see Pułapki; not a
+  regression signal by itself.
+- CI `.forgejo/workflows/ci.yml` runs lint + test:int + lint-security on
+  push/PR **and a nightly cron 05:30 (standing goals — daily re-verification
+  of finished work)**; INERT until a Forgejo runner is registered.
 - Not run in this pass: `pnpm build`, `pnpm test:e2e` (needs running server),
   `pnpm check:security`.
