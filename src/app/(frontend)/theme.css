@@ -288,6 +288,10 @@ code, pre, .font-mono {
     animation: none;
   }
 
+  .live-dot {
+    animation: none;
+  }
+
   *,
   *::before,
   *::after {
@@ -832,6 +836,41 @@ header [class*="logo"] {
   font-size: 1.25rem;
   color: hsl(var(--foreground));
   letter-spacing: -0.02em;
+}
+
+/* Building in public badge */
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-heading);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: hsl(var(--live));
+  border: 1px solid hsl(var(--live) / 0.3);
+  padding: 0.28rem 0.7rem;
+  white-space: nowrap;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  background: hsl(var(--live));
+  border-radius: 50%;
+  animation: live-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (max-width: 900px) {
+  .live-badge {
+    display: none;
+  }
 }
 
 /* ============================================
