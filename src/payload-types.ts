@@ -227,6 +227,7 @@ export interface Page {
   };
   layout: (
     | GlassHeroBlock
+    | BuildLogHeroBlock
     | FeaturesBlock
     | FeaturedProjectsBlock
     | TestimonialsBlock
@@ -1184,6 +1185,74 @@ export interface CourseCalloutBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "BuildLogHeroBlock".
+ */
+export interface BuildLogHeroBlock {
+  eyebrow?: string | null;
+  headline: string;
+  lede?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  primaryCTA?: {
+    type?: ('reference' | 'custom') | null;
+    newTab?: boolean | null;
+    reference?:
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'posts';
+          value: number | Post;
+        } | null);
+    url?: string | null;
+    label?: string | null;
+    /**
+     * Choose how the link should be rendered.
+     */
+    appearance?: ('default' | 'outline') | null;
+  };
+  secondaryCTA?: {
+    type?: ('reference' | 'custom') | null;
+    newTab?: boolean | null;
+    reference?:
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'posts';
+          value: number | Post;
+        } | null);
+    url?: string | null;
+    label?: string | null;
+    /**
+     * Choose how the link should be rendered.
+     */
+    appearance?: ('default' | 'outline') | null;
+  };
+  showLog?: boolean | null;
+  showStats?: boolean | null;
+  customStatLabel?: string | null;
+  customStatValue?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'buildLogHero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "FeaturedProjectsBlock".
  */
 export interface FeaturedProjectsBlock {
@@ -1868,6 +1937,7 @@ export interface PagesSelect<T extends boolean = true> {
     | T
     | {
         glassHero?: T | GlassHeroBlockSelect<T>;
+        buildLogHero?: T | BuildLogHeroBlockSelect<T>;
         features?: T | FeaturesBlockSelect<T>;
         featuredProjects?: T | FeaturedProjectsBlockSelect<T>;
         testimonials?: T | TestimonialsBlockSelect<T>;
@@ -1921,6 +1991,41 @@ export interface GlassHeroBlockSelect<T extends boolean = true> {
         appearance?: T;
       };
   backgroundMedia?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "BuildLogHeroBlock_select".
+ */
+export interface BuildLogHeroBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  headline?: T;
+  lede?: T;
+  primaryCTA?:
+    | T
+    | {
+        type?: T;
+        newTab?: T;
+        reference?: T;
+        url?: T;
+        label?: T;
+        appearance?: T;
+      };
+  secondaryCTA?:
+    | T
+    | {
+        type?: T;
+        newTab?: T;
+        reference?: T;
+        url?: T;
+        label?: T;
+        appearance?: T;
+      };
+  showLog?: T;
+  showStats?: T;
+  customStatLabel?: T;
+  customStatValue?: T;
   id?: T;
   blockName?: T;
 }
