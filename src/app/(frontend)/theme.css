@@ -946,6 +946,15 @@ select:focus-visible {
     grid-template-columns: 1fr;
   }
 
+  /* .features-title (+ siblings) is nowrap by design (title shares the line
+     with the decorative divider, section 5) — long PL titles overflow narrow
+     viewports, so let them wrap on mobile; the divider still trails after. */
+  .features-title,
+  .testimonials-title,
+  .featured-projects-title {
+    white-space: normal;
+  }
+
   .contact-info {
     flex-direction: column;
     gap: 1rem;
