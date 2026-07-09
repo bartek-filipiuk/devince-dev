@@ -27,6 +27,10 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
           <span className="sr-only">{t('header.search')}</span>
           <SearchIcon className="w-5 text-primary" />
         </Link>
+        <span className="live-badge" aria-label="building in public">
+          <span className="live-dot" aria-hidden="true" />
+          building in public
+        </span>
         <LanguageSwitcher />
       </nav>
 

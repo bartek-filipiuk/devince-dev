@@ -96,6 +96,7 @@ export const BrevoSignupBlock: React.FC<BrevoSignupProps> = ({
 
             <form onSubmit={handleSubmit} className="brevo-form">
               <div className="brevo-form-inner flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                <span className="brevo-prompt-sign" aria-hidden="true">$</span>
                 <input
                   type="email"
                   value={email}

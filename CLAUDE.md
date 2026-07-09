@@ -50,6 +50,9 @@ secrets live in Coolify, not in the repo.
   `Component.tsx` (structural render), assembled by `src/blocks/RenderBlocks.tsx`.
   ALL visual identity lives in theme files: `src/app/(frontend)/theme.css`,
   `src/app/courses-app/course-theme.css`, `src/app/apps-app/app-theme.css`.
+  Homepage hero: `BuildLogHero` (hero z danymi live: posty/projekty/roadmap,
+  `src/blocks/BuildLogHero/`) + warianty `Features` (`cards`/`ledger`/`columns`,
+  `src/blocks/Features/`).
 - Access control: `src/access/` (`enrolledOrAdmin.ts`, `adminOnly.ts`,
   `authenticatedOrPublished.ts`).
 - Services/business logic: `src/utilities/` (fulfillment, Brevo email, claim &

@@ -24,15 +24,16 @@ Format HSL bez `hsl()` (konsumowane przez Tailwind `hsl(var(--…))`). Light w
 
 | Token | Light | Dark | Rola |
 |---|---|---|---|
-| `--primary` | `220 70% 50%` (indigo) | `220 65% 60%` (jaśniejszy) | CTA, linki, akcenty — JEDYNY kolor „głośny" |
-| `--accent` | `215 85% 55%` | `215 80% 65%` | elektryczny błękit, highlighty |
-| `--secondary` | `210 12% 90%` | `220 15% 20%` | chłodny slate, tła drugorzędne |
-| `--background` / `--foreground` | `210 15% 96%` / `210 20% 15%` | `220 20% 10%` / `210 15% 95%` | dark ≠ czysta czerń (blue-gray) |
-| `--card` | `210 15% 98%` | `220 18% 14%` | karty bez borderów, cień zamiast ramki |
-| `--muted-foreground` | `210 12% 45%` | `210 12% 60%` | tekst drugorzędny |
-| `--border` / `--input` / `--ring` | `210 15% 88%` / j.w. / `= primary` | `220 15% 22%` / j.w. / `= primary` | focus ring dziedziczy primary |
-| `--success` / `--warning` / `--error`+`--destructive` | `142 70% 45%` / `38 92% 50%` / `0 72% 51%` | wersje +5% L | semantyka stanów |
-| `--section-alt` | `210 12% 94%` | `220 22% 8%` | naprzemienne tła sekcji |
+| `--primary` | `220 70% 50%` (indigo) | `228 90% 74%` (electric indigo, Build Log) | CTA, linki, akcenty — JEDYNY kolor „głośny" |
+| `--accent` | `215 85% 55%` | `228 95% 79%` | hover indigo, highlighty |
+| `--secondary` | `210 12% 90%` | `224 20% 13%` | chłodny slate, tła drugorzędne |
+| `--background` / `--foreground` | `210 15% 96%` / `210 20% 15%` | `228 20% 5%` / `227 25% 93%` | dark ≠ czysta czerń (deep blue-black) |
+| `--card` | `210 15% 98%` | `225 22% 7%` | karty bez borderów, cień zamiast ramki |
+| `--muted-foreground` | `210 12% 45%` | `223 15% 66%` | tekst drugorzędny |
+| `--border` / `--input` / `--ring` | `210 15% 88%` / j.w. / `= primary` | `222 23% 15%` / j.w. / `= primary` | focus ring dziedziczy primary |
+| `--success` / `--warning` / `--error`+`--destructive` | `142 70% 45%` / `38 92% 50%` / `0 72% 51%` | `149 69% 58%` / `38 92% 55%` / `0 62% 55%` | semantyka stanów |
+| `--section-alt` | `210 12% 94%` | `225 22% 6%` | naprzemienne tła sekcji |
+| `--live` | `149 60% 38%` | `149 69% 58%` | sygnał „żyje/wdrożone" (BuildLogHero stats, roadmap) — tylko semantyka statusu, nigdy dekoracja |
 
 Cienie: klasy `.shadow-subtle` / `.shadow-card` / `.shadow-card-hover`
 (sekcja 4 theme.css) — jedyny dopuszczalny sposób „podnoszenia" kart;
