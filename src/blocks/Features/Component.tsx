@@ -102,9 +102,9 @@ export const FeaturesBlock: React.FC<FeaturesProps & { locale?: Locale }> = ({
           <div className="features-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features?.map((feature, index) => (
               <ScrollReveal key={index} staggerIndex={(index % 6) + 1}>
-                <div className="feature-card p-6 rounded-lg border bg-card h-full">
+                <div className="feature-card p-6 bg-card h-full">
                   {feature.icon && iconMap[feature.icon] && (
-                    <div className="feature-icon w-14 h-14 rounded-xl flex items-center justify-center mb-4 bg-primary text-primary-foreground">
+                    <div className="feature-icon w-14 h-14 flex items-center justify-center mb-4">
                       {iconMap[feature.icon]}
                     </div>
                   )}
