@@ -78,19 +78,19 @@ export const ContactCTABlock: React.FC<ContactCTAProps & { locale?: Locale }> = 
   return (
     <section className="contact-section py-20 relative overflow-hidden">
       {/* Background layer - style via .contact-background in theme.css */}
-      <div className="contact-background absolute inset-0 -z-10 bg-primary" />
+      <div className="contact-background absolute inset-0" />
 
       <div className="container relative z-10">
         <ScrollReveal>
           <div className="contact-content max-w-4xl mx-auto text-center p-8 md:p-12 lg:p-16">
             {headline && (
-              <h2 className="contact-headline text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-primary-foreground">
+              <h2 className="contact-headline text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
                 {headline}
               </h2>
             )}
 
             {description && (
-              <div className="contact-description text-lg text-primary-foreground/90 mb-8 max-w-2xl mx-auto">
+              <div className="contact-description text-lg mb-8 max-w-2xl mx-auto">
                 <RichText data={description} enableGutter={false} />
               </div>
             )}
@@ -101,7 +101,7 @@ export const ContactCTABlock: React.FC<ContactCTAProps & { locale?: Locale }> = 
                 {contactEmail && (
                   <a
                     href={`mailto:${contactEmail}`}
-                    className="contact-link flex items-center gap-2 text-primary-foreground/90 hover:text-primary-foreground transition-colors"
+                    className="contact-link flex items-center gap-2 transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -112,7 +112,7 @@ export const ContactCTABlock: React.FC<ContactCTAProps & { locale?: Locale }> = 
                 {contactPhone && (
                   <a
                     href={`tel:${contactPhone}`}
-                    className="contact-link flex items-center gap-2 text-primary-foreground/90 hover:text-primary-foreground transition-colors"
+                    className="contact-link flex items-center gap-2 transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -132,7 +132,7 @@ export const ContactCTABlock: React.FC<ContactCTAProps & { locale?: Locale }> = 
                     href={social.url || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="contact-social-link w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center text-primary-foreground transition-colors"
+                    className="contact-social-link w-10 h-10 flex items-center justify-center transition-colors"
                   >
                     {social.platform && socialIcons[social.platform]}
                   </a>
@@ -146,7 +146,7 @@ export const ContactCTABlock: React.FC<ContactCTAProps & { locale?: Locale }> = 
                 {...primaryCTA}
                 locale={locale}
                 size="lg"
-                className="contact-cta bg-background text-foreground hover:bg-background/90 px-8 py-4 rounded-lg font-semibold inline-flex items-center gap-2"
+                className="contact-cta px-8 py-4 font-semibold inline-flex items-center gap-2"
               />
             )}
           </div>
