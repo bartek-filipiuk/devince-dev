@@ -132,7 +132,7 @@ export const ContactCTABlock: React.FC<ContactCTAProps & { locale?: Locale }> = 
                     href={social.url || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="contact-social-link w-10 h-10 rounded-full bg-primary-foreground/20 hover:bg-primary-foreground/30 flex items-center justify-center text-primary-foreground transition-colors"
+                    className="contact-social-link w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center text-primary-foreground transition-colors"
                   >
                     {social.platform && socialIcons[social.platform]}
                   </a>

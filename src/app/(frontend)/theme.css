@@ -470,11 +470,7 @@ code, pre, .font-mono {
 .features-description,
 .testimonials-description,
 .featured-projects-description {
-  font-family: var(--font-body);
-  color: hsl(var(--muted-foreground));
-  margin: 0;
-  max-width: 38rem;
-  text-align: left;
+  display: none;
 }
 
 .features-grid {
