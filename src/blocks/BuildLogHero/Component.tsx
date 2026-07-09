@@ -1,10 +1,20 @@
 import React from 'react'
+import Link from 'next/link'
 
 import type { BuildLogHeroBlock as BuildLogHeroProps } from '@/payload-types'
 import { defaultLocale, type Locale } from '@/i18n'
 
 import { CMSLink } from '@/components/Link'
 import RichText from '@/components/RichText'
+import configPromise from '@payload-config'
+import { getPayload } from 'payload'
+import { getLocalizedPath } from '@/utilities/getLocale'
+import {
+  getBuildLogEntries,
+  getCurrentlyBuilding,
+  getPlatformStats,
+  type BuildLogPayload,
+} from '@/utilities/buildLog'
 
 /**
  * BuildLogHero Block - Server Component
@@ -28,6 +38,39 @@ export const BuildLogHeroBlock: React.FC<BuildLogHeroProps & { locale?: Locale }
   customStatValue,
   locale = defaultLocale,
 }) => {
+  // ponytail: Payload's `find`/`findGlobal` types collection slugs as a literal
+  // union; buildLog.ts's DI-friendly BuildLogPayload types them as `string` (so
+  // it stays testable without a real Payload instance). Structural cast bridges
+  // the two — same pattern already used at src/app/(frontend)/api/stripe/webhook/route.ts.
+  const payload = (await getPayload({ config: configPromise })) as unknown as BuildLogPayload
+
+  const [entries, stats, building] = await Promise.all([
+    showLog ? getBuildLogEntries(payload, locale, 4) : Promise.resolve([]),
+    showStats ? getPlatformStats(payload, locale) : Promise.resolve(null),
+    showLog ? getCurrentlyBuilding(payload, locale) : Promise.resolve(null),
+  ])
+
+  const t =
+    locale === 'pl'
+      ? {
+          projects: 'Projekty live',
+          courses: 'Kursy w sprzedaży',
+          lastShip: 'Ostatnia publikacja',
+          building: 'w budowie',
+        }
+      : {
+          projects: 'Projects live',
+          courses: 'Courses for sale',
+          lastShip: 'Last shipped',
+          building: 'building',
+        }
+
+  const fmtDate = (iso: string) =>
+    new Intl.DateTimeFormat(locale === 'pl' ? 'pl-PL' : 'en-US', {
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date(iso))
+
   return (
     <section className="blh-section hero-section">
       <div className="hero-background" aria-hidden="true" />
@@ -57,14 +100,52 @@ export const BuildLogHeroBlock: React.FC<BuildLogHeroProps & { locale?: Locale }
                 <span>~/build-log</span>
                 <span>tail -f</span>
               </div>
-              <div className="blh-log-body">{/* Task 6: wiersze z danych */}</div>
+              <div className="blh-log-body">
+                {building && (
+                  <div className="blh-log-row">
+                    <span className="blh-log-date blh-log-live">●</span>
+                    <span className="blh-log-msg">
+                      <b>{building}</b> <span className="blh-log-live">{t.building}…</span>
+                    </span>
+                  </div>
+                )}
+                {entries.map((entry) => (
+                  <Link
+                    key={entry.href}
+                    href={getLocalizedPath(entry.href, locale)}
+                    className="blh-log-row"
+                  >
+                    <span className="blh-log-date">{fmtDate(entry.date)}</span>
+                    <span className="blh-log-msg">
+                      <b>{entry.title}</b>
+                    </span>
+                  </Link>
+                ))}
+              </div>
             </aside>
           )}
         </div>
 
-        {showStats && (
+        {showStats && (stats || (customStatLabel && customStatValue)) && (
           <div className="blh-stats" role="list">
-            {/* Task 6: statystyki z danych */}
+            {stats && (
+              <>
+                <div className="blh-stat" role="listitem">
+                  <div className="blh-stat-label">{t.projects}</div>
+                  <div className="blh-stat-value">{stats.projectsLive}</div>
+                </div>
+                <div className="blh-stat" role="listitem">
+                  <div className="blh-stat-label">{t.courses}</div>
+                  <div className="blh-stat-value">{stats.programsLive}</div>
+                </div>
+                {stats.lastShippedAt && (
+                  <div className="blh-stat" role="listitem">
+                    <div className="blh-stat-label">{t.lastShip}</div>
+                    <div className="blh-stat-value">{fmtDate(stats.lastShippedAt)}</div>
+                  </div>
+                )}
+              </>
+            )}
             {customStatLabel && customStatValue && (
               <div className="blh-stat" role="listitem">
                 <div className="blh-stat-label">{customStatLabel}</div>
