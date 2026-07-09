@@ -72,6 +72,7 @@ const iconMap: Record<string, React.ReactNode> = {
  * - .feature-link: Feature link
  */
 export const FeaturesBlock: React.FC<FeaturesProps & { locale?: Locale }> = ({
+  variant,
   sectionTitle,
   sectionDescription,
   features,
@@ -97,44 +98,80 @@ export const FeaturesBlock: React.FC<FeaturesProps & { locale?: Locale }> = ({
           </ScrollReveal>
         )}
 
-        <div className="features-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features?.map((feature, index) => (
-            <ScrollReveal key={index} staggerIndex={(index % 6) + 1}>
-              <div className="feature-card p-6 rounded-lg border bg-card h-full">
-                {feature.icon && iconMap[feature.icon] && (
-                  <div className="feature-icon w-14 h-14 rounded-xl flex items-center justify-center mb-4 bg-primary text-primary-foreground">
-                    {iconMap[feature.icon]}
-                  </div>
-                )}
-                <h3 className="feature-title text-xl font-semibold mb-2">
-                  {feature.title}
-                </h3>
-                <p className="feature-description text-muted-foreground mb-4">
-                  {feature.description}
-                </p>
-                {feature.linkUrl && feature.linkLabel && (
-                  <CMSLink
-                    type="custom"
-                    url={feature.linkUrl}
-                    appearance="inline"
-                    locale={locale}
-                    className="feature-link text-primary font-medium inline-flex items-center gap-1"
-                  >
-                    {feature.linkLabel}
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+        {(!variant || variant === 'cards') && (
+          <div className="features-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {features?.map((feature, index) => (
+              <ScrollReveal key={index} staggerIndex={(index % 6) + 1}>
+                <div className="feature-card p-6 rounded-lg border bg-card h-full">
+                  {feature.icon && iconMap[feature.icon] && (
+                    <div className="feature-icon w-14 h-14 rounded-xl flex items-center justify-center mb-4 bg-primary text-primary-foreground">
+                      {iconMap[feature.icon]}
+                    </div>
+                  )}
+                  <h3 className="feature-title text-xl font-semibold mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="feature-description text-muted-foreground mb-4">
+                    {feature.description}
+                  </p>
+                  {feature.linkUrl && feature.linkLabel && (
+                    <CMSLink
+                      type="custom"
+                      url={feature.linkUrl}
+                      appearance="inline"
+                      locale={locale}
+                      className="feature-link text-primary font-medium inline-flex items-center gap-1"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </CMSLink>
-                )}
-              </div>
-            </ScrollReveal>
-          ))}
-        </div>
+                      {feature.linkLabel}
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </CMSLink>
+                  )}
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        )}
+
+        {variant === 'ledger' && (
+          <div className="features-ledger">
+            {features?.map((feature, index) => (
+              <ScrollReveal key={index} staggerIndex={(index % 6) + 1}>
+                <CMSLink
+                  type="custom"
+                  url={feature.linkUrl || '#'}
+                  appearance="inline"
+                  locale={locale}
+                  className="ledger-row"
+                >
+                  <span className="ledger-idx">{String(index + 1).padStart(2, '0')}</span>
+                  <span className="ledger-title">{feature.title}</span>
+                  <span className="ledger-desc">{feature.description}</span>
+                  {feature.linkLabel && <span className="ledger-cta">{feature.linkLabel} →</span>}
+                </CMSLink>
+              </ScrollReveal>
+            ))}
+          </div>
+        )}
+
+        {variant === 'columns' && (
+          <div className="features-columns">
+            {features?.map((feature, index) => (
+              <ScrollReveal key={index} staggerIndex={(index % 6) + 1}>
+                <div className="who-card">
+                  <h3 className="feature-title">{feature.title}</h3>
+                  <p className="feature-description">{feature.description}</p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )

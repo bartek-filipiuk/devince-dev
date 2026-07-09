@@ -5,6 +5,17 @@ export const Features: Block = {
   interfaceName: 'FeaturesBlock',
   fields: [
     {
+      name: 'variant',
+      type: 'select',
+      defaultValue: 'cards',
+      options: [
+        { label: 'Karty (siatka)', value: 'cards' },
+        { label: 'Ledger (pełne wiersze 01/02/03)', value: 'ledger' },
+        { label: 'Kolumny (górna linia, bez ikon)', value: 'columns' },
+      ],
+      label: 'Wariant layoutu',
+    },
+    {
       name: 'sectionTitle',
       type: 'text',
       label: 'Section Title',

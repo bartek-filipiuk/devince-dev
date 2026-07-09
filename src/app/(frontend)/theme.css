@@ -2136,3 +2136,129 @@ a.blh-log-row:hover .blh-log-msg b {
     border-top: 1px solid hsl(var(--border));
   }
 }
+
+/* ============================================
+ * SECTION 25: FEATURES VARIANTS (ledger / columns)
+ * ============================================
+ */
+.features-ledger {
+  border-top: 1px solid hsl(var(--border));
+}
+
+.ledger-row {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(14rem, 1fr) minmax(0, 1.6fr) auto;
+  gap: 1.5rem;
+  align-items: center;
+  padding: 1.7rem 0.5rem;
+  border-bottom: 1px solid hsl(var(--border));
+  text-decoration: none;
+  position: relative;
+  transition: background 180ms ease-out;
+}
+
+.ledger-row::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: hsl(var(--primary));
+  transform: scaleY(0);
+  transition: transform 200ms ease-out;
+}
+
+.ledger-row:hover,
+.ledger-row:focus-visible {
+  background: hsl(var(--card));
+}
+
+.ledger-row:hover::before,
+.ledger-row:focus-visible::before {
+  transform: scaleY(1);
+}
+
+.ledger-idx {
+  font-family: var(--font-heading);
+  font-size: 0.8125rem;
+  color: hsl(var(--muted-foreground) / 0.7);
+}
+
+.ledger-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+  color: hsl(var(--foreground));
+}
+
+.ledger-desc {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.9688rem;
+  line-height: 1.6;
+}
+
+.ledger-cta {
+  font-family: var(--font-heading);
+  font-size: 0.8125rem;
+  color: hsl(var(--primary));
+  white-space: nowrap;
+  transition: transform 200ms ease-out;
+}
+
+.ledger-row:hover .ledger-cta {
+  transform: translateX(4px);
+}
+
+.features-columns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(1.5rem, 3vw, 3rem);
+}
+
+.who-card {
+  border-top: 2px solid hsl(var(--border));
+  padding-top: 1.3rem;
+  transition: border-color 200ms ease-out;
+}
+
+.who-card:hover {
+  border-top-color: hsl(var(--primary));
+}
+
+.who-card .feature-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.6rem;
+}
+
+.who-card .feature-description {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.9688rem;
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .ledger-row {
+    grid-template-columns: 3rem 1fr;
+  }
+
+  .ledger-desc,
+  .ledger-cta {
+    grid-column: 2;
+  }
+
+  .features-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ledger-row::before,
+  .ledger-cta {
+    transition: none;
+  }
+}

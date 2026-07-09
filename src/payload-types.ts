@@ -650,6 +650,7 @@ export interface GlassHeroBlock {
  * via the `definition` "FeaturesBlock".
  */
 export interface FeaturesBlock {
+  variant?: ('cards' | 'ledger' | 'columns') | null;
   sectionTitle?: string | null;
   sectionDescription?: string | null;
   features?:
@@ -2034,6 +2035,7 @@ export interface BuildLogHeroBlockSelect<T extends boolean = true> {
  * via the `definition` "FeaturesBlock_select".
  */
 export interface FeaturesBlockSelect<T extends boolean = true> {
+  variant?: T;
   sectionTitle?: T;
   sectionDescription?: T;
   features?:
