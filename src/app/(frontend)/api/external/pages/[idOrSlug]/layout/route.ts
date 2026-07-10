@@ -11,6 +11,7 @@ import { convertBlocksMarkdown } from '../../../_lib/markdown.js'
 
 const VALID_BLOCK_TYPES = [
   'glassHero',
+  'buildLogHero',
   'features',
   'featuredProjects',
   'testimonials',
