@@ -2043,6 +2043,15 @@ article:hover .post-card-image img {
  * SECTION 24: BUILD LOG HERO BLOCK
  * ============================================
  */
+
+/* Lift the hero content above .hero-background (position:absolute; z-index:0;
+   opaque gradient) — GlassHero did this via .hero-content{z-index:10}, the
+   .blh-* wrappers need the same or the grid overlay paints over the content. */
+.blh-section .container {
+  position: relative;
+  z-index: 10;
+}
+
 .blh-inner {
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);

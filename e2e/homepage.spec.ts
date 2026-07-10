@@ -13,6 +13,19 @@ test('homepage: dark default, hero build-log, ledger', async ({ page }) => {
   // do tego czasu ten expect może być czerwony — patrz kolejność tasków
   await expect(page.locator('.blh-log')).toBeVisible()
 
+  // regresja: treść hero NIE może być przykryta przez .hero-background
+  // (opaque gradient, position:absolute z-index:0). elementFromPoint w środku
+  // headline musi trafić w headline, nie w overlay tła — inaczej cały hero jest
+  // niewidoczny mimo że toBeVisible() przechodzi (Playwright nie łapie occlusion).
+  const headlineOnTop = await page.evaluate(() => {
+    const h = document.querySelector('.blh-headline') as HTMLElement | null
+    if (!h) return false
+    const r = h.getBoundingClientRect()
+    const top = document.elementFromPoint(r.x + r.width * 0.2, r.y + r.height * 0.5)
+    return !!top && (top === h || h.contains(top))
+  })
+  expect(headlineOnTop).toBe(true)
+
   // zero requestów do Google Fonts CDN (fonty self-hosted po Task 1)
   const cdnRequests: string[] = []
   page.on('request', (r) => {
