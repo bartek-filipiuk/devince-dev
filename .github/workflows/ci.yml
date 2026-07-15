@@ -2,7 +2,7 @@
 # main, see deploy.yml; a .forgejo/ workflow would never run here). Activates
 # automatically once merged+pushed to GitHub — no runner registration needed.
 # Deliberately NO `tsc --noEmit` (21 known test-mock errors — the type gate is
-# `pnpm build`) and NO `test:e2e` (needs a running server).
+# `pnpm build`, uruchamiany niżej) i NO `test:e2e` (needs a running server).
 name: ci
 on:
   push: {}
@@ -15,11 +15,22 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
       - run: corepack enable && pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm test:int
       - run: node scripts/lint-security.mjs
+      # Bramka typów. Do tej pory pierwszym miejscem, gdzie cokolwiek sprawdzało
+      # typy, był `next build` w kontenerze Coolify — czyli już po merge'u.
+      # Build nie łączy się z bazą (zweryfikowane: DATABASE_URI na martwy port,
+      # 28/28 stron, exit 0), więc atrapy wystarczą i job nie potrzebuje Postgresa.
+      # Gdy kiedyś ECONNREFUSED :59999 wysypie ten krok — znaczy, że coś zaczęło
+      # odpytywać DB w buildzie; wtedy dochodzi `services: postgres`, nie wcześniej.
+      - run: pnpm build
+        env:
+          DATABASE_URI: postgres://ci:ci@127.0.0.1:59999/ci
+          PAYLOAD_SECRET: ci-build-only-not-a-real-secret
+          NEXT_PUBLIC_SERVER_URL: http://localhost:3010
