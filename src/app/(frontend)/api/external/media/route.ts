@@ -3,6 +3,18 @@ import type { File } from 'payload'
 import { validateAuth } from '../_lib/auth.js'
 import { createErrorResponse, createSuccessResponse, handleRouteError } from '../_lib/errors.js'
 import { getPayloadClient } from '../_lib/payload.js'
+import { readList } from '../_lib/read.js'
+
+export async function GET(request: NextRequest) {
+  const authError = validateAuth(request)
+  if (authError) return authError
+  try {
+    const payload = await getPayloadClient()
+    return readList(payload, 'media', request)
+  } catch (error) {
+    return handleRouteError('List media', error)
+  }
+}
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_MIMETYPES = [

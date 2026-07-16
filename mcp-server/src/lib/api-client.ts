@@ -149,6 +149,40 @@ export class ApiClient {
     return this.request<ContentData>('PUT', `/programs/${encodeURIComponent(idOrSlug)}/layout`, { layout }, locale)
   }
 
+  async createLesson(data: Record<string, unknown>, locale?: string): Promise<ApiResponse<ContentData>> {
+    return this.request<ContentData>('POST', '/lessons', data, locale)
+  }
+
+  async updateLesson(idOrSlug: string, data: Record<string, unknown>, locale?: string): Promise<ApiResponse<ContentData>> {
+    return this.request<ContentData>('PATCH', `/lessons/${encodeURIComponent(idOrSlug)}`, data, locale)
+  }
+
+  async createProduct(data: Record<string, unknown>, locale?: string): Promise<ApiResponse<ContentData>> {
+    return this.request<ContentData>('POST', '/products', data, locale)
+  }
+
+  async updateProduct(idOrSlug: string, data: Record<string, unknown>, locale?: string): Promise<ApiResponse<ContentData>> {
+    return this.request<ContentData>('PATCH', `/products/${encodeURIComponent(idOrSlug)}`, data, locale)
+  }
+
+  async listContent(resource: string, query: Record<string, unknown>, locale?: string): Promise<ApiResponse<unknown>> {
+    const qs = new URLSearchParams()
+    for (const [k, v] of Object.entries(query)) if (v !== undefined && v !== null && v !== '') qs.set(k, String(v))
+    const suffix = qs.toString() ? `?${qs.toString()}` : ''
+    return this.request<unknown>('GET', `/${resource}${suffix}`, undefined, locale)
+  }
+
+  async getContent(resource: string, idOrSlug: string, query: Record<string, unknown>, locale?: string): Promise<ApiResponse<unknown>> {
+    const qs = new URLSearchParams()
+    for (const [k, v] of Object.entries(query)) if (v !== undefined && v !== null && v !== '') qs.set(k, String(v))
+    const suffix = qs.toString() ? `?${qs.toString()}` : ''
+    return this.request<unknown>('GET', `/${resource}/${encodeURIComponent(idOrSlug)}${suffix}`, undefined, locale)
+  }
+
+  async getManifest(): Promise<ApiResponse<unknown>> {
+    return this.request<unknown>('GET', '', undefined)
+  }
+
   async setPageLayout(idOrSlug: string, layout: Record<string, unknown>[], locale?: string): Promise<ApiResponse<ContentData>> {
     return this.request<ContentData>('PUT', `/pages/${encodeURIComponent(idOrSlug)}/layout`, { layout }, locale)
   }

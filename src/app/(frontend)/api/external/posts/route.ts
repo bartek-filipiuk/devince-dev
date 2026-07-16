@@ -10,7 +10,19 @@ import {
   isErrorResponse,
   toDocSummary,
 } from '../_lib/payload.js'
+import { readList } from '../_lib/read.js'
 import type { CreatePostRequest } from '../_lib/types.js'
+
+export async function GET(request: NextRequest) {
+  const authError = validateAuth(request)
+  if (authError) return authError
+  try {
+    const payload = await getPayloadClient()
+    return readList(payload, 'posts', request)
+  } catch (error) {
+    return handleRouteError('List posts', error)
+  }
+}
 
 export async function POST(request: NextRequest) {
   const authError = validateAuth(request)

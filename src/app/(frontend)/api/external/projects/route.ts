@@ -10,7 +10,19 @@ import {
   toDocSummary,
   validateUrl,
 } from '../_lib/payload.js'
+import { readList } from '../_lib/read.js'
 import type { CreateProjectRequest } from '../_lib/types.js'
+
+export async function GET(request: NextRequest) {
+  const authError = validateAuth(request)
+  if (authError) return authError
+  try {
+    const payload = await getPayloadClient()
+    return readList(payload, 'projects', request)
+  } catch (error) {
+    return handleRouteError('List projects', error)
+  }
+}
 
 export async function POST(request: NextRequest) {
   const authError = validateAuth(request)

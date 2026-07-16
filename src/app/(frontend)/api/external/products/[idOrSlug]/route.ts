@@ -9,10 +9,23 @@ import {
   resolveDocId,
   validateContentFormat,
 } from '../../_lib/payload.js'
+import { readOne } from '../../_lib/read.js'
 import type { CreateProductRequest } from '../../_lib/types.js'
 
 const VALID_CURRENCIES = ['pln', 'eur', 'usd'] as const
 const VALID_ACCESS_MODES = ['paid', 'lead-magnet'] as const
+
+export async function GET(request: NextRequest, { params }: { params: Promise<{ idOrSlug: string }> }) {
+  const authError = validateAuth(request)
+  if (authError) return authError
+  try {
+    const { idOrSlug } = await params
+    const payload = await getPayloadClient()
+    return readOne(payload, 'products', idOrSlug, request)
+  } catch (error) {
+    return handleRouteError('Read product', error)
+  }
+}
 
 type UpdateProductRequest = Partial<CreateProductRequest> & {
   title?: unknown

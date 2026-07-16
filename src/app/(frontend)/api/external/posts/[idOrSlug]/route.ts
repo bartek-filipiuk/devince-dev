@@ -11,7 +11,20 @@ import {
   isErrorResponse,
   toDocSummary,
 } from '../../_lib/payload.js'
+import { readOne } from '../../_lib/read.js'
 import type { CreatePostRequest } from '../../_lib/types.js'
+
+export async function GET(request: NextRequest, { params }: { params: Promise<{ idOrSlug: string }> }) {
+  const authError = validateAuth(request)
+  if (authError) return authError
+  try {
+    const { idOrSlug } = await params
+    const payload = await getPayloadClient()
+    return readOne(payload, 'posts', idOrSlug, request)
+  } catch (error) {
+    return handleRouteError('Read post', error)
+  }
+}
 
 export async function PATCH(
   request: NextRequest,

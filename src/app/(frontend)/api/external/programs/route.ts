@@ -8,12 +8,24 @@ import {
   toDocSummary,
   validateUrl,
 } from '../_lib/payload.js'
+import { readList } from '../_lib/read.js'
 import type { CreateProgramRequest } from '../_lib/types.js'
 
 const VALID_TYPES = ['course', 'workshop', 'event'] as const
 const VALID_FORMATS = ['online', 'physical', 'hybrid'] as const
 const VALID_PRICING = ['free', 'paid'] as const
 const VALID_ACCESS_MODES = ['paid', 'lead-magnet'] as const
+
+export async function GET(request: NextRequest) {
+  const authError = validateAuth(request)
+  if (authError) return authError
+  try {
+    const payload = await getPayloadClient()
+    return readList(payload, 'program', request)
+  } catch (error) {
+    return handleRouteError('List programs', error)
+  }
+}
 
 export async function POST(request: NextRequest) {
   const authError = validateAuth(request)
