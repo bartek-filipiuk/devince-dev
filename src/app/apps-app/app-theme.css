@@ -755,3 +755,82 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
 }
 .pg-lightbox__x:hover { opacity: 1; }
 @media (max-width: 560px) { .pg-grid { grid-template-columns: 1fr; } }
+
+/* ── idea-to-mvp pipeline diagram (native, no image) ──────────────── */
+.pipe { margin: 26px 0 6px; }
+.pipe__head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.pipe__eyebrow {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.16em;
+  color: var(--accent); padding: 3px 8px; border: 1px solid var(--accent-line);
+  border-radius: var(--r-chip); background: var(--accent-soft);
+}
+.pipe__sub { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); }
+.pipe__flow { list-style: none; margin: 0; padding: 0; position: relative; }
+.pipe__flow::before {
+  content: ''; position: absolute; left: 8px; top: 10px; bottom: 10px; width: 2px;
+  background: linear-gradient(var(--accent-line), var(--line));
+}
+.pipe__node {
+  position: relative; display: flex; align-items: center; gap: 14px; padding: 5px 0;
+  animation: pipeIn 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+/* transform-only entrance — nodes stay visible even mid-delay / without animation */
+@keyframes pipeIn { from { transform: translateY(9px); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .pipe__node { animation: none; transform: none; } }
+.pipe__marker {
+  flex: none; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--surface-3); border: 2px solid var(--accent-line); box-shadow: 0 0 0 4px var(--bg);
+}
+.pipe__node--phase .pipe__marker { width: 12px; height: 12px; margin-left: 3px; }
+.pipe__node--cap .pipe__marker { background: var(--done); border-color: var(--done); }
+.pipe__node--gate .pipe__marker {
+  width: 16px; height: 16px; margin-left: 1px; border-radius: 3px; transform: rotate(45deg);
+  background: var(--gate); border-color: var(--gate);
+  box-shadow: 0 0 0 4px var(--gate-soft), 0 0 16px -2px var(--gate);
+}
+.pipe__cap { font-family: var(--font-mono); font-weight: 700; font-size: 13.5px; color: var(--done); }
+.pipe__card {
+  display: inline-flex; align-items: center; gap: 10px; padding: 8px 13px;
+  background: var(--surface-1); border: 1px solid var(--line); border-radius: var(--r-card);
+  box-shadow: var(--shadow-1);
+}
+.pipe__node--gate .pipe__card {
+  border-color: var(--gate); background: var(--gate-soft);
+  box-shadow: 0 8px 24px -14px var(--gate);
+}
+.pipe__num {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--accent);
+  background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: var(--r-chip);
+  padding: 1px 6px; min-width: 46px; text-align: center;
+}
+.pipe__tag {
+  font-family: var(--font-mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em;
+  color: var(--on-accent); background: var(--gate); border-radius: var(--r-chip); padding: 2px 7px;
+}
+.pipe__label { font-size: 14px; color: var(--text); line-height: 1.3; }
+
+.pipe-mini__eyebrow {
+  display: inline-block; font-family: var(--font-mono); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.16em; color: var(--text-dim); margin-bottom: 14px;
+}
+.pipe-mini__track { list-style: none; margin: 0; padding: 0; display: flex; align-items: flex-start; }
+.pipe-mini__stop {
+  position: relative; flex: 1 1 0; min-width: 64px; display: flex; flex-direction: column;
+  align-items: center; gap: 9px; text-align: center;
+}
+.pipe-mini__stop::before {
+  content: ''; position: absolute; top: 7px; left: -50%; width: 100%; height: 2px; background: var(--accent-line);
+}
+.pipe-mini__stop:first-child::before { display: none; }
+.pipe-mini__dot {
+  position: relative; z-index: 1; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--surface-3); border: 2px solid var(--accent-line); box-shadow: 0 0 0 4px var(--bg);
+}
+.pipe-mini__stop--cap .pipe-mini__dot { background: var(--done); border-color: var(--done); }
+.pipe-mini__stop--gate .pipe-mini__dot {
+  border-radius: 3px; transform: rotate(45deg); background: var(--gate); border-color: var(--gate);
+  box-shadow: 0 0 0 4px var(--gate-soft), 0 0 14px -2px var(--gate);
+}
+.pipe-mini__name { font-family: var(--font-mono); font-size: 11px; color: var(--text-mut); line-height: 1.25; }
+.pipe-mini__stop--cap .pipe-mini__name { color: var(--done); font-weight: 600; }
+.pipe-mini__stop--gate .pipe-mini__name { color: var(--gate); font-weight: 600; }

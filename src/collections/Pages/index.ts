@@ -4,6 +4,7 @@ import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { Archive } from '../../blocks/ArchiveBlock/config'
 import { BrevoSignup } from '../../blocks/BrevoSignup/config'
+import { BuildLogHero } from '../../blocks/BuildLogHero/config'
 import { CallToAction } from '../../blocks/CallToAction/config'
 import { Content } from '../../blocks/Content/config'
 import { FormBlock } from '../../blocks/Form/config'
@@ -81,6 +82,7 @@ export const Pages: CollectionConfig<'pages'> = {
               type: 'blocks',
               blocks: [
                 GlassHero,
+                BuildLogHero,
                 Features,
                 FeaturedProjects,
                 Testimonials,

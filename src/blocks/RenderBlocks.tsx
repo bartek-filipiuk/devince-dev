@@ -5,6 +5,7 @@ import { defaultLocale, type Locale } from '@/i18n'
 
 import { ArchiveBlock } from '@/blocks/ArchiveBlock/Component'
 import { BrevoSignupBlock } from '@/blocks/BrevoSignup/Component'
+import { BuildLogHeroBlock } from '@/blocks/BuildLogHero/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { ContentBlock } from '@/blocks/Content/Component'
 import { FormBlock } from '@/blocks/Form/Component'
@@ -18,6 +19,7 @@ import { FeaturedProjectsBlock } from '@/blocks/FeaturedProjects/Component'
 const blockComponents = {
   archive: ArchiveBlock,
   brevoSignup: BrevoSignupBlock,
+  buildLogHero: BuildLogHeroBlock,
   content: ContentBlock,
   cta: CallToActionBlock,
   formBlock: FormBlock,

@@ -1,18 +1,19 @@
 import type { Metadata } from 'next'
 
 import { cn } from '@/utilities/ui'
-import { Space_Grotesk, JetBrains_Mono } from 'next/font/google'
+import { IBM_Plex_Sans, JetBrains_Mono } from 'next/font/google'
 import React from 'react'
 
-const spaceGrotesk = Space_Grotesk({
+const ibmPlexSans = IBM_Plex_Sans({
   subsets: ['latin', 'latin-ext'],
-  variable: '--font-space-grotesk',
+  weight: ['400', '500', '600'],
+  variable: '--font-plex',
   display: 'swap',
 })
 
 const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-mono',
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-jetbrains',
   display: 'swap',
 })
 
@@ -39,7 +40,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const lang = await getLocale()
 
   return (
-    <html className={cn(spaceGrotesk.variable, jetbrainsMono.variable)} lang={lang} suppressHydrationWarning>
+    <html className={cn(ibmPlexSans.variable, jetbrainsMono.variable)} lang={lang} suppressHydrationWarning>
       <head>
         <InitTheme />
         <UmamiScript />
