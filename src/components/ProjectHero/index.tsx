@@ -1,5 +1,7 @@
 import React from 'react'
-import { ExternalLink, Github } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
+
+import { GithubIcon } from '@/components/icons/brand'
 
 import type { Project } from '@/payload-types'
 
@@ -44,7 +46,7 @@ export const ProjectHero: React.FC<{
                 rel="noopener noreferrer"
                 className="project-link-button"
               >
-                <Github size={20} />
+                <GithubIcon className="w-5 h-5" />
                 GitHub
               </a>
             )}
