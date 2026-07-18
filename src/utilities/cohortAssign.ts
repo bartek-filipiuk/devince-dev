@@ -8,7 +8,7 @@ export async function assignToCohortIfCohortProgram(
   payload: BasePayload,
   userId: number,
   programId: number,
-): Promise<'assigned' | 'already' | 'no-cohort' | 'not-cohort'> {
+): Promise<'assigned' | 'already' | 'no-cohort' | 'not-cohort' | 'error'> {
   const program = await payload.findByID({ collection: 'program', id: programId, depth: 0, overrideAccess: true })
   if (program.deliveryMode !== 'cohort') return 'not-cohort'
   const tz = program.cohortConfig?.timezone || 'Europe/Warsaw'
@@ -40,9 +40,13 @@ export async function assignToCohortIfCohortProgram(
       data: { user: userId, cohort: cohort.id, program: programId, joinedAt: new Date().toISOString() },
       overrideAccess: true,
     })
-  } catch {
-    // unikalny (user, program) → już przypisany (re-delivery webhooka)
-    return 'already'
+  } catch (err) {
+    const msg = String((err as Error)?.message || '').toLowerCase()
+    if (msg.includes('duplicate key') || msg.includes('unique'))
+      // unikalny (user, program) → już przypisany (re-delivery webhooka)
+      return 'already'
+    console.error('[cohortAssign] membership create failed:', err)
+    return 'error'
   }
   return 'assigned'
 }

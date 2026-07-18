@@ -69,4 +69,13 @@ describe('assignToCohortIfCohortProgram', () => {
     dup.create.mockRejectedValue(new Error('duplicate key'))
     expect(await assignToCohortIfCohortProgram(dup as never, 1, 7)).toBe('already')
   })
+
+  it('błąd create inny niż unikalność → error (obserwowalny)', async () => {
+    const boom = fakePayload({ program: cohortProgram, cohorts: [{ id: 1, startDate: '2026-08-01' }] })
+    boom.create.mockRejectedValue(new Error('connection reset'))
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    expect(await assignToCohortIfCohortProgram(boom as never, 1, 7)).toBe('error')
+    expect(spy).toHaveBeenCalled()
+    spy.mockRestore()
+  })
 })

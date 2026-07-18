@@ -49,8 +49,8 @@ export default async function AgentPage() {
         </div>
       </header>
       <p className="store-empty" style={{ marginBottom: '1.5rem' }}>
-        Podepnij Claude Code lub Codex do swojego kursu: agent pobierze dzisiejszą lekcję i zapisze
-        check-in za Ciebie.
+        Podepnij Claude Code lub Codex do swojego kursu: agent pobierze plan dnia (tytuł, zadanie,
+        definition-of-done) i zapisze check-in/pomiary za Ciebie.
       </p>
       <AgentKeysPanel keys={keys} mcpUrl={mcpUrl} />
     </section>

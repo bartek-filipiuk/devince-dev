@@ -284,6 +284,8 @@ export async function POST(req: NextRequest) {
       )
       if (cohortResult === 'no-cohort')
         console.error(`[stripe webhook] program ${programIdRaw}: brak kohorty do przypisania dla ${email}`)
+      else if (cohortResult === 'error')
+        console.error(`[stripe webhook] program ${programIdRaw}: przypisanie do kohorty nie powiodło się dla ${email}`)
 
       // Observability: the grant above is durable — fire the sales-pulse ping.
       // Best-effort (notifyEvent never throws); placed AFTER the grant so a

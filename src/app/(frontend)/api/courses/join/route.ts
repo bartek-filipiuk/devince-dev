@@ -100,8 +100,13 @@ export async function POST(req: NextRequest) {
       data: { user: user.id, cohort: cohortId, program: programId, joinedAt: new Date().toISOString() },
       overrideAccess: true,
     })
-  } catch {
+  } catch (err) {
     // unikalny (user, program) → już przypisany — no-op
+    const msg = String((err as Error)?.message || '').toLowerCase()
+    if (!msg.includes('duplicate key') && !msg.includes('unique'))
+      // membership nie powstało z innego powodu — nie blokuj invite flow (admin
+      // dopina członkostwo ręcznie), ale zostaw ślad.
+      console.error('[join] membership create failed:', err)
   }
 
   // Atomowe zużycie tokenu: warunkowy UPDATE z RETURNING — dokładnie jeden

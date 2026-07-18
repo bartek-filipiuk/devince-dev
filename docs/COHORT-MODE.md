@@ -46,6 +46,8 @@ omija cały gating.
 Endpoint `POST /api/agent/mcp` (Bearer = klucz z `/account/agent`), rate-limit
 60/min. Narzędzia: `get_today`, `save_checkin`, `complete_lesson`,
 `get_progress`, `save_measurement` (+ arg `program` przy >1 kursie).
+`get_today` zwraca metadane planu dnia (tytuł, `why`/`what`/`dod`), NIE pełną
+treść lekcji (ciężki Lexical celowo pominięty) — pełną lekcję czyta się w UI.
 Podpięcie: `claude mcp add --transport http devince-kurs
 https://courses.devince.dev/api/agent/mcp --header "Authorization: Bearer <KLUCZ>"`.
 
