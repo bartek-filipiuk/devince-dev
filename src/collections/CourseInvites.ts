@@ -21,6 +21,25 @@ export const CourseInvites: CollectionConfig = {
         return data
       },
     ],
+    afterChange: [
+      async ({ doc, operation }) => {
+        if (operation !== 'create') return
+        // Best-effort: błąd wysyłki nie może zablokować utworzenia invite'a —
+        // joinUrl i tak jest widoczny w adminie do ręcznego wysłania.
+        try {
+          const { sendTransactionalEmail } = await import('../utilities/brevo')
+          const base = process.env.NEXT_PUBLIC_COURSES_URL ?? 'https://courses.devince.dev'
+          const link = `${base}/join/${doc.token}`
+          await sendTransactionalEmail({
+            to: doc.email,
+            subject: 'Twoje zaproszenie do kursu',
+            htmlContent: `<p>Cześć!</p><p>Masz zaproszenie do kursu. Dołącz tutaj (link ważny 7 dni):</p><p><a href="${link}">${link}</a></p>`,
+          })
+        } catch (err) {
+          console.error('[course-invites] wysyłka zaproszenia nie powiodła się:', err)
+        }
+      },
+    ],
   },
   fields: [
     { name: 'email', type: 'email', required: true },
