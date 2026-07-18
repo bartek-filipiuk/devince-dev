@@ -82,6 +82,12 @@ export interface Config {
     'download-grants': DownloadGrant;
     'claim-grants': ClaimGrant;
     'lesson-progress': LessonProgress;
+    cohorts: Cohort;
+    'cohort-members': CohortMember;
+    checkins: Checkin;
+    'course-measurements': CourseMeasurement;
+    'course-invites': CourseInvite;
+    'agent-api-keys': AgentApiKey;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -114,6 +120,12 @@ export interface Config {
     'download-grants': DownloadGrantsSelect<false> | DownloadGrantsSelect<true>;
     'claim-grants': ClaimGrantsSelect<false> | ClaimGrantsSelect<true>;
     'lesson-progress': LessonProgressSelect<false> | LessonProgressSelect<true>;
+    cohorts: CohortsSelect<false> | CohortsSelect<true>;
+    'cohort-members': CohortMembersSelect<false> | CohortMembersSelect<true>;
+    checkins: CheckinsSelect<false> | CheckinsSelect<true>;
+    'course-measurements': CourseMeasurementsSelect<false> | CourseMeasurementsSelect<true>;
+    'course-invites': CourseInvitesSelect<false> | CourseInvitesSelect<true>;
+    'agent-api-keys': AgentApiKeysSelect<false> | AgentApiKeysSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -490,6 +502,7 @@ export interface Program {
    * Przypięty na górze listy kursów (storefront), niezależnie od postępu użytkownika.
    */
   featured?: boolean | null;
+  deliveryMode?: ('self-paced' | 'cohort') | null;
   heroImage?: (number | null) | Media;
   heroHeadline?: string | null;
   heroDescription?: string | null;
@@ -563,6 +576,77 @@ export interface Program {
       }[]
     | null;
   level?: ('beginner' | 'intermediate' | 'advanced') | null;
+  cohortConfig: {
+    /**
+     * Liczba dni programu (dzień lekcji = pole nr)
+     */
+    programLength: number;
+    unlockHour?: number | null;
+    timezone?: string | null;
+    /**
+     * Etykieta wbudowanego pola minimum, np. "Zrobiłem minimum"
+     */
+    minimumLabel?: string | null;
+    /**
+     * Dodatkowe pola dziennego check-inu (minimum + notatka są wbudowane)
+     */
+    checkinFields?:
+      | {
+          key: string;
+          label: string;
+          fieldType: 'boolean' | 'number' | 'select' | 'text';
+          min?: number | null;
+          max?: number | null;
+          options?:
+            | {
+                value: string;
+                label: string;
+                id?: string | null;
+              }[]
+            | null;
+          /**
+           * Nagłówek sekcji formularza (opcjonalny)
+           */
+          section?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    measurementPoints?:
+      | {
+          key: string;
+          label: string;
+          id?: string | null;
+        }[]
+      | null;
+    measurementMetrics?:
+      | {
+          key: string;
+          label: string;
+          unit?: string | null;
+          min?: number | null;
+          max?: number | null;
+          id?: string | null;
+        }[]
+      | null;
+    completion?: {
+      /**
+       * Ile dni z minimum = ukończenie (np. 48)
+       */
+      minimumDaysTarget?: number | null;
+      extraTargets?:
+        | {
+            label?: string | null;
+            /**
+             * Klucz pola z checkinFields
+             */
+            fieldKey: string;
+            matchValues: string[];
+            target: number;
+            id?: string | null;
+          }[]
+        | null;
+    };
+  };
   meta?: {
     title?: string | null;
     /**
@@ -1587,6 +1671,118 @@ export interface LessonProgress {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cohorts".
+ */
+export interface Cohort {
+  id: number;
+  name: string;
+  program: number | Program;
+  /**
+   * Dzień 1 programu — lekcje odblokowują się od tej daty o godzinie z konfiguracji kursu
+   */
+  startDate: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cohort-members".
+ */
+export interface CohortMember {
+  id: number;
+  user: number | User;
+  cohort: number | Cohort;
+  program: number | Program;
+  joinedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "checkins".
+ */
+export interface Checkin {
+  id: number;
+  user: number | User;
+  program: number | Program;
+  date: string;
+  programDay: number;
+  minimumDone: boolean;
+  note?: string | null;
+  values?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course-measurements".
+ */
+export interface CourseMeasurement {
+  id: number;
+  user: number | User;
+  program: number | Program;
+  point: string;
+  values?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  recordedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course-invites".
+ */
+export interface CourseInvite {
+  id: number;
+  email: string;
+  program: number | Program;
+  cohort: number | Cohort;
+  token?: string | null;
+  expiresAt?: string | null;
+  /**
+   * Ustawiane atomowo przy dołączeniu — puste = nieużyte
+   */
+  usedAt?: string | null;
+  createdBy?: (number | null) | User;
+  /**
+   * Link do wysłania uczestnikowi
+   */
+  joinUrl?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "agent-api-keys".
+ */
+export interface AgentApiKey {
+  id: number;
+  user: number | User;
+  name: string;
+  keyPrefix: string;
+  keyHash: string;
+  lastUsedAt?: string | null;
+  revokedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1834,6 +2030,30 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'lesson-progress';
         value: number | LessonProgress;
+      } | null)
+    | ({
+        relationTo: 'cohorts';
+        value: number | Cohort;
+      } | null)
+    | ({
+        relationTo: 'cohort-members';
+        value: number | CohortMember;
+      } | null)
+    | ({
+        relationTo: 'checkins';
+        value: number | Checkin;
+      } | null)
+    | ({
+        relationTo: 'course-measurements';
+        value: number | CourseMeasurement;
+      } | null)
+    | ({
+        relationTo: 'course-invites';
+        value: number | CourseInvite;
+      } | null)
+    | ({
+        relationTo: 'agent-api-keys';
+        value: number | AgentApiKey;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2243,6 +2463,7 @@ export interface ProgramSelect<T extends boolean = true> {
   title?: T;
   type?: T;
   featured?: T;
+  deliveryMode?: T;
   heroImage?: T;
   heroHeadline?: T;
   heroDescription?: T;
@@ -2311,6 +2532,63 @@ export interface ProgramSelect<T extends boolean = true> {
         id?: T;
       };
   level?: T;
+  cohortConfig?:
+    | T
+    | {
+        programLength?: T;
+        unlockHour?: T;
+        timezone?: T;
+        minimumLabel?: T;
+        checkinFields?:
+          | T
+          | {
+              key?: T;
+              label?: T;
+              fieldType?: T;
+              min?: T;
+              max?: T;
+              options?:
+                | T
+                | {
+                    value?: T;
+                    label?: T;
+                    id?: T;
+                  };
+              section?: T;
+              id?: T;
+            };
+        measurementPoints?:
+          | T
+          | {
+              key?: T;
+              label?: T;
+              id?: T;
+            };
+        measurementMetrics?:
+          | T
+          | {
+              key?: T;
+              label?: T;
+              unit?: T;
+              min?: T;
+              max?: T;
+              id?: T;
+            };
+        completion?:
+          | T
+          | {
+              minimumDaysTarget?: T;
+              extraTargets?:
+                | T
+                | {
+                    label?: T;
+                    fieldKey?: T;
+                    matchValues?: T;
+                    target?: T;
+                    id?: T;
+                  };
+            };
+      };
   meta?:
     | T
     | {
@@ -2718,6 +2996,87 @@ export interface LessonProgressSelect<T extends boolean = true> {
   lesson?: T;
   program?: T;
   completedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cohorts_select".
+ */
+export interface CohortsSelect<T extends boolean = true> {
+  name?: T;
+  program?: T;
+  startDate?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cohort-members_select".
+ */
+export interface CohortMembersSelect<T extends boolean = true> {
+  user?: T;
+  cohort?: T;
+  program?: T;
+  joinedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "checkins_select".
+ */
+export interface CheckinsSelect<T extends boolean = true> {
+  user?: T;
+  program?: T;
+  date?: T;
+  programDay?: T;
+  minimumDone?: T;
+  note?: T;
+  values?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course-measurements_select".
+ */
+export interface CourseMeasurementsSelect<T extends boolean = true> {
+  user?: T;
+  program?: T;
+  point?: T;
+  values?: T;
+  recordedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course-invites_select".
+ */
+export interface CourseInvitesSelect<T extends boolean = true> {
+  email?: T;
+  program?: T;
+  cohort?: T;
+  token?: T;
+  expiresAt?: T;
+  usedAt?: T;
+  createdBy?: T;
+  joinUrl?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "agent-api-keys_select".
+ */
+export interface AgentApiKeysSelect<T extends boolean = true> {
+  user?: T;
+  name?: T;
+  keyPrefix?: T;
+  keyHash?: T;
+  lastUsedAt?: T;
+  revokedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

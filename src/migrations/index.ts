@@ -20,6 +20,7 @@ import * as migration_20260623_060439_product_screenshots from './20260623_06043
 import * as migration_20260623_094459_email_tracking from './20260623_094459_email_tracking';
 import * as migration_20260709_184011_build_log_hero from './20260709_184011_build_log_hero';
 import * as migration_20260709_190834_features_variant from './20260709_190834_features_variant';
+import * as migration_20260718_080019_cohort_mode from './20260718_080019_cohort_mode';
 
 export const migrations = [
   {
@@ -130,6 +131,11 @@ export const migrations = [
   {
     up: migration_20260709_190834_features_variant.up,
     down: migration_20260709_190834_features_variant.down,
-    name: '20260709_190834_features_variant'
+    name: '20260709_190834_features_variant',
+  },
+  {
+    up: migration_20260718_080019_cohort_mode.up,
+    down: migration_20260718_080019_cohort_mode.down,
+    name: '20260718_080019_cohort_mode'
   },
 ];

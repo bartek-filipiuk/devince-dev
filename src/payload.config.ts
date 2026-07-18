@@ -4,9 +4,15 @@ import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
+import { AgentApiKeys } from './collections/AgentApiKeys'
 import { AppAssets } from './collections/AppAssets'
 import { Categories } from './collections/Categories'
+import { Checkins } from './collections/Checkins'
 import { ClaimGrants } from './collections/ClaimGrants'
+import { CohortMembers } from './collections/CohortMembers'
+import { Cohorts } from './collections/Cohorts'
+import { CourseInvites } from './collections/CourseInvites'
+import { CourseMeasurements } from './collections/CourseMeasurements'
 import { LessonProgress } from './collections/LessonProgress'
 import { CourseAssets } from './collections/CourseAssets'
 import { DownloadGrants } from './collections/DownloadGrants'
@@ -106,6 +112,12 @@ export default buildConfig({
     DownloadGrants,
     ClaimGrants,
     LessonProgress,
+    Cohorts,
+    CohortMembers,
+    Checkins,
+    CourseMeasurements,
+    CourseInvites,
+    AgentApiKeys,
   ],
   cors: [getServerSideURL(), process.env.NEXT_PUBLIC_COURSES_URL, process.env.NEXT_PUBLIC_APPS_URL].filter(Boolean) as string[],
   globals: [Header, Footer, SiteSettings, Roadmap],

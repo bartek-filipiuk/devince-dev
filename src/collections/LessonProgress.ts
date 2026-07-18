@@ -1,14 +1,6 @@
-import type { Access, CollectionConfig } from 'payload'
+import type { CollectionConfig } from 'payload'
 import { adminOnly } from '../access/adminOnly'
-
-// A signed-in user may read only their own rows; admins read all. Writes happen
-// exclusively through the authenticated progress route via the Local API
-// (overrideAccess), so create/update/delete are admin-only at the collection.
-const ownOrAdmin: Access = ({ req: { user } }) => {
-  if (!user) return false
-  if ((user.roles ?? []).includes('admin')) return true
-  return { user: { equals: user.id } }
-}
+import { ownOrAdmin } from '../access/ownOrAdmin'
 
 export const LessonProgress: CollectionConfig = {
   slug: 'lesson-progress',
