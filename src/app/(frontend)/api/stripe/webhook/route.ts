@@ -276,6 +276,15 @@ export async function POST(req: NextRequest) {
         overrideAccess: true,
       })
 
+      // Tryb kohortowy: przypisz do najbliższej kohorty (idempotentne — unikalny
+      // indeks łapie re-delivery). Best-effort: brak kohorty nie blokuje grantu.
+      const { assignToCohortIfCohortProgram } = await import('@/utilities/cohortAssign')
+      const cohortResult = await assignToCohortIfCohortProgram(payload, user.id, programId as number).catch(
+        () => 'error' as const,
+      )
+      if (cohortResult === 'no-cohort')
+        console.error(`[stripe webhook] program ${programIdRaw}: brak kohorty do przypisania dla ${email}`)
+
       // Observability: the grant above is durable — fire the sales-pulse ping.
       // Best-effort (notifyEvent never throws); placed AFTER the grant so a
       // failing log/Discord POST can never break or roll back access.
@@ -670,6 +679,11 @@ export async function POST(req: NextRequest) {
                 })
                 await notifyEvent('refund', { item: `program ${programIdRaw}`, email })
               }
+              // Tryb kohortowy: zdejmij membership przy refundzie. Best-effort,
+              // idempotentne — brak membershipu to no-op. Poza gate'em na zmianę
+              // purchases, żeby re-delivered refund też domknął sprzątanie.
+              const { removeCohortMembership } = await import('@/utilities/cohortAssign')
+              await removeCohortMembership(payload, user.id as number, programId as number).catch(() => {})
             }
           } catch (courseErr) {
             console.error(
