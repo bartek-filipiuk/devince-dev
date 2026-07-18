@@ -97,7 +97,12 @@ export default async function CoursesAccountPage() {
           </span>
           <h1 className="section-title">{t(locale, 'courses.auth.accountTitle')}</h1>
         </div>
-        <LogoutButton locale={locale} />
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          <Link className="btn btn--ghost" href={getLocalizedPath('/account/agent', locale)}>
+            Agent (MCP)
+          </Link>
+          <LogoutButton locale={locale} />
+        </div>
       </header>
 
       {programs.length === 0 ? (

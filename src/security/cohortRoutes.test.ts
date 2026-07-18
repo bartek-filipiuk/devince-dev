@@ -3,11 +3,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const auth = vi.fn()
+const find = vi.fn()
+const create = vi.fn()
+const update = vi.fn()
 const resolveCohortContext = vi.fn()
 const saveCheckinAction = vi.fn()
 const saveMeasurementAction = vi.fn()
 
-vi.mock('payload', () => ({ getPayload: async () => ({ auth }) }))
+vi.mock('payload', () => ({ getPayload: async () => ({ auth, find, create, update }) }))
 vi.mock('@payload-config', () => ({ default: {} }))
 vi.mock('next/headers', () => ({ headers: async () => new Headers() }))
 vi.mock('@/utilities/cohortActions', () => ({
@@ -18,6 +21,10 @@ vi.mock('@/utilities/cohortActions', () => ({
 
 const { POST: checkinPOST } = await import('@/app/(frontend)/api/courses/checkin/route')
 const { POST: measurementPOST } = await import('@/app/(frontend)/api/courses/measurement/route')
+const { POST: agentKeysPOST, DELETE: agentKeysDELETE } = await import(
+  '@/app/(frontend)/api/courses/agent-keys/route'
+)
+const { AGENT_KEY_RE } = await import('@/utilities/agentApiKeys')
 
 const req = (body: unknown) =>
   new Request('http://x/api/courses/checkin', { method: 'POST', body: JSON.stringify(body) })
@@ -63,5 +70,42 @@ describe('POST /api/courses/measurement', () => {
     )
     expect(res.status).toBe(200)
     expect((await measurementPOST(new Request('http://x', { method: 'POST', body: '{}' }) as never)).status).toBe(400)
+  })
+})
+
+describe('/api/courses/agent-keys', () => {
+  const post = (body: unknown) =>
+    new Request('http://x/api/courses/agent-keys', { method: 'POST', body: JSON.stringify(body) })
+  const del = (body: unknown) =>
+    new Request('http://x/api/courses/agent-keys', { method: 'DELETE', body: JSON.stringify(body) })
+
+  it('POST 401 bez sesji', async () => {
+    auth.mockResolvedValue({ user: null })
+    expect((await agentKeysPOST(post({ name: 'laptop' }) as never)).status).toBe(401)
+  })
+
+  it('POST z sesją → 200 i key pasujący do AGENT_KEY_RE (plaintext RAZ)', async () => {
+    find.mockResolvedValue({ totalDocs: 0, docs: [] })
+    create.mockResolvedValue({ id: 42 })
+    const res = await agentKeysPOST(post({ name: 'laptop' }) as never)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.ok).toBe(true)
+    expect(data.key).toMatch(AGENT_KEY_RE)
+    // keyHash trafia do DB, plaintext nigdy
+    expect(create.mock.calls[0][0].data.keyHash).toBeDefined()
+    expect(JSON.stringify(create.mock.calls[0][0])).not.toContain(data.key)
+  })
+
+  it('POST szósty aktywny klucz → 409', async () => {
+    find.mockResolvedValue({ totalDocs: 5, docs: [] })
+    expect((await agentKeysPOST(post({ name: 'laptop' }) as never)).status).toBe(409)
+    expect(create).not.toHaveBeenCalled()
+  })
+
+  it('DELETE cudzego id (find po user zwraca pusto) → 404', async () => {
+    find.mockResolvedValue({ totalDocs: 0, docs: [] })
+    expect((await agentKeysDELETE(del({ id: 999 }) as never)).status).toBe(404)
+    expect(update).not.toHaveBeenCalled()
   })
 })
