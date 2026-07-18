@@ -99,6 +99,21 @@ export function maxUnlockedDay(clock: CohortClock, now: Date = new Date()): numb
   return isUnlocked(capped, clock, now) ? capped : Math.max(0, capped - 1)
 }
 
+// Nazwa dnia z Intl jest w mianowniku ('sobota'); w zdaniu "odblokuje się …"
+// potrzebny biernik z przyimkiem ("w sobotę", "we wtorek").
+const WEEKDAY_ACCUSATIVE: Record<string, string> = {
+  poniedziałek: 'w poniedziałek',
+  wtorek: 'we wtorek',
+  środa: 'w środę',
+  czwartek: 'w czwartek',
+  piątek: 'w piątek',
+  sobota: 'w sobotę',
+  niedziela: 'w niedzielę',
+}
+function weekdayAccusative(weekday: string): string {
+  return WEEKDAY_ACCUSATIVE[weekday] ?? `w ${weekday}`
+}
+
 export function unlockLabel(day: number, clock: CohortClock, now: Date = new Date()): string {
   const at = unlockAt(day, clock)
   const hour = `${clock.unlockHour}:00`
@@ -108,7 +123,7 @@ export function unlockLabel(day: number, clock: CohortClock, now: Date = new Dat
   if (diff <= 0) return `odblokuje się dziś o ${hour}`
   if (diff === 1) return `odblokuje się jutro o ${hour}`
   const weekday = new Intl.DateTimeFormat('pl-PL', { timeZone: clock.timezone, weekday: 'long' }).format(at)
-  if (diff < 7) return `odblokuje się w ${weekday} o ${hour}`
+  if (diff < 7) return `odblokuje się ${weekdayAccusative(weekday)} o ${hour}`
   const date = new Intl.DateTimeFormat('pl-PL', { timeZone: clock.timezone, day: 'numeric', month: 'long' }).format(at)
   return `odblokuje się ${date} (${weekday}) o ${hour}`
 }

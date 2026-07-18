@@ -429,6 +429,8 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
 .navitem .lbl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .navitem[aria-current="true"] { background: var(--accent-soft); color: var(--text); box-shadow: inset 2px 0 0 var(--accent); }
 .navitem[aria-current="true"] .lbl { font-weight: 600; }
+.navitem.locked { opacity: 0.5; cursor: not-allowed; color: var(--text-dim); }
+.navitem.locked:hover { background: none; color: var(--text-dim); }
 
 /* ---------- MAIN ---------- */
 .lmain { padding: clamp(24px,3.5vw,44px) clamp(18px,4vw,52px) 40px; max-width: 860px; }

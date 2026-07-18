@@ -96,6 +96,6 @@ describe('unlockLabel', () => {
     expect(unlockLabel(5, clock, now)).toBe('odblokuje się dziś o 6:00')
     expect(unlockLabel(6, clock, now)).toBe('odblokuje się jutro o 6:00')
     // 2026-07-11 to sobota
-    expect(unlockLabel(11, clock, now)).toContain('sobota')
+    expect(unlockLabel(11, clock, now)).toContain('w sobotę')
   })
 })

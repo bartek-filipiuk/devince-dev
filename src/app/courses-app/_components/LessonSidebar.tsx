@@ -7,13 +7,14 @@ import { phaseProgress, progressFor } from '@/utilities/courseProgress'
 type Phase = NonNullable<Program['phases']>[number]
 const pad = (n: number | null | undefined) => String(n ?? 0).padStart(2, '0')
 
-export function LessonSidebar({ slug, program, lesson, sorted, completedIds, locale }: {
+export function LessonSidebar({ slug, program, lesson, sorted, completedIds, locale, maxUnlockedNr }: {
   slug: string
   program: Program
   lesson: Lesson
   sorted: Lesson[]
   completedIds: Set<number>
   locale: Locale
+  maxUnlockedNr?: number | null
 }) {
   const phases: Phase[] = program.phases ?? []
   const byPhase = phaseProgress(sorted, completedIds)
@@ -52,6 +53,24 @@ export function LessonSidebar({ slug, program, lesson, sorted, completedIds, loc
                 {rows.map((l) => {
                   const current = l.id === lesson.id
                   const isDone = completedIds.has(l.id)
+                  const locked =
+                    maxUnlockedNr != null && typeof l.nr === 'number' && l.nr > maxUnlockedNr
+                  if (locked) {
+                    return (
+                      <span
+                        key={l.id}
+                        className="navitem locked"
+                        aria-disabled="true"
+                        title={t(locale, 'courses.lesson.locked')}
+                      >
+                        <span className="st">
+                          <span className="icon" data-i="lock" aria-hidden="true" />
+                        </span>
+                        <span className="lbl">{l.title}</span>
+                        <span className="nr">{pad(l.nr)}</span>
+                      </span>
+                    )
+                  }
                   return (
                     <Link
                       key={l.id}
