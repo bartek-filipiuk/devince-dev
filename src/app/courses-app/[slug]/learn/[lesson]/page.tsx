@@ -123,7 +123,7 @@ export default async function CourseLessonPage({
               <p style={{ marginBottom: '24px', opacity: 0.7 }}>
                 {unlockLabel(locked.nr, cohortClock)}
               </p>
-              <Link className="btn btn--primary" href={getLocalizedPath(`/${slug}`, locale)}>
+              <Link className="btn btn--primary" href={getLocalizedPath(`/${slug}/dzisiaj`, locale)}>
                 <span>{t(locale, 'courses.lesson.lockedCta')}</span>
                 <span className="icon" data-i="arrow" aria-hidden="true" />
               </Link>
