@@ -47,6 +47,7 @@
     "geist": "^1.7.2",
     "graphql": "^16.8.2",
     "lucide-react": "^1.24.0",
+    "mcp-handler": "^1.1.0",
     "next": "15.4.11",
     "next-sitemap": "^4.2.3",
     "payload": "3.86.0",
@@ -61,7 +62,8 @@
     "stripe": "^22.3.1",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
-    "unist-util-visit": "^5.1.0"
+    "unist-util-visit": "^5.1.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.6",
