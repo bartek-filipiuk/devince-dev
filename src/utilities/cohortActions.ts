@@ -101,6 +101,8 @@ export async function saveCheckinAction(
   if (!validated.ok) return { ok: false, error: validated.error, status: 400 }
 
   const day = programDayOf(clock, new Date(`${input.date}T12:00:00Z`))
+  if (day < 1 || day > clock.programLength)
+    return { ok: false, error: 'Ten dzień jest poza oknem programu', status: 400 }
   const existing = await payload.find({
     collection: 'checkins',
     where: {
@@ -138,6 +140,7 @@ export async function saveCheckinAction(
         overrideAccess: true,
       })
       if (again.docs[0]) await payload.update({ collection: 'checkins', id: again.docs[0].id, data, overrideAccess: true })
+      else return { ok: false, error: 'Nie udało się zapisać — spróbuj ponownie', status: 500 }
     }
   }
 

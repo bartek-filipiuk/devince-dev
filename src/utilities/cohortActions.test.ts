@@ -106,6 +106,24 @@ describe('saveCheckinAction', () => {
     expect(p.rows.checkins[0].minimumDone).toBe(true)
   })
 
+  it('odrzuca check-in przed startem programu (dzień < 1)', async () => {
+    vi.setSystemTime(new Date('2026-06-30T12:00:00Z')) // dzień 0 — kohorta startuje 2026-07-01
+    const res = await saveCheckinAction(fakePayload() as never, user, ctx(), {
+      date: '2026-06-30',
+      minimumDone: true,
+    })
+    expect(res).toMatchObject({ ok: false, status: 400 })
+  })
+
+  it('odrzuca check-in po końcu programu (dzień > programLength)', async () => {
+    const short = ctx({ clock: { startDate: '2026-07-01', unlockHour: 6, timezone: 'Europe/Warsaw', programLength: 3 } })
+    const res = await saveCheckinAction(fakePayload() as never, user, short, {
+      date: '2026-07-05', // dzień 5 przy programLength 3
+      minimumDone: true,
+    })
+    expect(res).toMatchObject({ ok: false, status: 400 })
+  })
+
   it('odrzuca values niezgodne z configiem', async () => {
     const res = await saveCheckinAction(fakePayload() as never, user, ctx(), {
       date: '2026-07-05',
