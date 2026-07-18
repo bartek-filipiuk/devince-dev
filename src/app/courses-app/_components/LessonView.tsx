@@ -5,6 +5,7 @@ import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import { t, type Locale } from '@/i18n'
 import { getLocalizedPath } from '@/utilities/getLocale'
 import type { LessonHeading } from '@/utilities/lessonHeadings'
+import { unlockLabel, type CohortClock } from '@/utilities/cohortUnlock'
 import { LessonSidebar } from './LessonSidebar'
 import { CourseLessonProse } from './CourseLessonProse'
 import { TableOfContents } from './TableOfContents'
@@ -33,7 +34,7 @@ function Paragraphs({ text, lead }: { text: string; lead?: boolean }) {
   )
 }
 
-export function LessonView({ slug, program, lesson, allLessons, completedIds, headings, locale, maxUnlockedNr }: {
+export function LessonView({ slug, program, lesson, allLessons, completedIds, headings, locale, maxUnlockedNr, cohortClock }: {
   slug: string
   program: Program
   lesson: Lesson
@@ -42,6 +43,7 @@ export function LessonView({ slug, program, lesson, allLessons, completedIds, he
   headings: LessonHeading[]
   locale: Locale
   maxUnlockedNr?: number | null
+  cohortClock?: CohortClock | null
 }) {
   const phases: Phase[] = program.phases ?? []
   const sorted = [...allLessons].sort((a, b) => (a.nr ?? 0) - (b.nr ?? 0))
@@ -190,7 +192,12 @@ export function LessonView({ slug, program, lesson, allLessons, completedIds, he
           )}
           {next && nextLocked ? (
             <div className="pg next disabled locked" aria-disabled="true">
-              <span className="k">{t(locale, 'courses.lesson.locked')}<span className="icon" data-i="lock" aria-hidden="true" /></span>
+              <span className="k">
+                {cohortClock && typeof next.nr === 'number'
+                  ? unlockLabel(next.nr, cohortClock)
+                  : t(locale, 'courses.lesson.locked')}
+                <span className="icon" data-i="lock" aria-hidden="true" />
+              </span>
               <span className="v">{pad(next.nr)} · {next.title}</span>
             </div>
           ) : next ? (

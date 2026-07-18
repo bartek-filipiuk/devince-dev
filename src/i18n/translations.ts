@@ -385,7 +385,6 @@ const translations = {
     // Courses — cohort gating (kłódki + ekran blokady)
     'courses.lesson.locked': 'Zablokowana',
     'courses.lesson.lockedEyebrow': 'Lekcja zablokowana',
-    'courses.lesson.lockedFallback': 'Lekcja jeszcze zablokowana',
     'courses.lesson.lockedCta': 'Wróć do kursu',
 
     // Courses — pro UX (lesson reading + progress)
@@ -838,7 +837,6 @@ const translations = {
     // Courses — cohort gating (locks + lock screen)
     'courses.lesson.locked': 'Locked',
     'courses.lesson.lockedEyebrow': 'Lesson locked',
-    'courses.lesson.lockedFallback': 'This lesson is still locked',
     'courses.lesson.lockedCta': 'Back to the course',
 
     // Courses — pro UX (lesson reading + progress)

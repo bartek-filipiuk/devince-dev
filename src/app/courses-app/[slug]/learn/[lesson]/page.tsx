@@ -161,6 +161,7 @@ export default async function CourseLessonPage({
       headings={headings}
       locale={locale}
       maxUnlockedNr={maxUnlockedNr}
+      cohortClock={cohortClock}
     />
   )
 }
