@@ -408,8 +408,15 @@ export const Program: CollectionConfig<'program'> = {
                 {
                   name: 'programLength',
                   type: 'number',
-                  required: true,
                   min: 1,
+                  // required: true w grupie czyni cały cohortConfig wymaganym w
+                  // wygenerowanych typach (psuje create programów self-paced);
+                  // wymagalność tylko dla trybu kohortowego egzekwuje validate.
+                  validate: (value: unknown, { data }: { data: unknown }) => {
+                    const mode = (data as { deliveryMode?: string } | undefined)?.deliveryMode
+                    if (mode !== 'cohort') return true
+                    return (typeof value === 'number' && value >= 1) || 'Wymagane dla trybu kohortowego'
+                  },
                   admin: { description: 'Liczba dni programu (dzień lekcji = pole nr)' },
                 },
                 { name: 'unlockHour', type: 'number', defaultValue: 6, min: 0, max: 23 },

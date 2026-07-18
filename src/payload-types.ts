@@ -576,11 +576,11 @@ export interface Program {
       }[]
     | null;
   level?: ('beginner' | 'intermediate' | 'advanced') | null;
-  cohortConfig: {
+  cohortConfig?: {
     /**
      * Liczba dni programu (dzień lekcji = pole nr)
      */
-    programLength: number;
+    programLength?: number | null;
     unlockHour?: number | null;
     timezone?: string | null;
     /**
