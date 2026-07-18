@@ -43,7 +43,9 @@ secrets live in Coolify, not in the repo.
   `DownloadGrants` + `ClaimGrants` (apps store), `Users` (auth + `purchases`),
   `Pages`/`Posts`/`Projects` + `Categories.ts`, `Media.ts` + private
   `AppAssets`/`CourseAssets`, `StripeEvents` (webhook idempotency),
-  `LessonProgress.ts`.
+  `LessonProgress.ts`; tryb kohortowy (2026-07-18, `docs/COHORT-MODE.md`):
+  `Cohorts` + `CohortMembers` + `Checkins` + `CourseMeasurements` +
+  `CourseInvites` + `AgentApiKeys` (klucze naturalne = unikalne indeksy DB).
 - Globals: `src/Header/`, `src/Footer/`, `src/SiteSettings/`, `src/Changelog/`,
   `src/Roadmap/`.
 - Page building: blocks in `src/blocks/<Name>/config.ts` (schema) +
@@ -99,7 +101,16 @@ secrets live in Coolify, not in the repo.
    StreamableHTTP, `MCP_AUTH_TOKEN`) → `mcp-server/src/server.ts` registers
    `mcp-server/src/tools/*.ts` → `mcp-server/src/lib/api-client.ts` → this
    app's `/api/external/*` with `EXTERNAL_API_TOKEN`.
-5. **Marketing page render**: request → `src/middleware.ts` (host + locale) →
+5. **Tryb kohortowy (drip + check-iny)**: program z `deliveryMode: 'cohort'` →
+   lekcja `nr` N odblokowana od `cohort.startDate + N-1` o `unlockHour`
+   (matematyka TYLKO w `src/utilities/cohortUnlock.ts`; reguły zapisu TYLKO w
+   `src/utilities/cohortActions.ts`) → gating treści w access
+   `src/access/enrolledOrAdmin.ts` (async, `nr <= maxUnlockedDay` — REST też) →
+   UI `courses-app/[slug]/dzisiaj|postepy`, check-in/pomiar przez
+   `api/courses/checkin|measurement`, MCP uczestnika `POST /api/agent/mcp`
+   (klucze `agent-api-keys`, SHA-256), invite'y `/join/[token]` (atomowe
+   zużycie), webhook przypisuje kohortę po zakupie i zdejmuje przy refundzie.
+6. **Marketing page render**: request → `src/middleware.ts` (host + locale) →
    `src/app/(frontend)/[locale]/[slug]/page.tsx` → Payload query on `pages` →
    `src/blocks/RenderBlocks.tsx` → block components styled by
    `src/app/(frontend)/theme.css`.
@@ -145,6 +156,13 @@ secrets live in Coolify, not in the repo.
   do not "simplify" it.
 - Tier prices are localized (PL/EN priced independently); checkout reads the
   product at the buyer's locale (`src/app/(frontend)/api/apps/checkout/route.ts`).
+- Tryb kohortowy: `checkins.values`/`course-measurements.values` to JSON
+  walidowany serwerowo wg `program.cohortConfig` (`checkinValues.ts`) — nie
+  dodawaj kolumn per pole. Nie licz dat samodzielnie (tylko `cohortUnlock.ts`);
+  `enrolledOrAdmin` jest async i robi 2 dodatkowe query dla kohortowych.
+- `cohortConfig.programLength` NIE może być `required: true` (grupa stałaby
+  się wymagana w generowanych typach i psuła create self-paced) — wymagalność
+  w trybie cohort egzekwuje `validate` na polu.
 
 ### Jak dodać feature (playbook)
 1. Read `docs/HANDOFF.md` + the relevant flow above; find the two most similar
