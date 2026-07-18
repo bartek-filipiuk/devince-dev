@@ -382,6 +382,11 @@ const translations = {
     'courses.lesson.start': 'Początek',
     'courses.lesson.end': 'Koniec',
 
+    // Courses — cohort gating (kłódki + ekran blokady)
+    'courses.lesson.locked': 'Zablokowana',
+    'courses.lesson.lockedEyebrow': 'Lekcja zablokowana',
+    'courses.lesson.lockedCta': 'Wróć do kursu',
+
     // Courses — pro UX (lesson reading + progress)
     'courses.lesson.onThisPage': 'Na tej stronie',
     'courses.lesson.markComplete': 'Ukończ i dalej',
@@ -828,6 +833,11 @@ const translations = {
     'courses.lesson.next': 'Next',
     'courses.lesson.start': 'Start',
     'courses.lesson.end': 'End',
+
+    // Courses — cohort gating (locks + lock screen)
+    'courses.lesson.locked': 'Locked',
+    'courses.lesson.lockedEyebrow': 'Lesson locked',
+    'courses.lesson.lockedCta': 'Back to the course',
 
     // Courses — pro UX (lesson reading + progress)
     'courses.lesson.onThisPage': 'On this page',

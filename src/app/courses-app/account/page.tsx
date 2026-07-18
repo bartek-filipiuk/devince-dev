@@ -97,17 +97,24 @@ export default async function CoursesAccountPage() {
           </span>
           <h1 className="section-title">{t(locale, 'courses.auth.accountTitle')}</h1>
         </div>
-        <LogoutButton locale={locale} />
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          <Link className="btn btn--ghost" href={getLocalizedPath('/account/agent', locale)}>
+            Agent (MCP)
+          </Link>
+          <LogoutButton locale={locale} />
+        </div>
       </header>
 
       {programs.length === 0 ? (
         <p className="store-empty">{t(locale, 'courses.auth.empty')}</p>
       ) : (
         <div className="auth-course-grid">
-          {programs.map((p: any) => (
+          {programs.map((p: any) => {
+            const isCohort = p.deliveryMode === 'cohort'
+            return (
             <Link
               key={p.id}
-              href={getLocalizedPath(`/${p.slug}`, locale)}
+              href={getLocalizedPath(isCohort ? `/${p.slug}/dzisiaj` : `/${p.slug}`, locale)}
               className="course-card auth-course-card"
             >
               <span className="eyebrow">
@@ -125,11 +132,12 @@ export default async function CoursesAccountPage() {
                 )
               })()}
               <span className="auth-course-cta">
-                {t(locale, 'courses.auth.openSyllabus')}
+                {isCohort ? 'Dzisiaj' : t(locale, 'courses.auth.openSyllabus')}
                 <i className="icon" data-i="arrow" aria-hidden="true" />
               </span>
             </Link>
-          ))}
+            )
+          })}
         </div>
       )}
     </section>

@@ -101,6 +101,16 @@ export const Program: CollectionConfig<'program'> = {
       },
     },
     {
+      name: 'deliveryMode',
+      type: 'select',
+      defaultValue: 'self-paced',
+      options: [
+        { label: 'Własne tempo', value: 'self-paced' },
+        { label: 'Kohortowy (dzienny drip)', value: 'cohort' },
+      ],
+      admin: { position: 'sidebar' },
+    },
+    {
       type: 'tabs',
       tabs: [
         {
@@ -383,6 +393,128 @@ export const Program: CollectionConfig<'program'> = {
                 { label: 'Początkujący', value: 'beginner' },
                 { label: 'Średniozaawansowany', value: 'intermediate' },
                 { label: 'Zaawansowany', value: 'advanced' },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Kohorta',
+          admin: { condition: (data) => data?.deliveryMode === 'cohort' },
+          fields: [
+            {
+              name: 'cohortConfig',
+              type: 'group',
+              fields: [
+                {
+                  name: 'programLength',
+                  type: 'number',
+                  min: 1,
+                  // required: true w grupie czyni cały cohortConfig wymaganym w
+                  // wygenerowanych typach (psuje create programów self-paced);
+                  // wymagalność tylko dla trybu kohortowego egzekwuje validate.
+                  validate: (value: unknown, { data }: { data: unknown }) => {
+                    const mode = (data as { deliveryMode?: string } | undefined)?.deliveryMode
+                    if (mode !== 'cohort') return true
+                    return (typeof value === 'number' && value >= 1) || 'Wymagane dla trybu kohortowego'
+                  },
+                  admin: { description: 'Liczba dni programu (dzień lekcji = pole nr)' },
+                },
+                { name: 'unlockHour', type: 'number', defaultValue: 6, min: 0, max: 23 },
+                { name: 'timezone', type: 'text', defaultValue: 'Europe/Warsaw' },
+                {
+                  name: 'minimumLabel',
+                  type: 'text',
+                  localized: true,
+                  admin: {
+                    description: 'Etykieta wbudowanego pola minimum, np. "Zrobiłem minimum"',
+                  },
+                },
+                {
+                  name: 'checkinFields',
+                  type: 'array',
+                  admin: {
+                    description:
+                      'Dodatkowe pola dziennego check-inu (minimum + notatka są wbudowane)',
+                  },
+                  fields: [
+                    { name: 'key', type: 'text', required: true },
+                    { name: 'label', type: 'text', required: true, localized: true },
+                    {
+                      name: 'fieldType',
+                      type: 'select',
+                      required: true,
+                      defaultValue: 'number',
+                      options: [
+                        { label: 'Tak/nie', value: 'boolean' },
+                        { label: 'Liczba', value: 'number' },
+                        { label: 'Wybór', value: 'select' },
+                        { label: 'Tekst', value: 'text' },
+                      ],
+                    },
+                    { name: 'min', type: 'number', admin: { condition: (_, s) => s?.fieldType === 'number' } },
+                    { name: 'max', type: 'number', admin: { condition: (_, s) => s?.fieldType === 'number' } },
+                    {
+                      name: 'options',
+                      type: 'array',
+                      admin: { condition: (_, s) => s?.fieldType === 'select' },
+                      fields: [
+                        { name: 'value', type: 'text', required: true },
+                        { name: 'label', type: 'text', required: true, localized: true },
+                      ],
+                    },
+                    {
+                      name: 'section',
+                      type: 'text',
+                      localized: true,
+                      admin: { description: 'Nagłówek sekcji formularza (opcjonalny)' },
+                    },
+                  ],
+                },
+                {
+                  name: 'measurementPoints',
+                  type: 'array',
+                  fields: [
+                    { name: 'key', type: 'text', required: true },
+                    { name: 'label', type: 'text', required: true, localized: true },
+                  ],
+                },
+                {
+                  name: 'measurementMetrics',
+                  type: 'array',
+                  fields: [
+                    { name: 'key', type: 'text', required: true },
+                    { name: 'label', type: 'text', required: true, localized: true },
+                    { name: 'unit', type: 'text' },
+                    { name: 'min', type: 'number' },
+                    { name: 'max', type: 'number' },
+                  ],
+                },
+                {
+                  name: 'completion',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'minimumDaysTarget',
+                      type: 'number',
+                      admin: { description: 'Ile dni z minimum = ukończenie (np. 48)' },
+                    },
+                    {
+                      name: 'extraTargets',
+                      type: 'array',
+                      fields: [
+                        { name: 'label', type: 'text', localized: true },
+                        {
+                          name: 'fieldKey',
+                          type: 'text',
+                          required: true,
+                          admin: { description: 'Klucz pola z checkinFields' },
+                        },
+                        { name: 'matchValues', type: 'text', hasMany: true, required: true },
+                        { name: 'target', type: 'number', required: true },
+                      ],
+                    },
+                  ],
+                },
               ],
             },
           ],

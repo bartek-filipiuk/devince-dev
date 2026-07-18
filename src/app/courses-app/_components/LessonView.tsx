@@ -5,6 +5,7 @@ import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import { t, type Locale } from '@/i18n'
 import { getLocalizedPath } from '@/utilities/getLocale'
 import type { LessonHeading } from '@/utilities/lessonHeadings'
+import { unlockLabel, type CohortClock } from '@/utilities/cohortUnlock'
 import { LessonSidebar } from './LessonSidebar'
 import { CourseLessonProse } from './CourseLessonProse'
 import { TableOfContents } from './TableOfContents'
@@ -33,7 +34,7 @@ function Paragraphs({ text, lead }: { text: string; lead?: boolean }) {
   )
 }
 
-export function LessonView({ slug, program, lesson, allLessons, completedIds, headings, locale }: {
+export function LessonView({ slug, program, lesson, allLessons, completedIds, headings, locale, maxUnlockedNr, cohortClock }: {
   slug: string
   program: Program
   lesson: Lesson
@@ -41,18 +42,24 @@ export function LessonView({ slug, program, lesson, allLessons, completedIds, he
   completedIds: Set<number>
   headings: LessonHeading[]
   locale: Locale
+  maxUnlockedNr?: number | null
+  cohortClock?: CohortClock | null
 }) {
   const phases: Phase[] = program.phases ?? []
   const sorted = [...allLessons].sort((a, b) => (a.nr ?? 0) - (b.nr ?? 0))
   const idx = sorted.findIndex((l) => l.id === lesson.id)
   const prev = idx > 0 ? sorted[idx - 1] : null
   const next = idx >= 0 && idx < sorted.length - 1 ? sorted[idx + 1] : null
+  // Cohort mode: the next lesson may still be locked. Show a gated label rather
+  // than a dead link (self-paced / admin → maxUnlockedNr null → never locked).
+  const nextLocked =
+    !!next && maxUnlockedNr != null && typeof next.nr === 'number' && next.nr > maxUnlockedNr
   const phase = phases.find((p) => p.letter === lesson.phaseId) ?? null
   const deps = (lesson.dependencies ?? []).filter(
     (d): d is Lesson => typeof d === 'object' && d !== null,
   )
   const skills = (lesson.skills ?? []).map((s) => s.skill).filter(Boolean)
-  const nextHref = next ? getLocalizedPath(`/${slug}/learn/${next.slug}`, locale) : null
+  const nextHref = next && !nextLocked ? getLocalizedPath(`/${slug}/learn/${next.slug}`, locale) : null
 
   const timeMin = lesson.estTimeMin?.min ?? 0
   const timeMax = lesson.estTimeMin?.max ?? 0
@@ -68,6 +75,7 @@ export function LessonView({ slug, program, lesson, allLessons, completedIds, he
         sorted={sorted}
         completedIds={completedIds}
         locale={locale}
+        maxUnlockedNr={maxUnlockedNr}
       />
 
       <main className="lmain" id="lmain">
@@ -182,7 +190,17 @@ export function LessonView({ slug, program, lesson, allLessons, completedIds, he
           ) : (
             <div className="pg disabled"><span className="k">{t(locale, 'courses.lesson.start')}</span><span className="v">—</span></div>
           )}
-          {next ? (
+          {next && nextLocked ? (
+            <div className="pg next disabled locked" aria-disabled="true">
+              <span className="k">
+                {cohortClock && typeof next.nr === 'number'
+                  ? unlockLabel(next.nr, cohortClock)
+                  : t(locale, 'courses.lesson.locked')}
+                <span className="icon" data-i="lock" aria-hidden="true" />
+              </span>
+              <span className="v">{pad(next.nr)} · {next.title}</span>
+            </div>
+          ) : next ? (
             <Link className="pg next" href={getLocalizedPath(`/${slug}/learn/${next.slug}`, locale)}>
               <span className="k">{t(locale, 'courses.lesson.next')}<span className="icon" data-i="arrow" aria-hidden="true" /></span>
               <span className="v">{pad(next.nr)} · {next.title}</span>
