@@ -120,6 +120,31 @@ describe('POST /api/courses/checkout', () => {
     expect(arg.metadata.withdrawalConsentAt).toBeUndefined()
   })
 
+  it('form POST (external landing) redirects 303 to Stripe and honors the consent gate', async () => {
+    const { POST } = await import('./route')
+    mockProgram({ ...PAID_PROGRAM, checkoutConsentMode: 'terms-only' })
+
+    const makeForm = (body: string) =>
+      new NextRequest('http://localhost/api/courses/checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body,
+      })
+
+    // Without the checkbox the server gate must still refuse — the browser's
+    // `required` is UX, THIS is the legal gate.
+    const denied = await POST(makeForm('slug=kurs&locale=pl'))
+    expect(denied.status).toBe(400)
+    expect(sessionsCreate).not.toHaveBeenCalled()
+
+    const res = await POST(makeForm('slug=kurs&consent=on&locale=pl'))
+    expect(res.status).toBe(303)
+    expect(res.headers.get('location')).toBe('https://checkout.stripe.com/x')
+    const arg = sessionsCreate.mock.calls[0][0]
+    expect(arg.metadata.termsConsent).toBe('true')
+    expect(arg.metadata.withdrawalConsent).toBeUndefined()
+  })
+
   it('rejects a free/un-priced program (400)', async () => {
     const { POST } = await import('./route')
     mockProgram({ id: 9, title: 'Free', pricing: 'free', slug: 'free' })

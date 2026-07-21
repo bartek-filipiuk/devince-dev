@@ -25,8 +25,26 @@ export async function POST(req: NextRequest) {
   let consent: unknown
   let locale: unknown
   let newsletter: unknown
+  // Two entry shapes, one legal gate:
+  //  - JSON: the platform's own checkout buttons (fetch → { url } response).
+  //  - form POST: external landings (e.g. stronaw5dni.pl) submit a plain HTML
+  //    <form> with a required consent checkbox — a top-level navigation, so no
+  //    CORS involved; the response is a 303 redirect straight into Stripe.
+  //    Checkbox convention: present ("on"/"true") == ticked.
+  const isFormPost = (req.headers.get('content-type') ?? '').includes(
+    'application/x-www-form-urlencoded',
+  )
   try {
-    ;({ slug, consent, locale, newsletter } = await req.json())
+    if (isFormPost) {
+      const form = await req.formData()
+      slug = form.get('slug')
+      const c = form.get('consent')
+      consent = c === 'on' || c === 'true' ? true : c
+      locale = form.get('locale')
+      newsletter = form.get('newsletter') === 'on' ? true : undefined
+    } else {
+      ;({ slug, consent, locale, newsletter } = await req.json())
+    }
   } catch {
     return NextResponse.json({ error: 'invalid body' }, { status: 400 })
   }
@@ -115,6 +133,11 @@ export async function POST(req: NextRequest) {
     currency: program.currency ?? 'pln',
   })
 
+  // Form flow: the buyer's browser is mid-navigation — take them straight to
+  // Stripe. 303 forces the follow-up to be a GET (correct after a POST).
+  if (isFormPost && session.url) {
+    return NextResponse.redirect(session.url, 303)
+  }
   return NextResponse.json({ url: session.url })
 }
 
