@@ -250,6 +250,28 @@ export const Program: CollectionConfig<'program'> = {
               admin: { condition: (data) => data?.pricing === 'paid' },
             },
             {
+              // Which legal consent the paid checkout collects. 'digital-content'
+              // (default) = Art. 38 pkt 13 withdrawal-rights waiver — correct when
+              // buying unlocks digital content immediately. 'terms-only' = plain
+              // terms+privacy acceptance — for products where NOTHING is delivered
+              // on purchase (e.g. a reservation fee) and the withdrawal right must
+              // stay intact; /api/courses/checkout then stamps termsConsentAt and
+              // never records a withdrawal waiver the buyer did not give.
+              name: 'checkoutConsentMode',
+              type: 'select',
+              label: 'Zgoda przy checkoucie',
+              defaultValue: 'digital-content',
+              options: [
+                { label: 'Treści cyfrowe (art. 38 — utrata odstąpienia)', value: 'digital-content' },
+                { label: 'Tylko regulamin (rezerwacja/usługa)', value: 'terms-only' },
+              ],
+              admin: {
+                description:
+                  'Rezerwacje: wybierz "Tylko regulamin" — kupujący NIE traci prawa odstąpienia i nie składa zgody z art. 38.',
+                condition: (data) => data?.pricing === 'paid',
+              },
+            },
+            {
               type: 'row',
               fields: [
                 {

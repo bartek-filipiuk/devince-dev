@@ -16,6 +16,7 @@ const VALID_TYPES = ['course', 'workshop', 'event'] as const
 const VALID_FORMATS = ['online', 'physical', 'hybrid'] as const
 const VALID_PRICING = ['free', 'paid'] as const
 const VALID_ACCESS_MODES = ['paid', 'lead-magnet'] as const
+const VALID_CONSENT_MODES = ['digital-content', 'terms-only'] as const
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ idOrSlug: string }> }) {
   const authError = validateAuth(request)
@@ -108,6 +109,15 @@ export async function PATCH(
         )
       }
       data.accessMode = body.accessMode
+    }
+    if (body.checkoutConsentMode !== undefined) {
+      if (!(VALID_CONSENT_MODES as readonly string[]).includes(body.checkoutConsentMode)) {
+        return createErrorResponse(
+          'VALIDATION_ERROR',
+          `checkoutConsentMode must be one of: ${VALID_CONSENT_MODES.join(', ')}`,
+        )
+      }
+      data.checkoutConsentMode = body.checkoutConsentMode
     }
 
     if (body.ctaUrl !== undefined) {

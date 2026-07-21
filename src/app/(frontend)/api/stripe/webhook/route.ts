@@ -327,13 +327,16 @@ export async function POST(req: NextRequest) {
       // /api/courses/checkout. Absent for sessions created outside our flow (e.g.
       // a hand-made Stripe Payment Link) — the email then omits the confirmation.
       const withdrawalConsentAt = session.metadata?.withdrawalConsentAt || undefined
+      // terms-only (reservation) checkouts stamp termsConsentAt INSTEAD of a
+      // withdrawal waiver — a valid consent record, not a missing one.
+      const termsConsentAt = session.metadata?.termsConsentAt || undefined
       // The legal gate lives at /api/courses/checkout (consent !== true → 400), so
-      // every course session WE create carries this. A course session reaching here
-      // without it was created outside our flow — flag it: that purchase has NO
-      // durable-medium consent record (mirror the apps branch warning).
-      if (!withdrawalConsentAt) {
+      // every course session WE create carries one of the stamps. A session
+      // reaching here without either was created outside our flow — flag it: that
+      // purchase has NO durable-medium consent record (mirror the apps branch warning).
+      if (!withdrawalConsentAt && !termsConsentAt) {
         console.warn(
-          `[stripe webhook] course purchase (program ${programIdRaw}, session ${session.id}) has no withdrawalConsentAt — created outside /api/courses/checkout; no Art. 38 pkt 13 consent recorded`,
+          `[stripe webhook] course purchase (program ${programIdRaw}, session ${session.id}) has no consent stamp (withdrawalConsentAt/termsConsentAt) — created outside /api/courses/checkout; no consent recorded`,
         )
       }
 

@@ -105,6 +105,21 @@ describe('POST /api/courses/checkout', () => {
     expect(arg.cancel_url).toMatch(/\/kurs$/)
   })
 
+  it('terms-only program stamps termsConsent* and NO withdrawal waiver', async () => {
+    const { POST } = await import('./route')
+    // Reservation-style purchase: buyer accepts terms only — the metadata must
+    // never claim an Art. 38 withdrawal waiver they did not give.
+    mockProgram({ ...PAID_PROGRAM, checkoutConsentMode: 'terms-only' })
+    const res = await POST(makeReq({ slug: 'kurs', consent: true, locale: 'pl' }))
+    expect(res.status).toBe(200)
+
+    const arg = sessionsCreate.mock.calls[0][0]
+    expect(arg.metadata.termsConsent).toBe('true')
+    expect(typeof arg.metadata.termsConsentAt).toBe('string')
+    expect(arg.metadata.withdrawalConsent).toBeUndefined()
+    expect(arg.metadata.withdrawalConsentAt).toBeUndefined()
+  })
+
   it('rejects a free/un-priced program (400)', async () => {
     const { POST } = await import('./route')
     mockProgram({ id: 9, title: 'Free', pricing: 'free', slug: 'free' })

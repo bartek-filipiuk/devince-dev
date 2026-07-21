@@ -520,6 +520,10 @@ export interface Program {
   stripePaymentLink?: string | null;
   stripePriceId?: string | null;
   /**
+   * Rezerwacje: wybierz "Tylko regulamin" — kupujący NIE traci prawa odstąpienia i nie składa zgody z art. 38.
+   */
+  checkoutConsentMode?: ('digital-content' | 'terms-only') | null;
+  /**
    * Cena w najmniejszej jednostce waluty (np. 4700 = 47,00 zł). Trzymaj zgodne z Payment Link / Price w Stripe.
    */
   priceCents?: number | null;
@@ -2477,6 +2481,7 @@ export interface ProgramSelect<T extends boolean = true> {
   accessMode?: T;
   stripePaymentLink?: T;
   stripePriceId?: T;
+  checkoutConsentMode?: T;
   priceCents?: T;
   currency?: T;
   duration?: T;

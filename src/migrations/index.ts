@@ -21,6 +21,7 @@ import * as migration_20260623_094459_email_tracking from './20260623_094459_ema
 import * as migration_20260709_184011_build_log_hero from './20260709_184011_build_log_hero';
 import * as migration_20260709_190834_features_variant from './20260709_190834_features_variant';
 import * as migration_20260718_080019_cohort_mode from './20260718_080019_cohort_mode';
+import * as migration_20260721_200312_checkout_consent_mode from './20260721_200312_checkout_consent_mode';
 
 export const migrations = [
   {
@@ -136,6 +137,11 @@ export const migrations = [
   {
     up: migration_20260718_080019_cohort_mode.up,
     down: migration_20260718_080019_cohort_mode.down,
-    name: '20260718_080019_cohort_mode'
+    name: '20260718_080019_cohort_mode',
+  },
+  {
+    up: migration_20260721_200312_checkout_consent_mode.up,
+    down: migration_20260721_200312_checkout_consent_mode.down,
+    name: '20260721_200312_checkout_consent_mode'
   },
 ];

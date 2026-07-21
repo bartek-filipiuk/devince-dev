@@ -346,6 +346,8 @@ const translations = {
     // Checkout (consent gate)
     'courses.checkout.consent':
       'Wyrażam zgodę na rozpoczęcie dostępu do treści cyfrowych przed upływem terminu odstąpienia i przyjmuję do wiadomości utratę prawa do odstąpienia (art. 38 pkt 13).',
+    'courses.checkout.consentTerms':
+      'Akceptuję Regulamin i Politykę Prywatności. Rezerwacja nie ogranicza ustawowego prawa odstąpienia od umowy.',
     'courses.checkout.processing': 'Przekierowuję…',
     'courses.checkout.error': 'Nie udało się rozpocząć płatności. Spróbuj ponownie.',
     'courses.checkout.consentRequired': 'Zaznacz najpierw zgodę powyżej, aby przejść do płatności.',
@@ -798,6 +800,8 @@ const translations = {
     // Checkout (consent gate)
     'courses.checkout.consent':
       'I consent to early access to the digital content before the withdrawal period expires and acknowledge that I lose my right of withdrawal (Art. 38(13)).',
+    'courses.checkout.consentTerms':
+      'I accept the Terms and Privacy Policy. The reservation does not limit your statutory right of withdrawal.',
     'courses.checkout.processing': 'Redirecting…',
     'courses.checkout.error': 'Could not start the payment. Please try again.',
     'courses.checkout.consentRequired': 'Please tick the consent box above to continue to payment.',

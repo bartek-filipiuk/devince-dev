@@ -84,11 +84,17 @@ export async function POST(req: NextRequest) {
       // The webhook's course branch keys on `programId` to grant access.
       programId: String(program.id),
       // Audit marker visible in the Stripe dashboard. NOT re-validated at
-      // fulfillment — `withdrawalConsentAt` is the load-bearing field (its
+      // fulfillment — the *ConsentAt timestamp is the load-bearing field (its
       // presence == consent given). Kept because Stripe is itself a durable
       // record of the transaction + the consent moment.
-      withdrawalConsent: 'true',
-      withdrawalConsentAt,
+      //
+      // terms-only programs (reservations): the buyer accepted ONLY the terms —
+      // recording a withdrawal waiver they never gave would be a false legal
+      // record, so we stamp termsConsent* instead; the durable-medium email
+      // then correctly omits the Art. 38 confirmation (keys on withdrawalConsentAt).
+      ...(program.checkoutConsentMode === 'terms-only'
+        ? { termsConsent: 'true', termsConsentAt: withdrawalConsentAt }
+        : { withdrawalConsent: 'true', withdrawalConsentAt }),
       locale: emailLocale,
       // Newsletter opt-in (separate from the Art. 38 consent above, never gates
       // the purchase, never affects price). Stamped only when the buyer ticked
