@@ -4,6 +4,7 @@ import { t, type Locale } from '@/i18n'
 import { getLocalizedPath } from '@/utilities/getLocale'
 import { CourseCheckoutButton } from './CourseCheckoutButton'
 import { CourseLeadMagnet } from './CourseLeadMagnet'
+import { checkoutConsentKey } from '../_lib/consentKey'
 
 /**
  * Closing `.cta-band` (handoff) driving the learner into the course: course
@@ -47,7 +48,7 @@ export function CtaBand({
             slug={program.slug}
             locale={locale}
             label={t(locale, 'courses.syllabus.buy')}
-            consentLabel={t(locale, 'courses.checkout.consent')}
+            consentLabel={t(locale, checkoutConsentKey(program))}
             processingLabel={t(locale, 'courses.checkout.processing')}
             errorLabel={t(locale, 'courses.checkout.error')}
             consentRequiredLabel={t(locale, 'courses.checkout.consentRequired')}

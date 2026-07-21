@@ -5,6 +5,7 @@ import { getLocalizedPath } from '@/utilities/getLocale'
 import { formatPrice } from '@/utilities/formatPrice'
 import { CourseCheckoutButton } from './CourseCheckoutButton'
 import { CourseLeadMagnet } from './CourseLeadMagnet'
+import { checkoutConsentKey } from '../_lib/consentKey'
 
 type Meta = {
   phases: number
@@ -98,14 +99,7 @@ export function SyllabusHero({
                   slug={program.slug}
                   locale={locale}
                   label={t(locale, 'courses.syllabus.buy')}
-                  consentLabel={t(
-                    locale,
-                    // terms-only: reservation-style purchase — plain terms acceptance,
-                    // no Art. 38 withdrawal waiver (nothing is delivered on purchase).
-                    program.checkoutConsentMode === 'terms-only'
-                      ? 'courses.checkout.consentTerms'
-                      : 'courses.checkout.consent',
-                  )}
+                  consentLabel={t(locale, checkoutConsentKey(program))}
                   processingLabel={t(locale, 'courses.checkout.processing')}
                   errorLabel={t(locale, 'courses.checkout.error')}
                   consentRequiredLabel={t(locale, 'courses.checkout.consentRequired')}
