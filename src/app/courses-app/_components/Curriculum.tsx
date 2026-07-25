@@ -31,6 +31,10 @@ export function Curriculum({
   byPhase?: Map<string, { done: number; total: number }>
   totalTimeMax?: number
 }) {
+  // No syllabus yet (e.g. a cohort course sold before content lands) → skip the
+  // whole section instead of rendering a „0 faz · 0 etapów" heading.
+  if (phases.length === 0 && lessons.length === 0) return null
+
   return (
     <section className="block" id="curriculum-sec">
       <div className="block__head">
@@ -39,8 +43,9 @@ export function Curriculum({
           {t(locale, 'courses.syllabus.curriculumEyebrow')}
         </span>
         <h2 className="section-title">
-          {phases.length} {t(locale, 'courses.syllabus.metaPhases')} · {lessons.length}{' '}
-          {t(locale, 'courses.syllabus.metaStages')}
+          {/* „0 faz" says nothing — list only the non-zero counts. */}
+          {phases.length > 0 ? <>{phases.length} {t(locale, 'courses.syllabus.metaPhases')} · </> : null}
+          {lessons.length} {t(locale, 'courses.syllabus.metaStages')}
           {totalTimeMax ? <> · ~{Math.round(totalTimeMax / 60)} {t(locale, 'courses.syllabus.totalTimeUnit')}</> : null}
         </h2>
         <p>

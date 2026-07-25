@@ -60,11 +60,13 @@ export function SyllabusHero({
     !enrolled &&
     (!!program.stripePriceId || typeof program.priceCents === 'number')
 
+  // Zero-value chips carry no information (a cohort course pre-syllabus would
+  // show „0 faz · 0 etapów · 0 hard-gate") — render only what exists.
   const chips: Array<{ value: string; label: string; gate?: boolean }> = [
     { value: `${meta.phases}`, label: t(locale, 'courses.syllabus.metaPhases') },
     { value: `${meta.stages}`, label: t(locale, 'courses.syllabus.metaStages') },
     { value: `${meta.hardGates}`, label: t(locale, 'courses.syllabus.metaGates'), gate: true },
-  ]
+  ].filter((c) => c.value !== '0')
 
   return (
     <header className="hero" id="hero" data-variant="a">
@@ -75,14 +77,16 @@ export function SyllabusHero({
             <h1>{headline}</h1>
             {program.heroDescription ? <p className="lead">{program.heroDescription}</p> : null}
 
-            <div className="meta">
-              {chips.map((c) => (
-                <span className={c.gate ? 'm gateflag' : 'm'} key={c.label}>
-                  <b>{c.value}</b>
-                  <span>{c.label}</span>
-                </span>
-              ))}
-            </div>
+            {chips.length ? (
+              <div className="meta">
+                {chips.map((c) => (
+                  <span className={c.gate ? 'm gateflag' : 'm'} key={c.label}>
+                    <b>{c.value}</b>
+                    <span>{c.label}</span>
+                  </span>
+                ))}
+              </div>
+            ) : null}
 
             <div className="cta">
               {!leadMagnet &&
@@ -127,6 +131,7 @@ export function SyllabusHero({
             </div>
           </div>
 
+          {phases.length ? (
           <aside className="spine-card" aria-label={t(locale, 'courses.syllabus.spineLabel')}>
             <div className="sc-h">
               {meta.phases} {t(locale, 'courses.syllabus.metaPhases')} ·{' '}
@@ -147,6 +152,7 @@ export function SyllabusHero({
               })}
             </div>
           </aside>
+          ) : null}
         </div>
       </div>
     </header>

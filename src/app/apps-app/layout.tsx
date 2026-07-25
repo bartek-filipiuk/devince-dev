@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { getLocale } from '@/utilities/getLocale.server'
 import { t } from '@/i18n'
 
+import '../_shared/checkout.css'
 import './app-theme.css'
 import { UmamiScript } from '@/components/UmamiScript'
 import { AppsNav } from './_components/Nav'

@@ -106,7 +106,13 @@ export default async function AppsStorefront({
                       {monogram(product.title)}
                     </span>
                   ) : null}
-                  {lead ? <span className="product-card__badge">{t(locale, 'leadMagnet.freeBadge')}</span> : null}
+                  {/* Price on the cover: free keeps the accent badge, paid gets a
+                      neutral chip readable on any image. */}
+                  {lead ? (
+                    <span className="product-card__badge">{t(locale, 'leadMagnet.freeBadge')}</span>
+                  ) : (
+                    <span className="product-card__badge product-card__badge--price">{priceLabel}</span>
+                  )}
                 </div>
                 <div className="product-card__body">
                   <h3 className="product-card__title">{product.title}</h3>

@@ -1,0 +1,102 @@
+/* ============================================================
+   SHARED CHECKOUT / LEAD-MAGNET STYLES (apps + courses)
+   Structural rules for the purchase and email-capture controls used on both
+   subdomains. Imported by each subdomain layout BEFORE its theme.css, so a
+   theme can override anything here. All colors come from the theme's CSS
+   variables — this file carries no visual identity of its own.
+   ============================================================ */
+
+/* ---------- consent + newsletter checkboxes (custom-drawn) ---------- */
+.consent-check,
+.newsletter-check {
+  display: flex; align-items: flex-start; gap: 11px;
+  max-width: 56ch; font-size: 13.5px; line-height: 1.55; color: var(--text-mut);
+  cursor: pointer; user-select: none; transition: color .15s ease;
+}
+.newsletter-check { color: var(--text-dim); }
+.consent-check:hover, .newsletter-check:hover { color: var(--text); }
+.consent-check[data-error] { color: var(--text); }
+
+.consent-check input[type='checkbox'],
+.newsletter-check input[type='checkbox'] {
+  appearance: none; -webkit-appearance: none;
+  flex: 0 0 auto; width: 18px; height: 18px; margin-top: 1px;
+  display: inline-grid; place-items: center;
+  background: var(--surface-2); border: 1.5px solid var(--line);
+  border-radius: 5px; cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+.consent-check input[type='checkbox']:hover,
+.newsletter-check input[type='checkbox']:hover { border-color: var(--accent-line); }
+.consent-check input[type='checkbox']:focus-visible,
+.newsletter-check input[type='checkbox']:focus-visible { outline: none; box-shadow: var(--ring); }
+.consent-check input[type='checkbox']:checked,
+.newsletter-check input[type='checkbox']:checked {
+  background: var(--accent); border-color: var(--accent);
+}
+.consent-check input[type='checkbox']:checked::before,
+.newsletter-check input[type='checkbox']:checked::before {
+  content: ''; width: 11px; height: 11px; background: var(--on-accent);
+  -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>') center/contain no-repeat;
+          mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>') center/contain no-repeat;
+}
+.consent-check input[type='checkbox']:disabled,
+.newsletter-check input[type='checkbox']:disabled { opacity: .55; cursor: default; }
+
+/* Missing-consent nudge (Art. 38 gate feedback). */
+.consent-check[data-error] input[type='checkbox'] {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+  animation: consent-nudge .32s ease;
+}
+@keyframes consent-nudge {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+/* ---------- checkout block (consent + buy button + inline message) ---------- */
+.checkout-block {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 16px;
+  flex: 1 1 100%; margin-top: 4px;
+}
+.checkout-buy { align-self: flex-start; }
+.checkout-msg { margin: 0; font-size: 13px; line-height: 1.5; }
+.checkout-msg[data-kind='consent'] { color: var(--accent); }
+.checkout-msg[data-kind='error'] { color: var(--gate); }
+
+/* ---------- lead-magnet email capture (free-for-email products/courses) ---------- */
+.lead-magnet {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 14px;
+  width: 100%; max-width: 440px;
+}
+.lead-magnet__field { display: flex; flex-direction: column; gap: 7px; width: 100%; }
+.lead-magnet__label {
+  font-family: var(--font-mono); font-size: 11.5px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim);
+}
+.lead-magnet__input {
+  width: 100%; font: inherit; font-size: 14.5px; color: var(--text);
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: var(--r-btn); padding: 12px 14px;
+  transition: border-color .16s ease, background .16s ease;
+}
+.lead-magnet__input:focus-visible { outline: none; border-color: var(--accent-line); background: var(--surface-1); }
+.lead-magnet__input::placeholder { color: var(--text-dim); }
+.lead-magnet__input[aria-invalid='true'] { border-color: var(--gate); }
+.lead-magnet__input:disabled { opacity: .6; }
+.lead-magnet__submit { align-self: flex-start; }
+.lead-magnet__note { margin: 0; font-size: 13px; line-height: 1.55; color: var(--text-dim); max-width: 52ch; }
+.lead-magnet__error {
+  margin: 0; font-size: 13px; color: var(--gate);
+  background: var(--gate-soft); border: 1px solid color-mix(in oklab, var(--gate) 30%, transparent);
+  border-radius: var(--r-chip); padding: 9px 12px;
+}
+.lead-magnet__success {
+  display: inline-flex; align-items: flex-start; gap: 9px;
+  margin: 0; font-size: 14px; line-height: 1.55; color: var(--text); max-width: 52ch;
+}
+.lead-magnet__success::before {
+  content: ''; flex: none; width: 16px; height: 16px; margin-top: 2px; background: var(--done);
+  -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>') center/contain no-repeat;
+          mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>') center/contain no-repeat;
+}

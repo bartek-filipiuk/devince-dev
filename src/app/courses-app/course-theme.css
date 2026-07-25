@@ -258,6 +258,9 @@ a { color: inherit; text-decoration: none; }
   font-size: 11.5px; color: var(--text-dim);
 }
 .course-card__paid { color: var(--accent); }
+/* Foot pins to the card bottom so CTAs align across the grid row. */
+.course-card__foot { margin-top: auto; padding-top: 16px; }
+.course-card__foot .btn { width: 100%; }
 
 /* pagination */
 .pagination {
@@ -280,37 +283,13 @@ a { color: inherit; text-decoration: none; }
 .hero .cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
 .hero__price { font-family: var(--font-mono); font-size: 20px; font-weight: 640; color: var(--text); align-self: center; }
 
-/* Course checkout: consent (Art. 38 pkt 13) + buy button. Stacks vertically so
-   the long consent text never collides with the button. The block takes a full
-   row in `.cta`/`.cta-band .cta` so it sits below the price. */
-.checkout-block { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; flex: 1 1 100%; margin-top: 4px; }
-.consent-check {
-  display: flex; gap: 11px; align-items: flex-start;
-  max-width: 60ch; font-size: 13px; line-height: 1.55; color: var(--text-mut);
-  cursor: pointer; user-select: none; transition: color .15s ease;
-}
-.consent-check input[type="checkbox"] {
-  flex: 0 0 auto; width: 17px; height: 17px; margin-top: 1px;
-  accent-color: var(--accent); cursor: pointer;
-}
-.consent-check:hover { color: var(--text); }
-.consent-check[data-error] { color: var(--text); }
-.consent-check[data-error] input[type="checkbox"] {
-  outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px;
-  animation: consent-nudge .32s ease;
-}
-@keyframes consent-nudge {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-3px); }
-  75% { transform: translateX(3px); }
-}
-.checkout-buy { align-self: flex-start; }
-.checkout-msg { margin: 0; font-size: 13px; line-height: 1.5; }
-.checkout-msg[data-kind="consent"] { color: var(--accent); }
-.checkout-msg[data-kind="error"] { color: #f0616d; }
-/* In the centred closing band, centre the consent+button group. */
+/* Course checkout: consent (Art. 38 pkt 13) + buy button — structural rules
+   live in the shared ../_shared/checkout.css; only band-centering lives here. */
 .cta-band .checkout-block { align-items: center; }
 .cta-band .consent-check { text-align: left; }
+.cta-band .checkout-buy { align-self: center; }
+.cta-band .lead-magnet { align-items: center; }
+.cta-band .lead-magnet__submit { align-self: center; }
 .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
 .meta .m { display: inline-flex; align-items: baseline; gap: 7px; padding: 8px 13px; border-radius: 6px; background: var(--surface-1); border: 1px solid var(--line-soft); }
 .meta .m b { font-family: var(--font-mono); font-size: 16px; font-weight: 600; }
@@ -320,7 +299,9 @@ a { color: inherit; text-decoration: none; }
 /* hero variant A — editorial split */
 .hero-a { display: grid; grid-template-columns: 1.25fr 0.9fr; gap: clamp(28px, 5vw, 64px); align-items: center; padding: clamp(48px,7vw,84px) 0 clamp(40px,5vw,56px); }
 .spine-card { background: var(--surface-1); border: 1px solid var(--line-soft); border-radius: 8px; padding: 20px 22px; }
-.spine-card .sc-h { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--text-dim); margin-bottom: 6px; }
+.spine-card .sc-h { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--text-dim); margin-bottom: 6px;
+  /* one line, ellipsized: an 11-phase axis („oś 0 → A → … → J") must not wrap into a tiny multi-line block */
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .spine { position: relative; }
 .spine .row { display: grid; grid-template-columns: 30px 1fr auto; gap: 12px; align-items: center; padding: 7px 0; position: relative; }
 .spine .row::before { content:""; position: absolute; left: 14px; top: -7px; bottom: -7px; width: 2px; background: var(--line); z-index: 0; }
@@ -393,9 +374,16 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
   .srow { grid-template-columns: 36px 1fr auto; }
 }
 
+/* Narrow nav: KEEP the links (there is no hamburger to replace them) — drop the
+   brand suffix, the „Zacznij kurs" CTA (reachable from the listing) and the
+   theme-toggle label instead, so everything fits down to ~360px. */
 @media (max-width: 720px) {
-  .nav { gap: 10px; }
-  .nav__links { display: none; }
+  .nav { gap: 6px; }
+  .nav__links { margin-left: 0; }
+  .nav__links a { padding: 8px; font-size: 13px; }
+  .brand b span { display: none; }
+  .nav__actions .btn--primary { display: none; }
+  .nav__actions .btn--ghost .btn__label { display: none; }
 }
 
 /* ============================================================

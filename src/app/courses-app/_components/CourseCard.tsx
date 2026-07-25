@@ -3,9 +3,7 @@ import type { Program } from '@/payload-types'
 import { t, type Locale } from '@/i18n'
 import { getLocalizedPath } from '@/utilities/getLocale'
 import { formatPrice } from '@/utilities/formatPrice'
-import { CourseCheckoutButton } from './CourseCheckoutButton'
 import { CourseLeadMagnet } from './CourseLeadMagnet'
-import { checkoutConsentKey } from '../_lib/consentKey'
 
 type CardMeta = {
   phases: number
@@ -72,12 +70,17 @@ export function CourseCard({
         ) : null}
       </Link>
       <div className="course-card__meta mono">
-        <span>
-          {meta.phases} {t(locale, 'courses.store.phases')}
-        </span>
-        <span>
-          {meta.stages} {t(locale, 'courses.store.stages')}
-        </span>
+        {/* Zero counts (course sold before its syllabus lands) say nothing — hide them. */}
+        {meta.phases > 0 ? (
+          <span>
+            {meta.phases} {t(locale, 'courses.store.phases')}
+          </span>
+        ) : null}
+        {meta.stages > 0 ? (
+          <span>
+            {meta.stages} {t(locale, 'courses.store.stages')}
+          </span>
+        ) : null}
         {/* A lead-magnet course is free — never show the paid badge/price. */}
         {program.accessMode !== 'lead-magnet' ? (
           <span className="course-card__paid">{t(locale, 'courses.store.paid')}</span>
@@ -94,16 +97,12 @@ export function CourseCard({
         {leadMagnet ? (
           <CourseLeadMagnet slug={program.slug} locale={locale} />
         ) : paidLocked ? (
-          <CourseCheckoutButton
-            slug={program.slug}
-            locale={locale}
-            label={t(locale, 'courses.syllabus.buy')}
-            consentLabel={t(locale, checkoutConsentKey(program))}
-            processingLabel={t(locale, 'courses.checkout.processing')}
-            errorLabel={t(locale, 'courses.checkout.error')}
-            consentRequiredLabel={t(locale, 'courses.checkout.consentRequired')}
-            newsletterLabel={t(locale, 'courses.checkout.newsletter')}
-          />
+          // The card is a storefront teaser — checkout (price, Art. 38 consent,
+          // newsletter) lives on the course landing, not inside a grid card.
+          <Link className="btn btn--primary" href={syllabusHref}>
+            <span>{t(locale, 'courses.store.viewCourse')}</span>
+            <span className="icon" data-i="arrow" aria-hidden="true" />
+          </Link>
         ) : (
           <Link className="btn" href={syllabusHref}>
             {enrolled
