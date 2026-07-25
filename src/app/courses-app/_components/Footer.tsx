@@ -21,7 +21,9 @@ export function CoursesFooter({ locale }: { locale: Locale }) {
             {t(locale, 'legal.privacy')}
           </a>
         </span>
-        <span className="mono">{t(locale, 'courses.footer.stats')}</span>
+        {/* Neutral copyright (like apps) — the old per-course stats string showed
+            one course's numbers on every page, contradicting other courses. */}
+        <span className="mono">© {new Date().getFullYear()} Devince</span>
       </div>
     </footer>
   )

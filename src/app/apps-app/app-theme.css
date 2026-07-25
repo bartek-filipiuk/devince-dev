@@ -312,6 +312,13 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: 0.06em; text-transform: uppercase;
   color: var(--on-accent); background: var(--accent); padding: 3px 8px; border-radius: var(--r-chip);
 }
+/* Paid price chip: fixed dark glass (not theme vars) so it stays readable on
+   any uploaded cover image in both themes. */
+.product-card__badge--price {
+  color: #fff; background: rgba(10, 12, 18, 0.72);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.14); text-transform: none; font-size: 11px;
+}
 
 .product-card__body { display: flex; flex-direction: column; flex: 1; padding: 16px 18px; }
 .product-card__title {
@@ -436,9 +443,14 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
   .srow__time { display: none; }
 }
 
+/* Narrow nav: KEEP the links (no hamburger exists) — tighten spacing and drop
+   the brand suffix + theme-toggle label instead. */
 @media (max-width: 720px) {
-  .nav { gap: 10px; }
-  .nav__links { display: none; }
+  .nav { gap: 6px; }
+  .nav__links { margin-left: 0; }
+  .nav__links a { padding: 8px; font-size: 13px; }
+  .brand b span { display: none; }
+  .nav__actions .btn--ghost .btn__label { display: none; }
 }
 
 /* ============================================================
@@ -602,7 +614,9 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
 .product-hero__cover { }
 
 /* Full-width, readable product description below the compact hero. */
-.product-detail { padding: clamp(4px, 1.5vw, 16px) 0 clamp(56px, 7vw, 88px); }
+/* padding-top/bottom (NOT the `padding` shorthand): the shorthand's horizontal
+   `0` would override .shell's side padding and glue text to the screen edge. */
+.product-detail { padding-top: clamp(4px, 1.5vw, 16px); padding-bottom: clamp(56px, 7vw, 88px); }
 .product-detail .product-desc { max-width: 800px; margin: 0; }
 .product-desc { font-size: 16px; line-height: 1.7; color: var(--text-mut); }
 .product-desc > :first-child { margin-top: 0; }
@@ -624,8 +638,8 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
 .product-note { font-size: 13px; color: var(--text-dim); margin: 0; }
 
 /* Art. 38 pkt 13 consent gate — separate checkbox above the buy button. */
-.consent-check { display: flex; align-items: flex-start; gap: 10px; max-width: 46ch; margin-bottom: 14px; font-size: 13px; line-height: 1.5; color: var(--text-dim); cursor: pointer; }
-.consent-check input { margin-top: 2px; flex: none; width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+/* consent + newsletter checkboxes: shared ../_shared/checkout.css */
+.consent-check { margin-bottom: 14px; }
 .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
 /* ============================================================ TIER SELECTOR
@@ -705,20 +719,19 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
           mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>') center/contain no-repeat;
 }
 
-/* Buy block, centered below the full-width pricing row */
+/* Buy block, a centered card below the full-width pricing row — the surface
+   ties the price + consents + button visually to the tier choice above. */
 .tier-buy {
   display: flex; flex-direction: column; align-items: center; gap: 14px;
-  margin: clamp(26px, 3vw, 38px) auto 0; max-width: 460px; text-align: center;
+  margin: clamp(26px, 3vw, 38px) auto 0; max-width: 520px; text-align: center;
+  padding: clamp(22px, 2.6vw, 32px) clamp(20px, 2.4vw, 30px);
+  background: var(--surface-1); border: 1px solid var(--line-soft);
+  border-radius: var(--r-card); box-shadow: var(--shadow-2);
 }
 .tier-buy .product-price { font-size: clamp(24px, 2.4vw, 30px); }
 .tier-buy .consent-check, .tier-buy .newsletter-check { text-align: left; }
 
-/* newsletter opt-in (mirrored from consent-check; not a gate) */
-.newsletter-check {
-  display: flex; align-items: flex-start; gap: 10px; max-width: 46ch;
-  font-size: 13px; line-height: 1.5; color: var(--text-dim); cursor: pointer;
-}
-.newsletter-check input { margin-top: 2px; flex: none; width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+/* newsletter opt-in: shared ../_shared/checkout.css */
 
 /* Below ~920px the three tier cards can no longer sit comfortably in one row,
    so stack them cleanly into a single column instead of an asymmetric 2 + 1. */
@@ -742,7 +755,9 @@ section.block { padding: clamp(44px,6vw,72px) 0 0; }
   transition: border-color 0.15s ease;
 }
 .pg-shot:hover { border-color: var(--accent-line); }
-.pg-shot img { display: block; width: 100%; height: auto; }
+/* Uniform thumbnails: tall full-page captures crop to the top edge; the
+   lightbox still shows the full image. */
+.pg-shot img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: center top; }
 .pg-cap { margin-top: 8px; font-size: 13px; color: var(--text-mut); }
 .pg-lightbox {
   position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center;

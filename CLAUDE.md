@@ -51,7 +51,10 @@ secrets live in Coolify, not in the repo.
 - Page building: blocks in `src/blocks/<Name>/config.ts` (schema) +
   `Component.tsx` (structural render), assembled by `src/blocks/RenderBlocks.tsx`.
   ALL visual identity lives in theme files: `src/app/(frontend)/theme.css`,
-  `src/app/courses-app/course-theme.css`, `src/app/apps-app/app-theme.css`.
+  `src/app/courses-app/course-theme.css`, `src/app/apps-app/app-theme.css`;
+  wyjątek: `src/app/_shared/checkout.css` (strukturalne style checkoutu i
+  lead-magnetu wspólne dla apps+courses, importowany PRZED theme.css — kolory
+  bierze z var() theme'u, theme może nadpisać wszystko).
   Homepage hero: `BuildLogHero` (hero z danymi live: posty/projekty/roadmap,
   `src/blocks/BuildLogHero/`) + warianty `Features` (`cards`/`ledger`/`columns`,
   `src/blocks/Features/`).

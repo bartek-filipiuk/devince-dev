@@ -8,6 +8,7 @@ import { t } from '@/i18n'
 import { CoursesNav } from './_components/Nav'
 import { CoursesFooter } from './_components/Footer'
 
+import '../_shared/checkout.css'
 import './course-theme.css'
 
 const inter = Inter({ subsets: ['latin', 'latin-ext'], variable: '--font-ui', display: 'swap' })
