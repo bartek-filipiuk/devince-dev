@@ -142,6 +142,46 @@ describe('(a) POST /api/apps/checkout — price comes from the DB, never the cli
     expect(res.status).toBe(400)
     expect(sessionsCreate).not.toHaveBeenCalled()
   })
+
+  // Ta sama gwarancja dla drugiego wejścia: zewnętrzny landing wysyła
+  // form-urlencoded. Formularz na obcej domenie jest w pełni pod kontrolą
+  // atakującego — każde pole cenopodobne musi zostać zignorowane, a przy
+  // produkcie z tierami brak `tierIndex` ma zatrzymać sesję, nie utworzyć
+  // ją po cenie bazowej (0 gr).
+  it('form POST: podstawione pola cenowe są ignorowane, tierowy produkt bez tierIndex nie tworzy sesji', async () => {
+    const { POST } = await import('../app/(frontend)/api/apps/checkout/route')
+    find.mockResolvedValue({ docs: [TIERED_PRODUCT] })
+
+    const res = await POST(
+      new NextRequest('http://localhost/api/apps/checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body: 'slug=my-tiered-app&consent=on&priceCents=1&amount=1&currency=idr&stripePriceId=price_attacker&tierIndex=1',
+      }),
+    )
+
+    expect(res.status).toBe(400)
+    expect(sessionsCreate).not.toHaveBeenCalled()
+  })
+
+  // Podszycie się pod content-type: multipart nie jest ścieżką formularzową,
+  // więc trafia do parsera JSON i kończy się 400 — nigdy cichym pominięciem
+  // bramki zgody.
+  it('form POST: multipart/form-data nie omija parsera ani bramki zgody', async () => {
+    const { POST } = await import('../app/(frontend)/api/apps/checkout/route')
+    find.mockResolvedValue({ docs: [TIERED_PRODUCT] })
+
+    const res = await POST(
+      new NextRequest('http://localhost/api/apps/checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'multipart/form-data; boundary=xyz' },
+        body: 'slug=my-tiered-app&consent=on',
+      }),
+    )
+
+    expect(res.status).toBe(400)
+    expect(sessionsCreate).not.toHaveBeenCalled()
+  })
 })
 
 describe('(b) webhook verifyAmount — underpaid session gets no fulfillment', () => {
