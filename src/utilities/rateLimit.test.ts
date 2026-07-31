@@ -44,7 +44,7 @@ describe('createRateLimiter (fixed-window, in-memory)', () => {
     // Długie okno (24h) => nic nie jest "stale", więc czyszczenie po czasie nie
     // zadziała. Dokładnie ten przypadek produkuje bot podstawiający co żądanie
     // inny adres. Bez limitu kluczy Mapa rosłaby bez końca.
-    let t = 1_000
+    const t = 1_000
     const rl = createRateLimiter({ max: 3, windowMs: 24 * 60 * 60_000, maxKeys: 50, now: () => t })
     for (let i = 0; i < 500; i++) expect(rl.check(`klucz-${i}`)).toBe(true)
     // Najstarsze klucze zostały wyrzucone, więc dostają świeże okno zamiast blokady.
