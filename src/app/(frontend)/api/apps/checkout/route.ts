@@ -26,8 +26,29 @@ export async function POST(req: NextRequest) {
   let locale: unknown
   let newsletter: unknown
   let tierIndex: unknown
+  // Two entry shapes, one legal gate (mirrors /api/courses/checkout):
+  //  - JSON: the platform's own BuyButton / ProductTierSelector (fetch → { url }).
+  //  - form POST: external landings (e.g. stronaw5dni.pl) submit a plain HTML
+  //    <form> with a required consent checkbox — a top-level navigation, so no
+  //    CORS involved; the response is a 303 redirect straight into Stripe.
+  //    Checkbox convention: present ("on"/"true") == ticked.
+  //    No `tierIndex` here on purpose: external landings sell single-price
+  //    products. A form POST for a tiered product falls into the existing
+  //    "tierIndex missing" 400 — no session is ever created with a wrong price.
+  const isFormPost = (req.headers.get('content-type') ?? '').includes(
+    'application/x-www-form-urlencoded',
+  )
   try {
-    ;({ slug, consent, locale, newsletter, tierIndex } = await req.json())
+    if (isFormPost) {
+      const form = await req.formData()
+      slug = form.get('slug')
+      const c = form.get('consent')
+      consent = c === 'on' || c === 'true' ? true : c
+      locale = form.get('locale')
+      newsletter = form.get('newsletter') === 'on' ? true : undefined
+    } else {
+      ;({ slug, consent, locale, newsletter, tierIndex } = await req.json())
+    }
   } catch {
     return NextResponse.json({ error: 'invalid body' }, { status: 400 })
   }
@@ -165,6 +186,11 @@ export async function POST(req: NextRequest) {
     currency: lineItemCurrency,
   })
 
+  // Form flow: the buyer's browser is mid-navigation — take them straight to
+  // Stripe. 303 forces the follow-up to be a GET (correct after a POST).
+  if (isFormPost && session.url) {
+    return NextResponse.redirect(session.url, 303)
+  }
   return NextResponse.json({ url: session.url })
 }
 

@@ -271,3 +271,107 @@ describe('POST /api/apps/checkout — per-locale tier pricing', () => {
     expect(arg.success_url).toContain('session_id={CHECKOUT_SESSION_ID}')
   })
 })
+
+// ── form POST z zewnętrznego landinga ────────────────────────────────────────
+// Statyczny landing (stronaw5dni.pl) wysyła zwykły <form method="POST"> z
+// checkboxem zgody. To nawigacja top-level, więc nie ma CORS-a — ale odpowiedź
+// musi być przekierowaniem 303 wprost do Stripe, bez strony pośredniej.
+// Bramka zgody z art. 38 obowiązuje tak samo jak w ścieżce JSON.
+
+describe('POST /api/apps/checkout — form-urlencoded (zewnętrzny landing)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    process.env.STRIPE_SECRET_KEY = 'sk_test_x'
+    sessionsCreate.mockResolvedValue({ url: 'https://checkout.stripe.com/x' })
+  })
+
+  const makeForm = (body: string) =>
+    new NextRequest('http://localhost/api/apps/checkout', {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body,
+    })
+
+  it('z zaznaczoną zgodą: 303 prosto na URL Stripe', async () => {
+    const { POST } = await import('./route')
+    mockProduct(SINGLE_PRICE_PRODUCT)
+    const res = await POST(makeForm('slug=my-app&consent=on&locale=pl'))
+    expect(res.status).toBe(303)
+    expect(res.headers.get('location')).toBe('https://checkout.stripe.com/x')
+  })
+
+  it('metadata sesji identyczna jak w ścieżce JSON (jedna logika sesji)', async () => {
+    const { POST } = await import('./route')
+    mockProduct(SINGLE_PRICE_PRODUCT)
+    await POST(makeForm('slug=my-app&consent=on&locale=pl'))
+    const arg = sessionsCreate.mock.calls[0][0]
+    expect(arg.metadata.productId).toBe('1')
+    expect(arg.metadata.withdrawalConsent).toBe('true')
+    expect(typeof arg.metadata.withdrawalConsentAt).toBe('string')
+    expect(arg.metadata.locale).toBe('pl')
+    expect(arg.metadata.expectedCents).toBe('4900')
+    // Cena zawsze z bazy — landing nie ma jak jej podstawić.
+    expect(arg.line_items[0].price_data.unit_amount).toBe(4900)
+    // Strona sukcesu stoi na identyfikatorze sesji także w tej ścieżce.
+    expect(arg.success_url).toContain('session_id={CHECKOUT_SESSION_ID}')
+  })
+
+  it('BEZ pola zgody: brak sesji Stripe (granica prawna, nie UX)', async () => {
+    const { POST } = await import('./route')
+    mockProduct(SINGLE_PRICE_PRODUCT)
+    const res = await POST(makeForm('slug=my-app&locale=pl'))
+    expect(res.status).toBe(400)
+    expect(sessionsCreate).not.toHaveBeenCalled()
+  })
+
+  it('checkbox odznaczony ręcznie (consent=off): brak sesji Stripe', async () => {
+    const { POST } = await import('./route')
+    mockProduct(SINGLE_PRICE_PRODUCT)
+    const res = await POST(makeForm('slug=my-app&consent=off&locale=pl'))
+    expect(res.status).toBe(400)
+    expect(sessionsCreate).not.toHaveBeenCalled()
+  })
+
+  it('nieznany slug: 404 i brak sesji Stripe', async () => {
+    const { POST } = await import('./route')
+    mockProduct(null)
+    const res = await POST(makeForm('slug=nie-ma-takiego&consent=on&locale=pl'))
+    expect(res.status).toBe(404)
+    expect(sessionsCreate).not.toHaveBeenCalled()
+  })
+
+  it('brak sluga: 400 i brak sesji Stripe', async () => {
+    const { POST } = await import('./route')
+    mockProduct(SINGLE_PRICE_PRODUCT)
+    const res = await POST(makeForm('consent=on&locale=pl'))
+    expect(res.status).toBe(400)
+    expect(sessionsCreate).not.toHaveBeenCalled()
+  })
+
+  it('newsletter=on stempluje zgodę marketingową, brak pola jej nie stempluje', async () => {
+    const { POST } = await import('./route')
+    mockProduct(SINGLE_PRICE_PRODUCT)
+    await POST(makeForm('slug=my-app&consent=on&newsletter=on&locale=pl'))
+    expect(sessionsCreate.mock.calls[0][0].metadata.newsletter).toBe('true')
+
+    sessionsCreate.mockClear()
+    await POST(makeForm('slug=my-app&consent=on&locale=pl'))
+    expect(sessionsCreate.mock.calls[0][0].metadata.newsletter).toBeUndefined()
+  })
+
+  it('locale=en czyta produkt i cenę w EN', async () => {
+    const { POST } = await import('./route')
+    mockProduct(SINGLE_PRICE_PRODUCT)
+    await POST(makeForm('slug=my-app&consent=on&locale=en'))
+    expect(find.mock.calls[0][0].locale).toBe('en')
+    expect(sessionsCreate.mock.calls[0][0].metadata.locale).toBe('en')
+  })
+
+  it('ścieżka JSON dalej oddaje JSON, nie redirect (regresja BuyButton)', async () => {
+    const { POST } = await import('./route')
+    mockProduct(SINGLE_PRICE_PRODUCT)
+    const res = await POST(makeReq({ slug: 'my-app', consent: true }))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ url: 'https://checkout.stripe.com/x' })
+  })
+})
