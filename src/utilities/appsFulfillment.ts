@@ -5,6 +5,23 @@ const GRANT_TTL_MS = 7 * 24 * 60 * 60 * 1000
 const GRANT_MAX_USES = 5
 
 /**
+ * `download-grants.product` is a relationship to `products`, whose ids are
+ * numeric — Payload rejects a numeric STRING with "The following field is
+ * invalid: Product". Callers reach us with either type: the Stripe webhook
+ * carries ids as metadata strings, and `confirmClaim` forwards `claim.itemId`,
+ * which `signClaim` stores as `String(item.id)`.
+ *
+ * Normalizing HERE (rather than in each caller) is deliberate: this module owns
+ * both writes of that field, so one guard covers every path, including future
+ * ones. Non-numeric ids pass through untouched, so a non-serial id scheme keeps
+ * working.
+ */
+function toRelationId(id: number | string): number | string {
+  const n = Number(id)
+  return Number.isNaN(n) ? id : n
+}
+
+/**
  * Create a bare DownloadGrant (token + 7-day expiry + use limit) for a product
  * and return the token. Shared by the paid path (fulfillAppPurchase, which wraps
  * this with stripeSessionId idempotency) and the FREE lead-magnet confirm route
@@ -27,7 +44,7 @@ export async function createDownloadGrant(
     collection: 'download-grants',
     data: {
       token,
-      product: args.productId,
+      product: toRelationId(args.productId),
       email: args.email,
       expiresAt: new Date(Date.now() + GRANT_TTL_MS).toISOString(),
       maxUses: GRANT_MAX_USES,
@@ -82,7 +99,7 @@ export async function fulfillAppPurchase(
       collection: 'download-grants',
       data: {
         token,
-        product: args.productId,
+        product: toRelationId(args.productId),
         email: args.email,
         tier: args.tier,
         amountPaid: args.amountPaid,

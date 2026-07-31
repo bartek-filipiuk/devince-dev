@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { fulfillAppPurchase } from './appsFulfillment'
+import { createDownloadGrant, fulfillAppPurchase } from './appsFulfillment'
 
 const grantRow = { id: 1, token: 't.sig' }
 
@@ -124,5 +124,55 @@ describe('fulfillAppPurchase', () => {
       fulfillAppPurchase(payload as never, { productId: 7, email: 'a@b.pl', sessionId: 'cs_err' }),
     ).rejects.toThrow(originalError)
     expect(payload.find).toHaveBeenCalledTimes(2)
+  })
+})
+
+/**
+ * Regresja produkcyjna (2026-07-31): darmowe odebranie lead-magnetu wywalało
+ * /claim/confirmed błędem Payloada "The following field is invalid: Product".
+ *
+ * Przyczyna: `download-grants.product` to relacja do `products` z kluczem
+ * liczbowym, a `confirmClaim` przekazywał `claim.itemId` — string, bo `signClaim`
+ * zapisuje id jako `String(item.id)`. Ścieżka płatna działała tylko dlatego, że
+ * webhook konwertował id samodzielnie (webhook/route.ts:393).
+ *
+ * Konwersja należy do tego modułu, bo tu schodzą się OBAJ wołający zapisujący
+ * `product` do bazy — łatanie po stronie wołających zostawiłoby następnego na minie.
+ */
+describe('productId normalization (relacja product wymaga liczby)', () => {
+  let savedSecret: string | undefined
+  beforeEach(() => {
+    savedSecret = process.env.DOWNLOAD_TOKEN_SECRET
+    process.env.DOWNLOAD_TOKEN_SECRET = 'test-secret'
+  })
+  afterEach(() => {
+    if (savedSecret === undefined) delete process.env.DOWNLOAD_TOKEN_SECRET
+    else process.env.DOWNLOAD_TOKEN_SECRET = savedSecret
+  })
+
+  it('createDownloadGrant: numeryczny string id zapisuje się jako number', async () => {
+    const payload = makePayload()
+    await createDownloadGrant(payload as never, { productId: '5', email: 'a@b.pl' })
+    const data = payload.create.mock.calls[0][0].data
+    expect(data.product).toBe(5)
+    expect(typeof data.product).toBe('number')
+  })
+
+  it('fulfillAppPurchase: numeryczny string id zapisuje się jako number', async () => {
+    const payload = makePayload()
+    await fulfillAppPurchase(payload as never, {
+      productId: '5',
+      email: 'a@b.pl',
+      sessionId: 'cs_str',
+    })
+    const data = payload.create.mock.calls[0][0].data
+    expect(data.product).toBe(5)
+    expect(typeof data.product).toBe('number')
+  })
+
+  it('nienumeryczne id (np. slug/mongo) zostaje nietknięte', async () => {
+    const payload = makePayload()
+    await createDownloadGrant(payload as never, { productId: 'abc123', email: 'a@b.pl' })
+    expect(payload.create.mock.calls[0][0].data.product).toBe('abc123')
   })
 })
