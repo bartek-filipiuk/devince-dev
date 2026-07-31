@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
       // the box; the webhook reads it post-grant to fire a Brevo double opt-in.
       ...(newsletter === true ? { newsletter: 'true' } : {}),
     },
-    success_url: `${APPS_URL()}/success`,
+    success_url: `${APPS_URL()}/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${APPS_URL()}/${product.slug}`,
   })
 

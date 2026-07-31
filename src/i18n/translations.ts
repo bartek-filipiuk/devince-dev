@@ -253,6 +253,10 @@ const translations = {
     'apps.success.eyebrow': 'zakup potwierdzony',
     'apps.success.title': 'Dziękujemy za zakup!',
     'apps.success.body': 'Wysłaliśmy link do pobrania na Twój adres e-mail. Sprawdź też folder spam.',
+    'apps.success.preparing': 'Przygotowujemy Twój plik — to chwila. Link przyjdzie też mailem.',
+    'apps.success.ready': 'Twój plik jest gotowy.',
+    'apps.success.cta': 'Pobierz plik',
+    'apps.success.alsoEmail': 'Ten sam link wysłaliśmy na Twój adres e-mail.',
 
     // Download page
     'apps.download.meta': 'Pobieranie',
@@ -707,6 +711,10 @@ const translations = {
     'apps.success.eyebrow': 'purchase confirmed',
     'apps.success.title': 'Thank you for your purchase!',
     'apps.success.body': 'We have sent a download link to your email address. Check your spam folder too.',
+    'apps.success.preparing': 'Preparing your file — just a moment. The link is on its way by email too.',
+    'apps.success.ready': 'Your file is ready.',
+    'apps.success.cta': 'Download file',
+    'apps.success.alsoEmail': 'We sent the same link to your email address.',
 
     // Download page
     'apps.download.meta': 'Download',
