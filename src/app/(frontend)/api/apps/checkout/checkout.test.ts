@@ -256,4 +256,18 @@ describe('POST /api/apps/checkout — per-locale tier pricing', () => {
     expect(find.mock.calls[0][0].locale).toBe('pl')
     expect(sessionsCreate.mock.calls[0][0].line_items[0].price_data.unit_amount).toBe(14900)
   })
+
+  /**
+   * Strona sukcesu musi umieć odnaleźć grant tego konkretnego zakupu, żeby
+   * pokazać link do pobrania od razu, zamiast odsyłać wyłącznie do maila.
+   * Grant jest kluczowany po `stripeSessionId`, więc identyfikator sesji musi
+   * wrócić w URL-u — Stripe podstawia go pod `{CHECKOUT_SESSION_ID}`.
+   */
+  it('success_url niesie identyfikator sesji (potrzebny stronie sukcesu)', async () => {
+    const { POST } = await import('./route')
+    mockProduct({ id: 5, slug: 'starter', title: 'Starter', priceCents: 4900, currency: 'pln', downloadFiles: [1] })
+    await POST(makeReq({ slug: 'starter', consent: true }))
+    const arg = sessionsCreate.mock.calls[0][0]
+    expect(arg.success_url).toContain('session_id={CHECKOUT_SESSION_ID}')
+  })
 })
