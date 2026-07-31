@@ -39,4 +39,19 @@ describe('createRateLimiter (fixed-window, in-memory)', () => {
     now += 59_999
     expect(rl.check('k')).toBe(false)
   })
+
+  it('nie rośnie w nieskończoność przy zalewie unikalnych kluczy (maxKeys)', () => {
+    // Długie okno (24h) => nic nie jest "stale", więc czyszczenie po czasie nie
+    // zadziała. Dokładnie ten przypadek produkuje bot podstawiający co żądanie
+    // inny adres. Bez limitu kluczy Mapa rosłaby bez końca.
+    let t = 1_000
+    const rl = createRateLimiter({ max: 3, windowMs: 24 * 60 * 60_000, maxKeys: 50, now: () => t })
+    for (let i = 0; i < 500; i++) expect(rl.check(`klucz-${i}`)).toBe(true)
+    // Najstarsze klucze zostały wyrzucone, więc dostają świeże okno zamiast blokady.
+    expect(rl.check('klucz-0')).toBe(true)
+    // Najnowszy klucz nadal ma swoje zliczenie: 1 użyty wyżej + 2 = limit 3.
+    expect(rl.check('klucz-499')).toBe(true)
+    expect(rl.check('klucz-499')).toBe(true)
+    expect(rl.check('klucz-499')).toBe(false)
+  })
 })

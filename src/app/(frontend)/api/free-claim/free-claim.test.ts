@@ -153,6 +153,60 @@ describe('POST /api/free-claim', () => {
     expect(brevoDoubleOptin).toHaveBeenCalledTimes(3)
   })
 
+
+  /**
+   * Regresja produkcyjna (2026-07-31): formularz lead-magnetu został użyty do
+   * signup bombingu — 49 maili DOI na 22 obce adresy w 11 godzin, jeden adres
+   * dostał 15 wiadomości. Limiter istniał, ale był kluczowany po parze IP+e-mail,
+   * więc bot podstawiający inny adres przy każdym żądaniu dostawał za każdym
+   * razem NOWY klucz i nigdy nie trafiał w limit.
+   *
+   * Potrzebne są trzy niezależne bariery: po IP (jedno źródło nie rozsyła w kółko),
+   * po adresie (ofiara nie dostaje serii niezależnie od tego, z ilu IP leci atak)
+   * i globalna (rozproszony atak ma sufit).
+   */
+  it('BLOKUJE jedno IP rozsyłające na wiele różnych adresów', async () => {
+    const { POST } = await import('./route')
+    mockItem(LEAD_PRODUCT)
+    const ip = { 'x-forwarded-for': '198.51.100.7' }
+    const hit = (n: number) =>
+      POST(makeReq({ surface: 'apps', slug: 'free-template', email: `ofiara${n}@example.com` }, ip))
+    for (let i = 0; i < 5; i++) expect((await hit(i)).status).toBe(200)
+    // Szósty adres z tego samego IP to już rozsyłka, nie człowiek.
+    expect((await hit(99)).status).toBe(429)
+    expect(brevoDoubleOptin).toHaveBeenCalledTimes(5)
+  })
+
+  it('BLOKUJE bombardowanie jednego adresu z wielu różnych IP', async () => {
+    const { POST } = await import('./route')
+    mockItem(LEAD_PRODUCT)
+    const body = { surface: 'apps', slug: 'free-template', email: 'ofiara@gmail.com' }
+    const from = (ip: string) => POST(makeReq(body, { 'x-forwarded-for': ip }))
+    expect((await from('203.0.113.1')).status).toBe(200)
+    expect((await from('203.0.113.2')).status).toBe(200)
+    expect((await from('203.0.113.3')).status).toBe(200)
+    // Ta sama ofiara, czwarte źródło — to już seria, blokujemy niezależnie od IP.
+    expect((await from('203.0.113.4')).status).toBe(429)
+    expect(brevoDoubleOptin).toHaveBeenCalledTimes(3)
+  })
+
+  it('ma globalny sufit wysyłek (bezpiecznik na atak rozproszony)', async () => {
+    const { POST } = await import('./route')
+    mockItem(LEAD_PRODUCT)
+    // Za każdym razem inne IP i inny adres, żeby ominąć obie poprzednie bariery.
+    const hit = (n: number) =>
+      POST(
+        makeReq(
+          { surface: 'apps', slug: 'free-template', email: `rozproszony${n}@example.com` },
+          { 'x-forwarded-for': `10.0.${Math.floor(n / 250)}.${n % 250}` },
+        ),
+      )
+    let allowed = 0
+    for (let i = 0; i < 60; i++) if ((await hit(i)).status === 200) allowed++
+    expect(allowed).toBe(50)
+    expect(brevoDoubleOptin).toHaveBeenCalledTimes(50)
+  })
+
   it('is neutral: same 200 shape whether or not the item exists is NOT leaked — unknown still 404', async () => {
     // Sanity: we DO distinguish unknown (404) from paid (400) for the caller's
     // own UX, but we never reveal whether the EMAIL is already a contact. The

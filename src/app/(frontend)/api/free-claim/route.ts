@@ -23,10 +23,25 @@ import { createRateLimiter } from '@/utilities/rateLimit'
  *    only unknown vs non-lead-magnet ITEM, which is public storefront info.
  */
 
-// Module-scoped so the window persists across requests in this process. v1 is
-// single-instance; see rateLimit.ts for the multi-instance note. 3 hits / minute
-// per (IP+email) is enough for a human retrying, far below an email-bomb rate.
-const limiter = createRateLimiter({ max: 3, windowMs: 60_000 })
+// Module-scoped so windows persist across requests in this process. v1 is
+// single-instance; see rateLimit.ts for the multi-instance note.
+//
+// THREE INDEPENDENT BARRIERS. The original single limiter keyed on (IP+email)
+// and was useless against the very attack it was written for: a bot supplying a
+// DIFFERENT address on every request gets a NEW key each time, so the counter
+// never rises. Not theoretical — on 2026-07-31 this endpoint was used for signup
+// bombing: 49 confirmation emails to 22 strangers in 11 hours, one address hit
+// 15 times. Each barrier closes a distinct escape route:
+//
+//   perIp     — one source cannot fan out across many addresses
+//   perEmail  — a victim cannot be serialised no matter how many IPs are used
+//   globalCap — a distributed bot still hits a ceiling (circuit breaker)
+//
+// Shared-NAT users are the known cost of perIp; at 5 per 10 min a human never
+// notices. perEmail is the barrier that actually protects third parties.
+const perIp = createRateLimiter({ max: 5, windowMs: 10 * 60_000 })
+const perEmail = createRateLimiter({ max: 3, windowMs: 24 * 60 * 60_000 })
+const globalCap = createRateLimiter({ max: 50, windowMs: 24 * 60 * 60_000 })
 
 // Conservative email shape check. Not RFC-perfect (impossible by regex); enough
 // to reject obvious garbage before we spend a DB lookup + a Brevo call on it.
@@ -72,10 +87,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'lead magnets not configured' }, { status: 503 })
   }
 
-  // Rate-limit BEFORE the DB/Brevo work. Key on IP+email so one IP can't bomb a
-  // single victim and one email can't be bombed from one IP.
-  const key = `${clientIp(req)}:${normalizedEmail}`
-  if (!limiter.check(key)) {
+  // Rate-limit BEFORE the DB/Brevo work. Short-circuit order matters: a request
+  // rejected by an earlier barrier must not consume budget in the later ones,
+  // otherwise a blocked flood would burn the global cap and lock out real users.
+  const ip = clientIp(req)
+  if (!perIp.check(ip) || !perEmail.check(normalizedEmail) || !globalCap.check('*')) {
+    // Masked so the log never carries a third party's full address — under an
+    // attack these are victims' inboxes, not our users'.
+    console.warn(
+      JSON.stringify({
+        event: 'free_claim_rate_limited',
+        ip,
+        email: normalizedEmail.replace(/(.).*(@.*)/, '$1…$2'),
+        slug,
+      }),
+    )
     return NextResponse.json({ error: 'too many requests' }, { status: 429 })
   }
 
