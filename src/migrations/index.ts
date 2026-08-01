@@ -22,6 +22,7 @@ import * as migration_20260709_184011_build_log_hero from './20260709_184011_bui
 import * as migration_20260709_190834_features_variant from './20260709_190834_features_variant';
 import * as migration_20260718_080019_cohort_mode from './20260718_080019_cohort_mode';
 import * as migration_20260721_200312_checkout_consent_mode from './20260721_200312_checkout_consent_mode';
+import * as migration_20260801_004500_repair_localized_columns from './20260801_004500_repair_localized_columns';
 
 export const migrations = [
   {
@@ -143,5 +144,10 @@ export const migrations = [
     up: migration_20260721_200312_checkout_consent_mode.up,
     down: migration_20260721_200312_checkout_consent_mode.down,
     name: '20260721_200312_checkout_consent_mode'
+  },
+  {
+    up: migration_20260801_004500_repair_localized_columns.up,
+    down: migration_20260801_004500_repair_localized_columns.down,
+    name: '20260801_004500_repair_localized_columns'
   },
 ];
