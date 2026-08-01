@@ -3,6 +3,7 @@ import {
   editorConfigFactory,
   BlocksFeature,
   CodeBlock,
+  EXPERIMENTAL_TableFeature,
   type SanitizedServerEditorConfig,
 } from '@payloadcms/richtext-lexical'
 import { getPayload } from 'payload'
@@ -17,9 +18,14 @@ function getEditorConfig(): Promise<SanitizedServerEditorConfig> {
         const payload = await getPayload({ config: configPromise })
         return await editorConfigFactory.fromFeatures({
           config: payload.config,
+          // Ta konfiguracja jest niezależna od edytora kolekcji, więc feature
+          // włączony w Posts nie działa automatycznie tutaj. Jeżeli markdown
+          // ma się konwertować z tabelami, TableFeature musi być w OBU
+          // miejscach: tu (konwersja przez API) i w kolekcji (edycja w adminie).
           features: ({ defaultFeatures }) => [
             ...defaultFeatures,
             BlocksFeature({ blocks: [CodeBlock()] }),
+            EXPERIMENTAL_TableFeature(),
           ],
         })
       } catch (error) {
