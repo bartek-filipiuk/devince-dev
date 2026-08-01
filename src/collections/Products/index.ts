@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
+import { slugifyField } from '../../fields/slugifyPl'
 
 import { adminOnly } from '../../access/adminOnly'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
@@ -190,7 +191,7 @@ export const Products: CollectionConfig = {
         },
       ],
     },
-    slugField(),
+    slugField({ slugify: slugifyField }),
     {
       name: 'publishedAt',
       type: 'date',

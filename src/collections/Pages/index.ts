@@ -16,6 +16,7 @@ import { ContactCTA } from '../../blocks/ContactCTA/config'
 import { FeaturedProjects } from '../../blocks/FeaturedProjects/config'
 import { hero } from '@/heros/config'
 import { slugField } from 'payload'
+import { slugifyField } from '../../fields/slugifyPl'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { revalidateDelete, revalidatePage } from './hooks/revalidatePage'
@@ -138,7 +139,7 @@ export const Pages: CollectionConfig<'pages'> = {
         position: 'sidebar',
       },
     },
-    slugField(),
+    slugField({ slugify: slugifyField }),
   ],
   hooks: {
     afterChange: [revalidatePage],

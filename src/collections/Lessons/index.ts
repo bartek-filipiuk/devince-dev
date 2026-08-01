@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
+import { slugifyField } from '../../fields/slugifyPl'
 import { adminOnly } from '../../access/adminOnly'
 import { enrolledOrAdmin } from '../../access/enrolledOrAdmin'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
@@ -81,7 +82,7 @@ export const Lessons: CollectionConfig = {
       admin: { condition: (d) => d?.type === 'download' },
     },
     { name: 'publishedAt', type: 'date', admin: { position: 'sidebar' } },
-    slugField(),
+    slugField({ slugify: slugifyField }),
   ],
   hooks: { beforeChange: [populatePublishedAt] },
   versions: { drafts: { autosave: { interval: 100 } }, maxPerDoc: 20 },

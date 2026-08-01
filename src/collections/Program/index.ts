@@ -17,6 +17,7 @@ import { CourseVideo } from '../../blocks/course/CourseVideo/config'
 import { CourseImage } from '../../blocks/course/CourseImage/config'
 import { CourseCallout } from '../../blocks/course/CourseCallout/config'
 import { slugField } from 'payload'
+import { slugifyField } from '../../fields/slugifyPl'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { revalidateDelete, revalidateProgram } from './hooks/revalidateProgram'
@@ -586,7 +587,7 @@ export const Program: CollectionConfig<'program'> = {
         ],
       },
     },
-    slugField(),
+    slugField({ slugify: slugifyField }),
   ],
   hooks: {
     afterChange: [revalidateProgram],
