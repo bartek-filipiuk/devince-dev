@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 import {
   BlocksFeature,
+  EXPERIMENTAL_TableFeature,
   FixedToolbarFeature,
   HeadingFeature,
   HorizontalRuleFeature,
@@ -99,6 +100,9 @@ export const Posts: CollectionConfig<'posts'> = {
                     FixedToolbarFeature(),
                     InlineToolbarFeature(),
                     HorizontalRuleFeature(),
+                    // Bez tego markdownowe tabele lądują w treści jako akapity
+                    // pełne pionowych kresek i renderują się jak ASCII-art.
+                    EXPERIMENTAL_TableFeature(),
                   ]
                 },
               }),

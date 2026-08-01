@@ -173,3 +173,22 @@ html[data-theme='light'] {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ==========================================
+   TABELE W TREŚCI (rich text)
+   Tabele porównawcze mają często 5-6 kolumn i na telefonie
+   rozpychałyby stronę w poziomie. Przewijamy samą tabelę,
+   nie body. Wzorzec jak w renderze markdownu na GitHubie.
+   ========================================== */
+
+.payload-richtext table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.payload-richtext table th,
+.payload-richtext table td {
+  white-space: nowrap;
+}
