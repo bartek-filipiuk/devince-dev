@@ -21,6 +21,11 @@ export async function Footer({ locale = defaultLocale }: { locale?: Locale }) {
   const showSocialLinks = footerData?.showSocialLinks ?? true
   const showContactInfo = footerData?.showContactInfo ?? true
   const showNewsletter = footerData?.showNewsletter ?? true
+  // Brand shown in the footer = "Devince" (same source as <title>/OG). The
+  // CMS siteSettings.siteName still holds the legacy "Devins" (the company's
+  // CEIDG name, which belongs only in the legal seller data), so it is not
+  // used as the brand label here.
+  const brand = process.env.NEXT_PUBLIC_SITE_NAME || 'Devince'
 
   return (
     <footer className="mt-auto border-t border-border bg-black dark:bg-card text-white">
@@ -32,9 +37,7 @@ export async function Footer({ locale = defaultLocale }: { locale?: Locale }) {
             <Link className="flex items-center mb-4" href={getLocalizedPath('/', locale)}>
               <Logo />
             </Link>
-            {siteSettings?.siteName && (
-              <p className="text-gray-400 text-sm">{siteSettings.siteName}</p>
-            )}
+            <p className="text-gray-400 text-sm">{brand}</p>
           </div>
 
           {/* Navigation Column */}
@@ -85,7 +88,7 @@ export async function Footer({ locale = defaultLocale }: { locale?: Locale }) {
             <ThemeSelector />
             <span className="text-gray-500 text-sm">
               &copy; {new Date().getFullYear()}{' '}
-              {siteSettings?.siteName || t(locale, 'footer.allRightsReserved')}
+              {brand}
             </span>
           </div>
 

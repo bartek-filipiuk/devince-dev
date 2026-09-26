@@ -49,4 +49,44 @@ describe('legal content parity (pl/en)', () => {
     expect(en).toContain('lead-magnet')
     expect(en).toContain('unsubscribe') // unsubscribe right
   })
+
+  it('terms carry the 2026-09 licence/B2B/Discord sections in BOTH locales, without tier packages', () => {
+    const pl = LEGAL_CONTENT.regulamin.pl
+    const en = LEGAL_CONTENT.regulamin.en
+    expect(pl).toContain('bezterminowej licencji')
+    expect(pl).toContain('art. 68')
+    expect(pl).toContain('art. 75 ust. 2 i 3')
+    expect(pl).toContain('czynnym podatnikiem VAT')
+    expect(pl).toContain('Bartłomiej Filipiuk Devins')
+    expect(pl).toContain('Devince')
+    expect(en).toContain('perpetual licence')
+    expect(en).toContain('Art. 68')
+    expect(en).toContain('Art. 75(2) and (3)')
+    expect(en).toContain('active VAT payer')
+    for (const md of [pl, en]) {
+      expect(md).toMatch(/§12\./)
+      expect(md).toMatch(/§13\. (Zasady korzystania z Discorda|Discord rules)/)
+      // packages were taken off sale — the licence is one, tier-free
+      expect(md).not.toMatch(/\b(Pro|Agency)\b/)
+      expect(md).not.toMatch(/idea-to-mvp|Course Platform Starter/i)
+    }
+    // No forum clause for consumers: the seller-seat court appears only in §12 (B2B).
+    const plForum = pl.indexOf('sąd właściwy dla siedziby Sprzedawcy')
+    expect(plForum).toBeGreaterThan(pl.indexOf('## §12.'))
+    expect(plForum).toBeLessThan(pl.indexOf('## §13.'))
+  })
+
+  it('privacy policy no longer says Discord notifications carry the buyer e-mail', () => {
+    const pl = LEGAL_CONTENT['polityka-prywatnosci'].pl
+    const en = LEGAL_CONTENT['polityka-prywatnosci'].en
+    expect(pl).toContain('bez adresu e-mail')
+    expect(en).toContain('no buyer e-mail address')
+    expect(pl).not.toContain('zawierające adres e-mail kupującego')
+    expect(en).not.toContain("containing the buyer's e-mail")
+    for (const md of [pl, en]) {
+      expect(md).toContain('Scanye')
+      expect(md).toContain('12')
+      expect(md).toContain('YouTube')
+    }
+  })
 })

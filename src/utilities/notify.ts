@@ -38,7 +38,13 @@ export type EventKind =
  */
 export function formatDiscord(kind: EventKind, payload: Record<string, unknown>): string {
   const item = typeof payload.item === 'string' ? payload.item : undefined
-  const email = typeof payload.email === 'string' ? payload.email : undefined
+  // PRIVACY: the buyer's e-mail is deliberately NOT rendered into the Discord
+  // line (Discord Inc. = US transfer; data minimisation, art. 5(1)(c) RODO).
+  // The Stripe Checkout Session id identifies the order instead — the owner
+  // looks the buyer up in Stripe/admin. The structured console log (server
+  // side, EU hosting) still carries the full payload for recovery.
+  const orderId =
+    typeof payload.orderId === 'string' && payload.orderId ? `zam. ${payload.orderId}` : undefined
   const amount = typeof payload.amount === 'number' ? payload.amount : undefined
   const currency = typeof payload.currency === 'string' ? payload.currency : 'pln'
   const failKind = typeof payload.kind === 'string' ? payload.kind : undefined
@@ -63,9 +69,9 @@ export function formatDiscord(kind: EventKind, payload: Record<string, unknown>)
 
   switch (kind) {
     case 'purchase':
-      return join(['🎉 **Sprzedaż**', item, money, email])
+      return join(['🎉 **Sprzedaż**', item, money, orderId])
     case 'refund':
-      return join(['↩️ **Zwrot**', item, email])
+      return join(['↩️ **Zwrot**', item, orderId])
     case 'email_failed':
       // `kind: 'ndqs-enroll'` signals the GRANT itself failed (recover by
       // re-POSTing enroll-by-email). Every other kind means the grant SUCCEEDED
@@ -73,17 +79,17 @@ export function formatDiscord(kind: EventKind, payload: Record<string, unknown>)
       if (failKind === 'ndqs-enroll') {
         return join([
           '⚠️ **Enroll NDQS nie powiódł się**',
-          email,
+          orderId,
           'odzyskaj: re-POST /api/admin/enroll-by-email',
         ])
       }
       return join([
         '⚠️ **Mail nie dostarczony**',
         failKind,
-        email ? `${email} (grant OK, odzyskaj ręcznie)` : '(grant OK, odzyskaj ręcznie)',
+        orderId ? `${orderId} (grant OK, odzyskaj ręcznie)` : '(grant OK, odzyskaj ręcznie)',
       ])
     case 'checkout_start':
-      return join(['🛒 **Checkout**', item, money, email])
+      return join(['🛒 **Checkout**', item, money])
     case 'payment_mismatch': {
       // Amounts are minor units (grosze/cents). Render both so the owner sees
       // the underpayment/substitution at a glance.
@@ -91,14 +97,14 @@ export function formatDiscord(kind: EventKind, payload: Record<string, unknown>)
         v === undefined ? undefined : `${(v / 100).toFixed(2)} ${currency.toUpperCase()}`
       const paidStr = paid !== undefined ? `zapłacono ${fmt(paid)}` : undefined
       const expStr = expected !== undefined ? `oczekiwano ${fmt(expected)}` : undefined
-      return join(['🚨 **Płatność nie zgadza się z ceną**', item, paidStr, expStr, email])
+      return join(['🚨 **Płatność nie zgadza się z ceną**', item, paidStr, expStr, orderId])
     }
     case 'payment_failed':
       // Async payment (P24/BLIK/bank transfer) attempt that did not settle. No
       // grant existed, so this is informational only.
-      return join(['❌ **Płatność async nieudana**', item, email])
+      return join(['❌ **Płatność async nieudana**', item, orderId])
     default:
-      return join([String(kind), item, money, email])
+      return join([String(kind), item, money, orderId])
   }
 }
 

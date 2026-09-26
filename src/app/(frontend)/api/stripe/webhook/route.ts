@@ -58,6 +58,7 @@ async function verifyAmount(
       paid: session.amount_total ?? undefined,
       expected,
       currency: expectedCurrency ?? session.currency ?? 'pln',
+      orderId: session.id,
       email,
     })
     return false
@@ -126,6 +127,7 @@ async function verifyAmount(
         item: itemLabel,
         paid: session.amount_total ?? undefined,
         currency: session.currency ?? 'pln',
+        orderId: session.id,
         email,
       })
     } catch {
@@ -295,6 +297,7 @@ export async function POST(req: NextRequest) {
         item: `program ${programIdRaw}`,
         amount: session.amount_total ?? undefined,
         currency: session.currency ?? 'pln',
+        orderId: session.id,
         email,
       })
       // Seller "you made a sale" email (best-effort, never throws).
@@ -381,7 +384,7 @@ export async function POST(req: NextRequest) {
         )
         // Observability: grant is OK, only the durable-medium email failed —
         // ping so the owner can recover delivery manually. Best-effort.
-        await notifyEvent('email_failed', { kind: 'set-password', email })
+        await notifyEvent('email_failed', { kind: 'set-password', orderId: session.id, email })
       }
       } // end if (reconciled)
     }
@@ -460,6 +463,7 @@ export async function POST(req: NextRequest) {
           item: `product ${productIdRaw}`,
           amount: session.amount_total ?? undefined,
           currency: session.currency ?? 'pln',
+          orderId: session.id,
           email,
         })
         // Seller "you made a sale" email (best-effort, never throws). Gated on
@@ -518,7 +522,7 @@ export async function POST(req: NextRequest) {
             err,
           )
           // Observability: grant exists, only the download-link email failed.
-          await notifyEvent('email_failed', { kind: 'download', email })
+          await notifyEvent('email_failed', { kind: 'download', orderId: session.id, email })
         }
         // Record the send outcome on the grant so the admin can verify delivery in
         // Payload (advanced later to delivered/opened/bounced by the Brevo event
@@ -568,7 +572,7 @@ export async function POST(req: NextRequest) {
         )
         // Observability: the enroll (grant) did NOT succeed — surface it as a
         // failed delivery so the owner recovers it manually. Best-effort.
-        await notifyEvent('email_failed', { kind: 'ndqs-enroll', email })
+        await notifyEvent('email_failed', { kind: 'ndqs-enroll', orderId: session.id, email })
       } else {
         // Enroll succeeded → the NDQS access grant is durable. Sales-pulse ping.
         await notifyEvent('purchase', {
@@ -576,6 +580,7 @@ export async function POST(req: NextRequest) {
           item: `course ${ndqsCourseId}`,
           amount: session.amount_total ?? undefined,
           currency: session.currency ?? 'pln',
+          orderId: session.id,
           email,
         })
       }
@@ -607,7 +612,7 @@ export async function POST(req: NextRequest) {
         email: email ?? null,
       }),
     )
-    await notifyEvent('payment_failed', { item: itemLabel, email })
+    await notifyEvent('payment_failed', { item: itemLabel, orderId: session.id, email })
   }
 
   // Refund → access revocation. A `charge.refunded` event does NOT carry the
@@ -647,7 +652,7 @@ export async function POST(req: NextRequest) {
           } else {
             // Revoke succeeded → access removal is durable. Refund pulse ping.
             // Best-effort (notifyEvent never throws) and AFTER the revoke.
-            await notifyEvent('refund', { item: `course ${ndqsCourseId}`, email })
+            await notifyEvent('refund', { item: `course ${ndqsCourseId}`, orderId: session?.id, email })
           }
         }
 
@@ -682,7 +687,7 @@ export async function POST(req: NextRequest) {
                   data: { purchases: next } as never,
                   overrideAccess: true,
                 })
-                await notifyEvent('refund', { item: `program ${programIdRaw}`, email })
+                await notifyEvent('refund', { item: `program ${programIdRaw}`, orderId: session?.id, email })
               }
               // Tryb kohortowy: zdejmij membership przy refundzie. Best-effort,
               // idempotentne — brak membershipu to no-op. Poza gate'em na zmianę
@@ -719,7 +724,7 @@ export async function POST(req: NextRequest) {
                 data: { expiresAt: new Date(Date.now() - 1000).toISOString() } as never,
                 overrideAccess: true,
               })
-              await notifyEvent('refund', { item: `product ${productIdRaw}`, email })
+              await notifyEvent('refund', { item: `product ${productIdRaw}`, orderId: session?.id, email })
             }
           } catch (appErr) {
             console.error(
