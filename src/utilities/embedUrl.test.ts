@@ -5,32 +5,32 @@ describe('toEmbedUrl', () => {
   // ---- YouTube ----
   it('converts a youtube watch URL to an embed URL', () => {
     expect(toEmbedUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ')).toBe(
-      'https://www.youtube.com/embed/dQw4w9WgXcQ',
+      'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
     )
   })
 
   it('converts a youtu.be short URL to an embed URL', () => {
     expect(toEmbedUrl('https://youtu.be/dQw4w9WgXcQ')).toBe(
-      'https://www.youtube.com/embed/dQw4w9WgXcQ',
+      'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
     )
   })
 
   it('is idempotent on an already-embed youtube URL', () => {
-    expect(toEmbedUrl('https://www.youtube.com/embed/dQw4w9WgXcQ')).toBe(
-      'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    expect(toEmbedUrl('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ')).toBe(
+      'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
     )
   })
 
   it('converts a mobile youtube watch URL to an embed URL', () => {
     expect(toEmbedUrl('https://m.youtube.com/watch?v=dQw4w9WgXcQ')).toBe(
-      'https://www.youtube.com/embed/dQw4w9WgXcQ',
+      'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
     )
   })
 
   it('strips extra query params from a youtube watch URL', () => {
     expect(
       toEmbedUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLxyz&t=42s&feature=share'),
-    ).toBe('https://www.youtube.com/embed/dQw4w9WgXcQ')
+    ).toBe('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ')
   })
 
   // ---- Vimeo ----
@@ -53,7 +53,7 @@ describe('toEmbedUrl', () => {
 
   it('trims surrounding whitespace before processing', () => {
     expect(toEmbedUrl('  https://youtu.be/dQw4w9WgXcQ  ')).toBe(
-      'https://www.youtube.com/embed/dQw4w9WgXcQ',
+      'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
     )
   })
 

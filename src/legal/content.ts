@@ -341,7 +341,7 @@ Korespondencja z Administratorem (e-mail, Discord, reklamacje) może być przetw
 
 ## Osadzone filmy (YouTube)
 
-Na stronach kursów i w lekcjach mogą być osadzone filmy z serwisu **YouTube** (Google Ireland Ltd. / Google LLC). Po załadowaniu strony z takim filmem Twoja przeglądarka łączy się z serwerami Google, które mogą odczytywać i zapisywać pliki cookies oraz przetwarzać Twój adres IP i dane o urządzeniu — na zasadach polityki prywatności Google, jako odrębny administrator. Dane mogą być przekazywane do **USA** (na podstawie DPF).
+Na stronach kursów i w lekcjach mogą być osadzone filmy z serwisu **YouTube** (Google Ireland Ltd. / Google LLC). Filmy są osadzane w trybie rozszerzonej prywatności (youtube-nocookie.com): przy samym załadowaniu strony Google nie zapisuje plików cookies do śledzenia, ale Twoja przeglądarka łączy się z serwerami Google (adres IP, dane o urządzeniu). Po uruchomieniu filmu Google może odczytywać i zapisywać dane w Twojej przeglądarce — na zasadach polityki prywatności Google, jako odrębny administrator. Dane mogą być przekazywane do **USA** (na podstawie DPF).
 
 ## Newsletter i marketing (zgoda, double opt-in)
 
@@ -441,7 +441,7 @@ Correspondence with the Controller (e-mail, Discord, complaints) may be processe
 
 ## Embedded videos (YouTube)
 
-Course pages and lessons may embed videos from **YouTube** (Google Ireland Ltd. / Google LLC). When a page with such a video loads, your browser connects to Google's servers, which may read and set cookies and process your IP address and device data — under Google's privacy policy, as a separate controller. Data may be transferred to the **USA** (based on the DPF).
+Course pages and lessons may embed videos from **YouTube** (Google Ireland Ltd. / Google LLC). Videos are embedded in privacy-enhanced mode (youtube-nocookie.com): loading the page sets no tracking cookies, but your browser connects to Google's servers (IP address, device data). Once you play a video, Google may read and store data in your browser — under Google's privacy policy, as a separate controller. Data may be transferred to the **USA** (based on the DPF).
 
 ## Newsletter and marketing (consent, double opt-in)
 
