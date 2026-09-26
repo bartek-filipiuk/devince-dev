@@ -10,6 +10,7 @@ import { LessonSidebar } from './LessonSidebar'
 import { CourseLessonProse } from './CourseLessonProse'
 import { TableOfContents } from './TableOfContents'
 import { MarkCompleteButton } from './MarkCompleteButton'
+import { toEmbedUrl } from '@/utilities/embedUrl'
 
 type Phase = NonNullable<Program['phases']>[number]
 const pad = (n: number | null | undefined) => String(n ?? 0).padStart(2, '0')
@@ -62,6 +63,8 @@ export function LessonView({ slug, program, lesson, allLessons, completedIds, he
   const nextHref = next && !nextLocked ? getLocalizedPath(`/${slug}/learn/${next.slug}`, locale) : null
 
   const timeMin = lesson.estTimeMin?.min ?? 0
+  // Lessons go through the same normaliser as the CourseVideo block: privacy-enhanced host, https only.
+  const videoSrc = lesson.youtubeEmbedUrl ? toEmbedUrl(lesson.youtubeEmbedUrl) : null
   const timeMax = lesson.estTimeMin?.max ?? 0
   const timeLabel =
     timeMax > 0 ? `${timeMin && timeMin !== timeMax ? `${timeMin}–` : '~'}${timeMax} ${t(locale, 'courses.lesson.readMin')}` : null
@@ -109,11 +112,11 @@ export function LessonView({ slug, program, lesson, allLessons, completedIds, he
           </section>
         ) : null}
 
-        {lesson.youtubeEmbedUrl ? (
+        {videoSrc ? (
           <div className="lvideo">
             <div className="lvideo__frame">
               <iframe
-                src={lesson.youtubeEmbedUrl}
+                src={videoSrc}
                 title={lesson.title}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen

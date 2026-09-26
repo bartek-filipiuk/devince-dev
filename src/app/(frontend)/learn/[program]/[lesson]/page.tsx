@@ -3,6 +3,7 @@ import configPromise from '@payload-config'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import RichText from '@/components/RichText'
+import { toEmbedUrl } from '@/utilities/embedUrl'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,13 +43,15 @@ export default async function LessonPage({
   })
   const lesson = found.docs[0]
   if (!lesson) redirect('/account')
+  // Lessons go through the same normaliser as the CourseVideo block: privacy-enhanced host, https only.
+  const videoSrc = lesson.youtubeEmbedUrl ? toEmbedUrl(lesson.youtubeEmbedUrl) : null
 
   return (
     <article className="lesson-page">
       <h1>{lesson.title}</h1>
-      {lesson.youtubeEmbedUrl && (
+      {videoSrc && (
         <div className="lesson-video">
-          <iframe src={lesson.youtubeEmbedUrl} allowFullScreen title={lesson.title} />
+          <iframe src={videoSrc} allowFullScreen title={lesson.title} />
         </div>
       )}
       {lesson.content && <RichText data={lesson.content as any} />}

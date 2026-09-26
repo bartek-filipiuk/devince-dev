@@ -26,16 +26,16 @@ export function toEmbedUrl(raw: string): string | null {
   const host = url.hostname.toLowerCase().replace(/^www\.|^m\./, '')
 
   // ---- YouTube ----
-  if (host === 'youtube.com') {
+  if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
     // Already an /embed/<id> URL → normalize host, keep id only.
     const embedMatch = url.pathname.match(/^\/embed\/([^/?#]+)/)
     if (embedMatch) {
-      return `https://www.youtube.com/embed/${embedMatch[1]}`
+      return `https://www.youtube-nocookie.com/embed/${embedMatch[1]}`
     }
     // watch?v=<id> → embed
     const id = url.searchParams.get('v')
     if (id) {
-      return `https://www.youtube.com/embed/${id}`
+      return `https://www.youtube-nocookie.com/embed/${id}`
     }
     // Unknown youtube.com path → pass through unchanged.
     return url.toString()
@@ -44,7 +44,7 @@ export function toEmbedUrl(raw: string): string | null {
   if (host === 'youtu.be') {
     const id = url.pathname.replace(/^\//, '').split('/')[0]
     if (id) {
-      return `https://www.youtube.com/embed/${id}`
+      return `https://www.youtube-nocookie.com/embed/${id}`
     }
     return url.toString()
   }
