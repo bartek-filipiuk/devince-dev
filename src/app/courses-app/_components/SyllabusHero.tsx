@@ -5,7 +5,7 @@ import { getLocalizedPath } from '@/utilities/getLocale'
 import { formatPrice } from '@/utilities/formatPrice'
 import { CourseCheckoutButton } from './CourseCheckoutButton'
 import { CourseLeadMagnet } from './CourseLeadMagnet'
-import { checkoutConsentKey } from '../_lib/consentKey'
+import { checkoutConsentKey, checkoutConsentLinks } from '../_lib/consentKey'
 
 type Meta = {
   phases: number
@@ -104,6 +104,7 @@ export function SyllabusHero({
                   locale={locale}
                   label={t(locale, 'courses.syllabus.buy')}
                   consentLabel={t(locale, checkoutConsentKey(program))}
+                  consentLinks={checkoutConsentLinks(program, locale)}
                   processingLabel={t(locale, 'courses.checkout.processing')}
                   errorLabel={t(locale, 'courses.checkout.error')}
                   consentRequiredLabel={t(locale, 'courses.checkout.consentRequired')}

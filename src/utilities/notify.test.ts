@@ -52,6 +52,7 @@ describe('notifyEvent', () => {
       item: 'Kurs „Bezpieczne flow"',
       amount: 4700,
       currency: 'pln',
+      orderId: 'cs_test_abc123',
       email: 'jan@example.com',
     })
 
@@ -61,9 +62,12 @@ describe('notifyEvent', () => {
     expect(opts.method).toBe('POST')
     expect((opts.headers as Record<string, string>)['Content-Type']).toBe('application/json')
     const body = JSON.parse(opts.body as string)
-    // Discord expects a `content` field; it carries the localized line + email.
+    // Discord expects a `content` field; it carries the localized line + the
+    // order id — NEVER the buyer's e-mail (privacy: US transfer, minimisation).
     expect(typeof body.content).toBe('string')
-    expect(body.content).toContain('jan@example.com')
+    expect(body.content).toContain('cs_test_abc123')
+    expect(body.content).toContain('47,00')
+    expect(body.content).not.toContain('jan@example.com')
   })
 
   it('never throws even when fetch rejects (best-effort)', async () => {
@@ -105,5 +109,22 @@ describe('notifyEvent', () => {
     expect(lines[2]).toContain('Checkout')
     expect(lines[3]).toContain('Enroll NDQS nie powiódł się')
     expect(lines[3]).not.toContain('grant OK')
+  })
+
+  it('never puts the buyer e-mail into ANY Discord line (all event kinds)', async () => {
+    vi.spyOn(console, 'log').mockImplementation(() => {})
+    process.env.DISCORD_WEBHOOK_URL = 'https://discord.test/webhook/abc'
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+    const base = { item: 'product 7', amount: 4900, currency: 'pln', orderId: 'cs_x', email: 'jan@example.com' }
+    for (const kind of ['purchase', 'refund', 'checkout_start', 'payment_mismatch', 'payment_failed'] as const) {
+      await notifyEvent(kind, base)
+    }
+    await notifyEvent('email_failed', { ...base, kind: 'download' })
+    await notifyEvent('email_failed', { ...base, kind: 'ndqs-enroll' })
+    const lines = fetchMock.mock.calls.map((c) => JSON.parse(c[1].body as string).content as string)
+    expect(lines).toHaveLength(7)
+    for (const line of lines) expect(line).not.toContain('jan@example.com')
+    expect(lines[6]).toContain('cs_x')
   })
 })

@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { track } from '@/utilities/track'
+import type { ConsentLink } from '../_lib/consentKey'
 
 export function CourseCheckoutButton({
   slug,
@@ -11,6 +12,7 @@ export function CourseCheckoutButton({
   consentLabel,
   consentRequiredLabel,
   newsletterLabel,
+  consentLinks = [],
 }: {
   slug: string
   locale: string
@@ -20,6 +22,8 @@ export function CourseCheckoutButton({
   consentLabel: string
   consentRequiredLabel: string
   newsletterLabel: string
+  /** Documents the consent refers to (terms-only mode), rendered as links. */
+  consentLinks?: ConsentLink[]
 }) {
   const [busy, setBusy] = useState(false)
   // Art. 38 pkt 13: a separate, unticked-by-default consent. The server re-checks
@@ -78,7 +82,22 @@ export function CourseCheckoutButton({
           }}
           disabled={busy}
         />
-        <span>{consentLabel}</span>
+        <span>
+          {consentLabel}
+          {consentLinks.length > 0 ? (
+            <span className="consent-links">
+              {' '}
+              {consentLinks.map((l, i) => (
+                <span key={l.href}>
+                  {i > 0 ? ' · ' : null}
+                  <a href={l.href} target="_blank" rel="noopener noreferrer">
+                    {l.label}
+                  </a>
+                </span>
+              ))}
+            </span>
+          ) : null}
+        </span>
       </label>
       <label className="newsletter-check">
         <input
