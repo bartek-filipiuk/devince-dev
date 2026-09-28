@@ -343,7 +343,7 @@ const translations = {
     'courses.syllabus.soon': 'Wkrótce',
     'courses.syllabus.ctaBandTitle': 'Gotowy, żeby zacząć?',
     'courses.syllabus.ctaBandBody':
-      'Przejdź cały pipeline od pomysłu do wdrożenia — krok po kroku, z twardymi bramkami, które pilnują jakości.',
+      'Program i warunki masz powyżej. Pytania: bartek@devince.dev',
     'courses.syllabus.buy': 'Kup dostęp',
     'courses.syllabus.continue': 'Kontynuuj',
 
@@ -351,7 +351,7 @@ const translations = {
     'courses.checkout.consent':
       'Wyrażam zgodę na rozpoczęcie dostępu do treści cyfrowych przed upływem terminu odstąpienia i przyjmuję do wiadomości utratę prawa do odstąpienia (art. 38 pkt 13).',
     'courses.checkout.consentTerms':
-      'Akceptuję regulaminy i Politykę Prywatności (linki poniżej). Rezerwacja nie ogranicza ustawowego prawa odstąpienia od umowy.',
+      'Akceptuję regulaminy i Politykę Prywatności (linki poniżej). Zakup nie ogranicza ustawowego prawa odstąpienia od umowy.',
     'courses.checkout.processing': 'Przekierowuję…',
     'courses.checkout.error': 'Nie udało się rozpocząć płatności. Spróbuj ponownie.',
     'courses.checkout.consentRequired': 'Zaznacz najpierw zgodę powyżej, aby przejść do płatności.',
@@ -801,7 +801,7 @@ const translations = {
     'courses.syllabus.soon': 'Soon',
     'courses.syllabus.ctaBandTitle': 'Ready to begin?',
     'courses.syllabus.ctaBandBody':
-      'Go through the entire pipeline from idea to deployment — step by step, with hard gates that keep quality in check.',
+      'The syllabus and terms are above. Questions: bartek@devince.dev',
     'courses.syllabus.buy': 'Buy access',
     'courses.syllabus.continue': 'Continue',
 
@@ -809,7 +809,7 @@ const translations = {
     'courses.checkout.consent':
       'I consent to early access to the digital content before the withdrawal period expires and acknowledge that I lose my right of withdrawal (Art. 38(13)).',
     'courses.checkout.consentTerms':
-      'I accept the terms and the Privacy Policy (linked below). The reservation does not limit your statutory right of withdrawal.',
+      'I accept the terms and the Privacy Policy (linked below). This purchase does not limit your statutory right of withdrawal.',
     'courses.checkout.processing': 'Redirecting…',
     'courses.checkout.error': 'Could not start the payment. Please try again.',
     'courses.checkout.consentRequired': 'Please tick the consent box above to continue to payment.',
