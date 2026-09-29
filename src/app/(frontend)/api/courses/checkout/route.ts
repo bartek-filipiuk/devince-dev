@@ -121,6 +121,10 @@ export async function POST(req: NextRequest) {
     },
     success_url: `${COURSES_URL()}/success`,
     cancel_url: `${COURSES_URL()}/${program.slug}`,
+    // Lets a buyer enter a promotion code created in the Stripe dashboard
+    // (e.g. a time-boxed code handed out on a free live lesson). Stripe applies
+    // it to the line item above; the webhook still records the amount paid.
+    allow_promotion_codes: true,
   })
 
   // Observability: server-side checkout_start ping. Best-effort — notifyEvent
