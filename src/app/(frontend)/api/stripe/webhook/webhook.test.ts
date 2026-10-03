@@ -284,6 +284,64 @@ describe('Fix 2 — amount/currency reconciliation', () => {
     )
   })
 
+  // Promotion codes (allow_promotion_codes on the courses checkout, e.g. LEKCJA
+  // for the workshop): Stripe lowers amount_total and reports the cut in
+  // total_details.amount_discount. The code exists only if the owner created it
+  // in the Stripe dashboard, so the discount counts toward the price.
+  it('GRANTS a course bought with a Stripe promotion code (amount_total + amount_discount covers the price)', async () => {
+    const { POST } = await import('./route')
+    setFind({ user: { id: 5, email: BUYER, purchases: [] } })
+    setFindByID({ 'program:16': PROGRAM_16 })
+    stageEvent(
+      completedEvent(
+        courseSession({
+          amount_total: 3700, // 47 zł course, 10 zł off
+          total_details: { amount_discount: 1000, amount_shipping: 0, amount_tax: 0 },
+        }),
+      ),
+    )
+
+    const res = await POST(makeReq())
+
+    expect(res.status).toBe(200)
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'users',
+        id: 5,
+        data: expect.objectContaining({ purchases: [16] }),
+      }),
+    )
+    expect(notifyEvent).not.toHaveBeenCalledWith('payment_mismatch', expect.anything())
+    // The sales ping reports what the buyer actually paid, not the list price.
+    expect(notifyEvent).toHaveBeenCalledWith(
+      'purchase',
+      expect.objectContaining({ surface: 'courses', amount: 3700 }),
+    )
+  })
+
+  it('does NOT grant when the Stripe discount does not cover the gap, and alerts', async () => {
+    const { POST } = await import('./route')
+    setFind({ user: { id: 5, email: BUYER, purchases: [] } })
+    setFindByID({ 'program:16': PROGRAM_16 })
+    stageEvent(
+      completedEvent(
+        courseSession({
+          amount_total: 100, // 1 zł paid + 10 zł off is still far below 47 zł
+          total_details: { amount_discount: 1000, amount_shipping: 0, amount_tax: 0 },
+        }),
+      ),
+    )
+
+    const res = await POST(makeReq())
+
+    expect(res.status).toBe(200)
+    expect(update).not.toHaveBeenCalled()
+    expect(notifyEvent).toHaveBeenCalledWith(
+      'payment_mismatch',
+      expect.objectContaining({ paid: 100, expected: 4700 }),
+    )
+  })
+
   it('does NOT grant on currency mismatch (paid usd for a pln course)', async () => {
     const { POST } = await import('./route')
     setFind({ user: { id: 5, email: BUYER, purchases: [] } })
