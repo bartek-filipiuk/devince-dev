@@ -2,8 +2,9 @@
  * D6 — the price is a SERVER-side value, end to end:
  *   (a) POST /api/apps/checkout: client-smuggled price fields are ignored —
  *       the Stripe session is created with the DB price (tier record)
- *   (b) webhook verifyAmount: a session whose amount_total is below the DB
- *       price gets NO fulfillment + a payment_mismatch alert
+ *   (b) webhook verifyAmount: a session whose amount_total (plus the discount
+ *       Stripe reports for a promotion code) is below the DB price gets NO
+ *       fulfillment + a payment_mismatch alert
  *
  * Harness mirrors checkout.test.ts (a) and webhook.test.ts (b).
  */
@@ -185,9 +186,9 @@ describe('(a) POST /api/apps/checkout — price comes from the DB, never the cli
 })
 
 describe('(b) webhook verifyAmount — underpaid session gets no fulfillment', () => {
-  function stageWebhook(amountTotal: number) {
+  function stageWebhook(amountTotal: number, amountDiscount = 0) {
     constructEvent.mockReturnValue({
-      id: `evt_amt_${amountTotal}`,
+      id: `evt_amt_${amountTotal}_${amountDiscount}`,
       type: 'checkout.session.completed',
       data: {
         object: {
@@ -195,6 +196,7 @@ describe('(b) webhook verifyAmount — underpaid session gets no fulfillment', (
           payment_status: 'paid',
           amount_total: amountTotal,
           currency: 'pln',
+          total_details: { amount_discount: amountDiscount, amount_shipping: 0, amount_tax: 0 },
           customer_details: { email: 'buyer@example.com' },
           metadata: { productId: '7', withdrawalConsentAt: '2026-07-06T00:00:00Z' },
         },
@@ -235,5 +237,58 @@ describe('(b) webhook verifyAmount — underpaid session gets no fulfillment', (
     expect(res.status).toBe(200)
     expect(fulfillAppPurchase).toHaveBeenCalledOnce()
     expect(notifyEvent).not.toHaveBeenCalledWith('payment_mismatch', expect.anything())
+  })
+
+  // A Stripe promotion-code discount counts toward the price, but only by the
+  // amount Stripe reports in total_details.amount_discount: it can never turn a
+  // genuine underpayment into a grant.
+  it('amount_total + Stripe discount covering the DB price → fulfillment runs', async () => {
+    const { POST } = await import('../app/(frontend)/api/stripe/webhook/route')
+    stageWebhook(3900, 1000) // 39 zł paid + 10 zł promotion code = 49 zł
+
+    const res = await POST(webhookReq())
+
+    expect(res.status).toBe(200)
+    expect(fulfillAppPurchase).toHaveBeenCalledOnce()
+    expect(notifyEvent).not.toHaveBeenCalledWith('payment_mismatch', expect.anything())
+  })
+
+  it('a non-numeric discount is ignored (no string concatenation in the sum)', async () => {
+    const { POST } = await import('../app/(frontend)/api/stripe/webhook/route')
+    stageWebhook(100, '99999' as unknown as number) // "100" + "99999" must not pass
+
+    const res = await POST(webhookReq())
+
+    expect(res.status).toBe(200)
+    expect(fulfillAppPurchase).not.toHaveBeenCalled()
+    expect(notifyEvent).toHaveBeenCalledWith(
+      'payment_mismatch',
+      expect.objectContaining({ paid: 100, expected: 4900 }),
+    )
+  })
+
+  it('a non-numeric amount_total is refused even with a real discount', async () => {
+    const { POST } = await import('../app/(frontend)/api/stripe/webhook/route')
+    stageWebhook('100' as unknown as number, 1000) // "100" + 1000 must not become "1001000"
+
+    const res = await POST(webhookReq())
+
+    expect(res.status).toBe(200)
+    expect(fulfillAppPurchase).not.toHaveBeenCalled()
+    expect(notifyEvent).toHaveBeenCalledWith('payment_mismatch', expect.anything())
+  })
+
+  it('amount_total + Stripe discount still below the DB price → NO grant + alert', async () => {
+    const { POST } = await import('../app/(frontend)/api/stripe/webhook/route')
+    stageWebhook(3900, 500) // 39 zł paid + 5 zł off = 44 zł < 49 zł
+
+    const res = await POST(webhookReq())
+
+    expect(res.status).toBe(200)
+    expect(fulfillAppPurchase).not.toHaveBeenCalled()
+    expect(notifyEvent).toHaveBeenCalledWith(
+      'payment_mismatch',
+      expect.objectContaining({ paid: 3900, expected: 4900 }),
+    )
   })
 })

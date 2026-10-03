@@ -33,7 +33,13 @@ function getStripe(): Stripe {
  *   2. else `item.stripePriceId`  → retrieve the Stripe Price → expected = unit_amount, currency = price.currency
  *   3. else                       → cannot verify → REFUSE (return false)
  *
- * The gate is `amount_total != null && amount_total >= expected && currency matches`.
+ * The gate is `amount_total != null && amount_total + discount >= expected && currency matches`.
+ * `discount` is `total_details.amount_discount`: what Stripe itself took off for a
+ * promotion code (the courses checkout sets allow_promotion_codes; codes such as
+ * LEKCJA are created by the owner in the Stripe dashboard). It arrives in the
+ * signature-verified event, so a buyer cannot inflate it, and a code only exists
+ * if the owner made it. Without it, a buyer who used a valid code paid and was
+ * refused access.
  * `>=` (not `===`) so a FULLER payment — e.g. Stripe-added tax/VAT, or a tip —
  * never false-rejects a legitimate buyer. Underpayment / currency substitution /
  * an unverifiable price all return false.
@@ -102,15 +108,20 @@ async function verifyAmount(
     }
 
     const paid = session.amount_total
+    // Promotion-code discount applied by Stripe (0 when no code was used). Only a
+    // positive number counts: a string would turn `paid + discount` into string
+    // concatenation and wave an underpayment through.
+    const rawDiscount = session.total_details?.amount_discount
+    const discount = typeof rawDiscount === 'number' && rawDiscount > 0 ? rawDiscount : 0
     const paidCurrency = session.currency?.toLowerCase()
     const currencyOk = paidCurrency === expectedCurrency.toLowerCase()
     // `>=` is intentional: a fuller payment (tax/VAT/tip) must NOT false-reject.
-    const amountOk = paid != null && paid >= expected
+    const amountOk = typeof paid === 'number' && paid + discount >= expected
 
     if (!amountOk || !currencyOk) {
       const reason = !currencyOk
         ? `currency mismatch (paid ${paidCurrency}, expected ${expectedCurrency})`
-        : `underpayment (paid ${paid}, expected >= ${expected})`
+        : `underpayment (paid ${paid} + discount ${discount}, expected >= ${expected})`
       return await refuse(reason, expected, expectedCurrency)
     }
     return true
