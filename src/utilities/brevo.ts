@@ -96,6 +96,16 @@ function buildConsentLine(locale: 'pl' | 'en', iso: string): string {
   return `<hr/><p style="font-size:13px;color:#555"><strong>Potwierdzenie zgody (art. 38 pkt 13 ustawy o prawach konsumenta):</strong> w dniu ${when} wyrazili Państwo wyraźną zgodę na natychmiastowe rozpoczęcie dostarczania treści cyfrowej i przyjęli do wiadomości, że z chwilą wykonania umowy (udostępnienia pliku) tracą Państwo prawo odstąpienia od umowy. Niniejsza wiadomość stanowi potwierdzenie tej zgody na trwałym nośniku.</p>`
 }
 
+// Same text for every product: the package carries its own instructions, and Claude Code products
+// can be installed from the link with the public devince-apps CLI. Generic on purpose, so the
+// e-mail needs no per-product field.
+function installHint(locale: 'pl' | 'en', link: string): string {
+  const cmd = `npx devince-apps install ${esc(link)}`
+  return locale === 'en'
+    ? `<p style="font-size:13px;color:#555">The installation guide is inside the package. A Claude Code product installs with one command in your terminal:<br/><code>${cmd}</code></p>`
+    : `<p style="font-size:13px;color:#555">Instrukcja instalacji jest w paczce. Produkt do Claude Code zainstalujesz jedną komendą w terminalu:<br/><code>${cmd}</code></p>`
+}
+
 export async function sendDownloadLinkEmail(args: {
   to: string
   link: string
@@ -123,11 +133,11 @@ export async function sendDownloadLinkEmail(args: {
     locale === 'en'
       ? {
           subject: `Your purchase: ${args.productTitle} — download link`,
-          body: `<p>Thank you for purchasing <strong>${esc(args.productTitle)}</strong>.</p><p><a href="${esc(args.link)}">Download files</a></p><p>The link expires after 7 days and has a download limit. If it expires — just reply to this email.</p>`,
+          body: `<p>Thank you for purchasing <strong>${esc(args.productTitle)}</strong>.</p><p><a href="${esc(args.link)}">Download files</a></p>${installHint("en", args.link)}<p>The link expires after 7 days and has a download limit. If it expires — just reply to this email.</p>`,
         }
       : {
           subject: `Twój zakup: ${args.productTitle} — link do pobrania`,
-          body: `<p>Dziękujemy za zakup <strong>${esc(args.productTitle)}</strong>.</p><p><a href="${esc(args.link)}">Pobierz pliki</a></p><p>Link wygaśnie po 7 dniach i ma limit pobrań. Jeśli wygaśnie — odpisz na tego maila.</p>`,
+          body: `<p>Dziękujemy za zakup <strong>${esc(args.productTitle)}</strong>.</p><p><a href="${esc(args.link)}">Pobierz pliki</a></p>${installHint("pl", args.link)}<p>Link wygaśnie po 7 dniach i ma limit pobrań. Jeśli wygaśnie — odpisz na tego maila.</p>`,
         }
 
   const res = await sendTransactionalEmail({
@@ -157,11 +167,13 @@ export async function sendProductUpdateEmail(args: {
     `<p>Cześć! Produkt, który kupiłeś — <strong>${esc(args.productTitle)}</strong> — ma nową wersję do pobrania.</p>` +
     noteBlock +
     `<p><a href="${esc(args.link)}">Pobierz najnowszą wersję</a></p>` +
+    installHint("pl", args.link) +
     `<p style="font-size:13px;color:#555">Link wygaśnie po 7 dniach i ma limit pobrań. To wiadomość serwisowa dotycząca zakupionego produktu — jeśli nie chcesz takich powiadomień, odpisz na tego maila.</p>`
   const en =
     `<hr/><p>Hi! The product you purchased — <strong>${esc(args.productTitle)}</strong> — has a new version available.</p>` +
     noteBlock +
     `<p><a href="${esc(args.link)}">Download the latest version</a></p>` +
+    installHint("en", args.link) +
     `<p style="font-size:13px;color:#555">The link expires after 7 days and has a download limit. This is a service message about a product you purchased — to stop these, just reply to this email.</p>`
   const res = await sendTransactionalEmail({
     to: args.to,
