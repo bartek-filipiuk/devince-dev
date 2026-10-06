@@ -69,6 +69,8 @@ secrets live in Coolify, not in the repo.
 - DB schema changes ONLY via migrations in `src/migrations/`
   (`push: false` in `src/payload.config.ts`); deploy = Coolify from `main`,
   runs `npx payload migrate && node server.js`.
+  Coolify health check on `GET /api/health` (DB ping) gates the rolling update;
+  `deploy.yml` dumps devince-db before every deploy. Rollback levels: `docs/ROLLBACK.md`.
 - Security net (fable-hardening): regression tests in `src/security/*.test.ts`
   (Stripe signature + idempotency, download token, paywall, external-API auth,
   checkout amount), mechanical rules in `scripts/lint-security.mjs`, CI gate
