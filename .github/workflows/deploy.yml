@@ -37,6 +37,10 @@ jobs:
         env:
           COOLIFY_URL: ${{ secrets.COOLIFY_URL }}
           COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
+          COOLIFY_APP_UUID: ${{ secrets.COOLIFY_APP_UUID }}
+          # Passed through env, never interpolated into the script (commit
+          # messages are user-controlled text).
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           set -euo pipefail
           api() { curl -sf --retry 3 --retry-all-errors -H "Authorization: Bearer $COOLIFY_API_TOKEN" -H "Accept: application/json" "$@"; }
@@ -55,7 +59,23 @@ jobs:
             [ "$uuid" = "$before" ] && continue
             echo "[$((i * 5))s] backup $uuid: $status"
             if [ "$status" = "success" ]; then
-              echo "Restore point: $(echo "$run" | jq -r '.filename')"
+              restore_point=$(echo "$run" | jq -r '.filename')
+              echo "Restore point: $restore_point"
+              # Code running before this deploy = the image to pick on the
+              # Coolify Rollback page if this deploy turns out bad.
+              # Summary only: never block the deploy on it.
+              previous=$(api "$COOLIFY_URL/api/v1/deployments/applications/$COOLIFY_APP_UUID?take=20" \
+                | jq -r '[.deployments[] | select(.status == "finished")][0].commit // "unknown"') || previous=unknown
+              {
+                echo "### Rollback point for this deploy"
+                echo "| | |"
+                echo "|---|---|"
+                echo "| Deploying | \`$GITHUB_SHA\` $(printf '%s' "${COMMIT_MESSAGE:-manual run}" | head -n1 | tr -d '|`') |"
+                echo "| Code before deploy (Coolify > Rollback) | \`$previous\` |"
+                echo "| DB before deploy (Import Backup > file on server) | \`$restore_point\` |"
+                echo
+                echo "Runbook: docs/ROLLBACK.md"
+              } >> "$GITHUB_STEP_SUMMARY"
               exit 0
             fi
             if [ "$status" = "failed" ]; then
