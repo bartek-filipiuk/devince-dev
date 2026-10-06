@@ -21,6 +21,16 @@ jobs:
       BACKUP_UUID: t4ww4sco840kkgkoko884wcs
 
     steps:
+      # The Coolify API is reachable only over Tailscale; the runner joins the
+      # tailnet as an ephemeral tag:ci node for this job.
+      - name: Join tailnet
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          ping: 100.126.180.51
+
       # Pre-deploy snapshot: the restore point for docs/ROLLBACK.md. The deploy
       # does not start unless the dump finished successfully.
       - name: Back up database before deploy
