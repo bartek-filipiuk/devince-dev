@@ -6,15 +6,69 @@ on:
       - main
   workflow_dispatch:
 
+# One deploy at a time, so a run never mistakes another run's backup for its own.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' || github.event.head_commit.message != ''
+    env:
+      # devince-db and its daily backup schedule (UUIDs are not secrets).
+      DB_UUID: yk8ckw80gwww4owo0088wswg
+      BACKUP_UUID: t4ww4sco840kkgkoko884wcs
 
     steps:
+      # The Coolify API is reachable only over Tailscale; the runner joins the
+      # tailnet as an ephemeral tag:ci node for this job.
+      - name: Join tailnet
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          ping: 100.126.180.51
+
+      # Pre-deploy snapshot: the restore point for docs/ROLLBACK.md. The deploy
+      # does not start unless the dump finished successfully.
+      - name: Back up database before deploy
+        env:
+          COOLIFY_URL: ${{ secrets.COOLIFY_URL }}
+          COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          api() { curl -sf --retry 3 --retry-all-errors -H "Authorization: Bearer $COOLIFY_API_TOKEN" -H "Accept: application/json" "$@"; }
+          executions="$COOLIFY_URL/api/v1/databases/$DB_UUID/backups/$BACKUP_UUID/executions"
+          latest() { api "$executions" | jq -c '(.executions // .) | max_by(.created_at) // {}'; }
+
+          before=$(latest | jq -r '.uuid // ""')
+          api -X PATCH -H "Content-Type: application/json" -d '{"backup_now":true}' \
+            "$COOLIFY_URL/api/v1/databases/$DB_UUID/backups/$BACKUP_UUID" > /dev/null
+
+          for i in $(seq 1 60); do
+            sleep 5
+            run=$(latest)
+            uuid=$(echo "$run" | jq -r '.uuid // ""')
+            status=$(echo "$run" | jq -r '.status // ""')
+            [ "$uuid" = "$before" ] && continue
+            echo "[$((i * 5))s] backup $uuid: $status"
+            if [ "$status" = "success" ]; then
+              echo "Restore point: $(echo "$run" | jq -r '.filename')"
+              exit 0
+            fi
+            if [ "$status" = "failed" ]; then
+              echo "Backup failed: $(echo "$run" | jq -r '.message')"
+              exit 1
+            fi
+          done
+          echo "Backup did not finish within 5 minutes"
+          exit 1
+
       - name: Trigger Coolify Deployment
         run: |
-          response=$(curl -s -w "\n%{http_code}" \
+          response=$(curl -s -X POST -w "\n%{http_code}" \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_API_TOKEN }}" \
             -H "Accept: application/json" \
             "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_APP_UUID }}")
