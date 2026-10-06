@@ -37,7 +37,8 @@ not contain the new migration file, so it cannot run its `down`):
 1. Coolify → `devince-dev` → **Terminal** → the running container.
 2. `npx payload migrate:status` to confirm what is applied.
 3. `npx payload migrate:down` rolls back the last batch.
-4. Then do level 1.
+4. Then do level 1. The old image runs `npx payload migrate` on boot; it has
+   nothing to apply and ignores migration rows it has no file for, so it boots fine.
 
 If the bad container is already gone (health check rejected it), the migration
 is applied but its `down` is not in any running image: either deploy a fix
