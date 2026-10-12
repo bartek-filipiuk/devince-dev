@@ -32,6 +32,15 @@ const SOURCES: Record<string, () => Source> = {
     listId: process.env.BREVO_LESSON_LIST_ID,
     templateId: process.env.BREVO_LESSON_DOI_TEMPLATE_ID,
   }),
+  // local-security.devince.dev (ai-agent-audit landing): one list and DOI template per language.
+  'local-security': () => ({
+    listId: process.env.BREVO_LOCAL_SECURITY_LIST_ID,
+    templateId: process.env.BREVO_LOCAL_SECURITY_DOI_TEMPLATE_ID,
+  }),
+  'local-security-en': () => ({
+    listId: process.env.BREVO_LOCAL_SECURITY_EN_LIST_ID,
+    templateId: process.env.BREVO_LOCAL_SECURITY_EN_DOI_TEMPLATE_ID,
+  }),
 }
 
 // Answer to "co masz dziś" on the lesson signup; stored as the PROJEKT contact
