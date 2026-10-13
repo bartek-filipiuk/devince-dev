@@ -15,8 +15,12 @@ const ENV: Record<string, string> = {
   BREVO_DOI_TEMPLATE_ID: '1',
   BREVO_LESSON_LIST_ID: '14',
   BREVO_LESSON_DOI_TEMPLATE_ID: '9',
+  BREVO_LOCAL_SECURITY_LIST_ID: '21',
+  BREVO_LOCAL_SECURITY_DOI_TEMPLATE_ID: '31',
+  BREVO_LOCAL_SECURITY_EN_LIST_ID: '22',
+  BREVO_LOCAL_SECURITY_EN_DOI_TEMPLATE_ID: '32',
   NEXT_PUBLIC_SERVER_URL: 'https://devince.dev',
-  NEWSLETTER_REDIRECT_ORIGINS: 'https://stronaw5dni.pl',
+  NEWSLETTER_REDIRECT_ORIGINS: 'https://stronaw5dni.pl,https://local-security.devince.dev',
 }
 const saved: Record<string, string | undefined> = {}
 
@@ -87,6 +91,26 @@ describe('POST /api/newsletter/subscribe', () => {
       redirectionUrl: 'https://stronaw5dni.pl/lekcja/potwierdzone.html',
       attributes: { PROJEKT: 'lokalnie' },
     })
+  })
+
+  it('local-security sources pick their own list and DOI template per language', async () => {
+    const res = await post(
+      form({
+        email: 'pl@example.com',
+        source: 'local-security',
+        next: 'https://local-security.devince.dev/sprawdz-poczte/',
+        confirmed: 'https://local-security.devince.dev/poradnik/',
+      }),
+    )
+    expect(res.status).toBe(303)
+    expect(res.headers.get('location')).toBe('https://local-security.devince.dev/sprawdz-poczte/')
+    expect(lastDoi()).toMatchObject({
+      listId: 21,
+      templateId: '31',
+      redirectionUrl: 'https://local-security.devince.dev/poradnik/',
+    })
+    await post(json({ email: 'en@example.com', source: 'local-security-en' }))
+    expect(lastDoi()).toMatchObject({ listId: 22, templateId: '32' })
   })
 
   it('rejects an unknown source and never names a list from the client', async () => {
