@@ -42,6 +42,7 @@ describe('POST /api/free-claim', () => {
   let savedTpl: string | undefined
   let savedList: string | undefined
   let savedLeadList: string | undefined
+  let savedLeadTpl: string | undefined
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -50,6 +51,8 @@ describe('POST /api/free-claim', () => {
     savedTpl = process.env.BREVO_DOI_TEMPLATE_ID
     savedList = process.env.BREVO_LIST_ID
     savedLeadList = process.env.BREVO_LEADMAGNET_LIST_ID
+    savedLeadTpl = process.env.BREVO_LEADMAGNET_DOI_TEMPLATE_ID
+    delete process.env.BREVO_LEADMAGNET_DOI_TEMPLATE_ID
     process.env.CLAIM_TOKEN_SECRET = 'claim-secret-test'
     process.env.BREVO_DOI_TEMPLATE_ID = '1'
     process.env.BREVO_LIST_ID = '12'
@@ -60,6 +63,7 @@ describe('POST /api/free-claim', () => {
     restore('BREVO_DOI_TEMPLATE_ID', savedTpl)
     restore('BREVO_LIST_ID', savedList)
     restore('BREVO_LEADMAGNET_LIST_ID', savedLeadList)
+    restore('BREVO_LEADMAGNET_DOI_TEMPLATE_ID', savedLeadTpl)
   })
 
   it('returns 503 when the DOI template is not configured', async () => {
@@ -69,6 +73,27 @@ describe('POST /api/free-claim', () => {
     const res = await POST(makeReq({ surface: 'apps', slug: 'free-template', email: 'a@b.pl' }))
     expect(res.status).toBe(503)
     expect(brevoDoubleOptin).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['own lead-magnet template when set', '9', '9'],
+    ['shared newsletter template as fallback', undefined, '1'],
+  ])('confirm mail uses the %s', async (_label, leadTpl, expected) => {
+    if (leadTpl) process.env.BREVO_LEADMAGNET_DOI_TEMPLATE_ID = leadTpl
+    const { POST } = await import('./route')
+    mockItem(LEAD_PRODUCT)
+    const res = await POST(makeReq({ surface: 'apps', slug: 'free-template', email: 't@b.pl' }))
+    expect(res.status).toBe(200)
+    expect(brevoDoubleOptin).toHaveBeenCalledWith(expect.objectContaining({ templateId: expected }))
+  })
+
+  it('serves with only the lead-magnet template set (no newsletter template)', async () => {
+    delete process.env.BREVO_DOI_TEMPLATE_ID
+    process.env.BREVO_LEADMAGNET_DOI_TEMPLATE_ID = '9'
+    const { POST } = await import('./route')
+    mockItem(LEAD_PRODUCT)
+    const res = await POST(makeReq({ surface: 'apps', slug: 'free-template', email: 'u@b.pl' }))
+    expect(res.status).toBe(200)
   })
 
   it('rejects an invalid email (400) without hitting the DB', async () => {

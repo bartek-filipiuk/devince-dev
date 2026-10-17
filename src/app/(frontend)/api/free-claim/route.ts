@@ -93,7 +93,11 @@ export async function POST(req: NextRequest) {
   // brevoDoubleOptin util would silently skip and the user would never get a
   // confirm email). Surface that as a clear 503 rather than a misleading 200 so
   // the UI can show "not available yet" and the owner knows to set the env.
-  if (!process.env.BREVO_DOI_TEMPLATE_ID) {
+  // Own template so the confirm mail talks about the download, not the newsletter;
+  // falls back to the shared newsletter DOI template until the owner creates one.
+  const doiTemplateId =
+    process.env.BREVO_LEADMAGNET_DOI_TEMPLATE_ID || process.env.BREVO_DOI_TEMPLATE_ID
+  if (!doiTemplateId) {
     return NextResponse.json({ error: 'lead magnets not configured' }, { status: 503 })
   }
   // Same gate for the target list: a missing claims list must NEVER fall back to
@@ -162,7 +166,7 @@ export async function POST(req: NextRequest) {
   await brevoDoubleOptin({
     email: normalizedEmail,
     listId,
-    templateId: process.env.BREVO_DOI_TEMPLATE_ID,
+    templateId: doiTemplateId,
     redirectionUrl,
     attributes: { SOURCE: 'leadmagnet', PRODUCT: slug, SURFACE: surface },
   })
