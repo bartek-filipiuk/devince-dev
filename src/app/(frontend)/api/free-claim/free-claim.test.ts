@@ -41,6 +41,7 @@ describe('POST /api/free-claim', () => {
   let savedSecret: string | undefined
   let savedTpl: string | undefined
   let savedList: string | undefined
+  let savedLeadList: string | undefined
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -48,14 +49,17 @@ describe('POST /api/free-claim', () => {
     savedSecret = process.env.CLAIM_TOKEN_SECRET
     savedTpl = process.env.BREVO_DOI_TEMPLATE_ID
     savedList = process.env.BREVO_LIST_ID
+    savedLeadList = process.env.BREVO_LEADMAGNET_LIST_ID
     process.env.CLAIM_TOKEN_SECRET = 'claim-secret-test'
     process.env.BREVO_DOI_TEMPLATE_ID = '1'
     process.env.BREVO_LIST_ID = '12'
+    process.env.BREVO_LEADMAGNET_LIST_ID = '34'
   })
   afterEach(() => {
     restore('CLAIM_TOKEN_SECRET', savedSecret)
     restore('BREVO_DOI_TEMPLATE_ID', savedTpl)
     restore('BREVO_LIST_ID', savedList)
+    restore('BREVO_LEADMAGNET_LIST_ID', savedLeadList)
   })
 
   it('returns 503 when the DOI template is not configured', async () => {
@@ -114,7 +118,8 @@ describe('POST /api/free-claim', () => {
       attributes: Record<string, unknown>
     }
     expect(arg.email).toBe('a@b.pl')
-    expect(arg.listId).toBe(12)
+    // No newsletter field → claims-only list, never the newsletter list.
+    expect(arg.listId).toBe(34)
     expect(arg.attributes).toEqual({ SOURCE: 'leadmagnet', PRODUCT: 'free-template', SURFACE: 'apps' })
 
     // The redirectionUrl carries the signed claim token at /claim/confirmed.
@@ -136,6 +141,56 @@ describe('POST /api/free-claim', () => {
     expect(arg.attributes).toEqual({ SOURCE: 'leadmagnet', PRODUCT: 'free-course', SURFACE: 'courses' })
     const grant = new URL(arg.redirectionUrl).searchParams.get('grant')
     expect(verifyClaim(grant as string)).toEqual({ kind: 'course', itemId: '16', email: 'c@d.pl' })
+  })
+
+  /**
+   * Consent split (art. 7(4) GDPR, art. 398 PKE): the material is delivered with
+   * no strings; only a strict boolean `true` puts the contact on the newsletter
+   * list. Strings, numbers and missing values are NOT consent.
+   */
+  describe('newsletter consent', () => {
+    const listFor = async (extra: Record<string, unknown>) => {
+      const { POST } = await import('./route')
+      mockItem(LEAD_PRODUCT)
+      const res = await POST(makeReq({ surface: 'apps', slug: 'free-template', email: 'n@b.pl', ...extra }))
+      expect(res.status).toBe(200)
+      return (brevoDoubleOptin.mock.calls[0][0] as { listId: number }).listId
+    }
+
+    it('newsletter: true → newsletter list', async () => {
+      expect(await listFor({ newsletter: true })).toBe(12)
+    })
+    it.each([
+      ['missing', {}],
+      ['false', { newsletter: false }],
+      ['"true" string', { newsletter: 'true' }],
+      ['"on" string', { newsletter: 'on' }],
+      ['1', { newsletter: 1 }],
+      ['null', { newsletter: null }],
+      ['object', { newsletter: { value: true } }],
+    ])('newsletter %s → claims-only list', async (_label, extra) => {
+      expect(await listFor(extra)).toBe(34)
+    })
+
+    it('missing claims list → 503, never falls back to the newsletter list', async () => {
+      delete process.env.BREVO_LEADMAGNET_LIST_ID
+      const { POST } = await import('./route')
+      mockItem(LEAD_PRODUCT)
+      const res = await POST(makeReq({ surface: 'apps', slug: 'free-template', email: 'n@b.pl' }))
+      expect(res.status).toBe(503)
+      expect(brevoDoubleOptin).not.toHaveBeenCalled()
+    })
+
+    it('ticked box but newsletter list unset → 503, no DOI', async () => {
+      delete process.env.BREVO_LIST_ID
+      const { POST } = await import('./route')
+      mockItem(LEAD_PRODUCT)
+      const res = await POST(
+        makeReq({ surface: 'apps', slug: 'free-template', email: 'n@b.pl', newsletter: true }),
+      )
+      expect(res.status).toBe(503)
+      expect(brevoDoubleOptin).not.toHaveBeenCalled()
+    })
   })
 
   it('rate-limits repeated hits from the same IP+email (429)', async () => {

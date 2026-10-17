@@ -226,8 +226,10 @@ const translations = {
     'leadMagnet.submit': 'Odbierz za darmo',
     'leadMagnet.processing': 'Wysyłam…',
     'leadMagnet.note':
-      'Podaj e-mail → potwierdź zapis w mailu → dostajesz dostęp i dołączasz do listy. Bez płatności.',
-    'leadMagnet.success': '📧 Sprawdź mail i potwierdź zapis, żeby odebrać dostęp.',
+      'Podaj e-mail → potwierdź adres w mailu → dostajesz materiał. Bez płatności i bez warunków.',
+    'leadMagnet.newsletter':
+      'Chcę dostawać kolejne paczki z filmów i informacje o warsztatach, mniej więcej raz w tygodniu.',
+    'leadMagnet.success': '📧 Sprawdź mail i potwierdź adres, żeby odebrać dostęp.',
     'leadMagnet.error': 'Coś poszło nie tak. Spróbuj ponownie za chwilę.',
     'leadMagnet.invalidEmail': 'Podaj poprawny adres e-mail.',
     'leadMagnet.unavailable': 'Darmowy dostęp jest chwilowo niedostępny. Wróć później.',
@@ -684,8 +686,10 @@ const translations = {
     'leadMagnet.submit': 'Get it free',
     'leadMagnet.processing': 'Sending…',
     'leadMagnet.note':
-      'Enter your email → confirm in the email → you get access and join the list. No payment.',
-    'leadMagnet.success': '📧 Check your email and confirm to unlock your access.',
+      'Enter your email → confirm your address in the email → you get the material. No payment, no strings attached.',
+    'leadMagnet.newsletter':
+      'I want to receive new packs from the videos and workshop announcements, about once a week.',
+    'leadMagnet.success': '📧 Check your email and confirm your address to unlock your access.',
     'leadMagnet.error': 'Something went wrong. Please try again in a moment.',
     'leadMagnet.invalidEmail': 'Please enter a valid email address.',
     'leadMagnet.unavailable': 'Free access is temporarily unavailable. Please check back later.',

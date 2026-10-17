@@ -4,7 +4,7 @@ import { track } from '@/utilities/track'
 
 /**
  * Lead-magnet email capture — rendered INSTEAD of the paid buy control when an
- * item's `accessMode === 'lead-magnet'`. Posts `{surface, slug, email}` to
+ * item's `accessMode === 'lead-magnet'`. Posts `{surface, slug, email, newsletter}` to
  * /api/free-claim, which validates the item is a published lead-magnet
  * SERVER-SIDE and fires Brevo's double opt-in. No access is granted here; the
  * user confirms via the email, which lands on /claim/confirmed.
@@ -20,6 +20,7 @@ export function LeadMagnetForm({
   submitLabel,
   processingLabel,
   noteLabel,
+  newsletterLabel,
   successLabel,
   errorLabel,
   invalidEmailLabel,
@@ -32,12 +33,15 @@ export function LeadMagnetForm({
   submitLabel: string
   processingLabel: string
   noteLabel: string
+  newsletterLabel: string
   successLabel: string
   errorLabel: string
   invalidEmailLabel: string
   unavailableLabel: string
 }) {
   const [email, setEmail] = useState('')
+  // Separate, optional, unchecked by default: the material never depends on it.
+  const [newsletter, setNewsletter] = useState(false)
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -58,7 +62,7 @@ export function LeadMagnetForm({
       const res = await fetch('/api/free-claim', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ surface, slug, email: value }),
+        body: JSON.stringify({ surface, slug, email: value, newsletter }),
       })
       if (res.status === 503) {
         setError(unavailableLabel)
@@ -104,6 +108,15 @@ export function LeadMagnetForm({
           disabled={busy}
           aria-invalid={error ? true : undefined}
         />
+      </label>
+      <label className="newsletter-check">
+        <input
+          type="checkbox"
+          checked={newsletter}
+          onChange={(e) => setNewsletter(e.target.checked)}
+          disabled={busy}
+        />
+        <span>{newsletterLabel}</span>
       </label>
       <button
         type="submit"

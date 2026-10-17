@@ -7,7 +7,16 @@ import { createRateLimiter } from '@/utilities/rateLimit'
 /**
  * POST /api/free-claim — lead-magnet email capture (grants NO access).
  *
- * Body: `{ surface:'apps'|'courses', slug, email }`.
+ * Body: `{ surface:'apps'|'courses', slug, email, newsletter? }`.
+ *
+ * CONSENT (art. 6(1)(b) + 7(4) GDPR, art. 398 PKE): the material is delivered
+ * unconditionally; newsletter membership is a SEPARATE opt-in. Brevo's DOI API
+ * always adds the contact to some list (`includeListIds` is mandatory), so the
+ * confirm mail goes through a claims-only list (`BREVO_LEADMAGNET_LIST_ID`, never
+ * used for campaigns) unless `newsletter === true` (strict boolean), in which
+ * case it goes to the newsletter list (`BREVO_LIST_ID`), exactly like the paid
+ * checkout's newsletter box. Anything else ("true", 1, "on", missing) = NOT
+ * subscribed.
  *
  * SECURITY POSTURE (this is the entry to a FREE-access flow):
  *  - The item is loaded with `overrideAccess:false` so ONLY published items are
@@ -62,8 +71,9 @@ export async function POST(req: NextRequest) {
   let surface: unknown
   let slug: unknown
   let email: unknown
+  let newsletter: unknown
   try {
-    ;({ surface, slug, email } = await req.json())
+    ;({ surface, slug, email, newsletter } = await req.json())
   } catch {
     return NextResponse.json({ error: 'invalid body' }, { status: 400 })
   }
@@ -84,6 +94,15 @@ export async function POST(req: NextRequest) {
   // confirm email). Surface that as a clear 503 rather than a misleading 200 so
   // the UI can show "not available yet" and the owner knows to set the env.
   if (!process.env.BREVO_DOI_TEMPLATE_ID) {
+    return NextResponse.json({ error: 'lead magnets not configured' }, { status: 503 })
+  }
+  // Same gate for the target list: a missing claims list must NEVER fall back to
+  // the newsletter list (that would re-bundle the consent this route separates).
+  const subscribe = newsletter === true
+  const listId = Number(
+    subscribe ? process.env.BREVO_LIST_ID : process.env.BREVO_LEADMAGNET_LIST_ID,
+  )
+  if (!Number.isInteger(listId) || listId <= 0) {
     return NextResponse.json({ error: 'lead magnets not configured' }, { status: 503 })
   }
 
@@ -137,12 +156,12 @@ export async function POST(req: NextRequest) {
 
   const redirectionUrl = `${HOST[surface]()}/claim/confirmed?grant=${encodeURIComponent(token)}`
 
-  // Best-effort DOI (never throws). The contact is added to the list + access is
+  // Best-effort DOI (never throws). The contact is added to `listId` + access is
   // granted only when the user clicks Brevo's confirmation link → /claim/confirmed.
   const { brevoDoubleOptin } = await import('@/utilities/brevoContacts')
   await brevoDoubleOptin({
     email: normalizedEmail,
-    listId: Number(process.env.BREVO_LIST_ID),
+    listId,
     templateId: process.env.BREVO_DOI_TEMPLATE_ID,
     redirectionUrl,
     attributes: { SOURCE: 'leadmagnet', PRODUCT: slug, SURFACE: surface },

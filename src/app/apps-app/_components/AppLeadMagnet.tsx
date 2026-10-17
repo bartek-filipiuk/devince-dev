@@ -16,6 +16,7 @@ export function AppLeadMagnet({ slug, locale }: { slug: string; locale: Locale }
       submitLabel={t(locale, 'leadMagnet.submit')}
       processingLabel={t(locale, 'leadMagnet.processing')}
       noteLabel={t(locale, 'leadMagnet.note')}
+      newsletterLabel={t(locale, 'leadMagnet.newsletter')}
       successLabel={t(locale, 'leadMagnet.success')}
       errorLabel={t(locale, 'leadMagnet.error')}
       invalidEmailLabel={t(locale, 'leadMagnet.invalidEmail')}
