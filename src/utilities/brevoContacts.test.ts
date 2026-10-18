@@ -140,6 +140,22 @@ describe('brevoDoubleOptin', () => {
     expect(body.templateId).toBe(1)
   })
 
+  it('one confirmation can add the contact to extra lists', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await brevoDoubleOptin({
+      email: 'jan@example.com',
+      listId: 40,
+      extraListIds: [13],
+      templateId: 41,
+      redirectionUrl: 'https://devince.dev/mcp',
+    })
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string)
+    expect(body.includeListIds).toEqual([40, 13])
+  })
+
   it('NO-OPS (no fetch) when templateId is falsy — ships dark — returns false', async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)

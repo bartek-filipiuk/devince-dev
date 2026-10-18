@@ -3,6 +3,7 @@ import configPromise from '@payload-config'
 
 import { t, type Locale } from '@/i18n'
 import { confirmClaim } from '@/utilities/confirmClaim'
+import { ClaimNewsletterOffer } from './ClaimNewsletterOffer'
 
 /**
  * Shared lead-magnet confirm renderer used by BOTH the apps-app and courses-app
@@ -57,6 +58,18 @@ export async function ClaimConfirmed({
       >
         {t(locale, `claim.${key}.body` as never)}
       </p>
+      {result.status === 'granted' ? (
+        <ClaimNewsletterOffer
+          title={t(locale, 'claim.newsletter.title')}
+          body={t(locale, 'claim.newsletter.body')}
+          placeholder={t(locale, 'leadMagnet.emailPlaceholder')}
+          submit={t(locale, 'claim.newsletter.submit')}
+          done={t(locale, 'claim.newsletter.done')}
+          error={t(locale, 'claim.newsletter.error')}
+          invalidEmail={t(locale, 'leadMagnet.invalidEmail')}
+          privacy={t(locale, 'claim.newsletter.privacy')}
+        />
+      ) : null}
     </section>
   )
 }

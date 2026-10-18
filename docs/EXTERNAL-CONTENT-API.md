@@ -57,6 +57,7 @@ its `.real_value`; `.value` is masked.)
 | `/media` | POST | upload an image (returns a media id) |
 | `/app-assets` | POST | private downloadable file for apps store |
 | `/pages/[idOrSlug]/layout` | PUT | main-site Page layout blocks |
+| `/videos`, `/videos/[slug]` | GET, PUT | films for the public channel MCP; PUT = idempotent full upsert from the video pipeline (`title`, `youtubeId`, `publishedAt`, `summary`, `description`, `tags`, `chapters[{tMs,label}]`, `transcript`, `publicFiles[{name,content}]` (.md/.txt), `productSlug`, `hidden`). Shown by the MCP only after `publishedAt`. |
 
 ## Rich text: markdown is auto-converted
 

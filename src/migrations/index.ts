@@ -23,6 +23,7 @@ import * as migration_20260709_190834_features_variant from './20260709_190834_f
 import * as migration_20260718_080019_cohort_mode from './20260718_080019_cohort_mode';
 import * as migration_20260721_200312_checkout_consent_mode from './20260721_200312_checkout_consent_mode';
 import * as migration_20260801_004500_repair_localized_columns from './20260801_004500_repair_localized_columns';
+import * as migration_20261018_072454_channel_videos from './20261018_072454_channel_videos';
 
 export const migrations = [
   {
@@ -143,11 +144,16 @@ export const migrations = [
   {
     up: migration_20260721_200312_checkout_consent_mode.up,
     down: migration_20260721_200312_checkout_consent_mode.down,
-    name: '20260721_200312_checkout_consent_mode'
+    name: '20260721_200312_checkout_consent_mode',
   },
   {
     up: migration_20260801_004500_repair_localized_columns.up,
     down: migration_20260801_004500_repair_localized_columns.down,
-    name: '20260801_004500_repair_localized_columns'
+    name: '20260801_004500_repair_localized_columns',
+  },
+  {
+    up: migration_20261018_072454_channel_videos.up,
+    down: migration_20261018_072454_channel_videos.down,
+    name: '20261018_072454_channel_videos'
   },
 ];

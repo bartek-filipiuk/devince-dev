@@ -19,6 +19,7 @@ export type ReadableCollection =
   | 'projects'
   | 'media'
   | 'app-assets'
+  | 'videos'
 
 function clampInt(value: string | null, def: number, min: number, max: number): number {
   const n = parseInt(value ?? '', 10)

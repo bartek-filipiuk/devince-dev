@@ -1,3 +1,5 @@
+import { isIPv6 } from 'node:net'
+
 /**
  * Tiny in-memory fixed-window rate limiter.
  *
@@ -60,4 +62,21 @@ export function createRateLimiter(opts: {
       return true
     },
   }
+}
+
+/**
+ * Limiter key for a client address: IPv4 as is, IPv6 by its /64 (one host owns the
+ * whole prefix). Compressed forms are expanded first, so 2001:db8::a:1 and
+ * 2001:db8::b:1 share a key. IPv4-mapped (::ffff:1.2.3.4) stays whole.
+ */
+export function ipKey(ip: string): string {
+  if (!isIPv6(ip) || ip.includes('.')) return ip
+  const [head = '', tail = ''] = ip.split('::')
+  const h = head ? head.split(':') : []
+  const t = tail ? tail.split(':') : []
+  const groups = ip.includes('::') ? [...h, ...Array(8 - h.length - t.length).fill('0'), ...t] : h
+  return groups
+    .slice(0, 4)
+    .map((g) => parseInt(g, 16).toString(16))
+    .join(':')
 }
