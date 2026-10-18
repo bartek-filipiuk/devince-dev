@@ -7,7 +7,7 @@ import { track } from '@/utilities/track'
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /**
- * Tester signup for the channel's MCP server. Posts to /api/newsletter/subscribe
+ * Signup for news about the channel's MCP server. Posts to /api/newsletter/subscribe
  * with `source: 'mcp'`; the newsletter box is a separate, unchecked opt-in that
  * the route honours only as a strict boolean.
  */
@@ -84,11 +84,11 @@ export function WaitlistForm() {
         />
         <span>
           Chcę też dostawać newsletter: kolejne paczki z filmów i informacje o warsztatach, mniej
-          więcej raz w tygodniu. To osobna zgoda, testy działają bez niej.
+          więcej raz w tygodniu. To osobna zgoda, serwer działa bez niej.
         </span>
       </label>
       <Button type="submit" size="lg" disabled={busy} aria-busy={busy}>
-        {busy ? 'Zapisuję…' : 'Zapisz mnie do testów'}
+        {busy ? 'Zapisuję…' : 'Zapisz mnie'}
       </Button>
       {error ? (
         <p role="alert" className="text-sm text-destructive">

@@ -1,6 +1,7 @@
 import React from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { CopyField } from './CopyField'
 import { WaitlistForm } from './WaitlistForm'
 
 // ponytail: PL-only copy (the channel is Polish); /en/mcp shows the same page until there is an EN audience.
@@ -12,13 +13,47 @@ type Args = {
 export const metadata: Metadata = {
   title: 'Subskrybuj kanał swoim agentem',
   description:
-    'Kanał Bartka jako connector MCP dla Claude, ChatGPT i Cursora. Agent pyta, co nowego, i dostaje prompty, pliki i kulisy z filmów. Lista testerów otwarta.',
+    'Kanał Bartka jako connector MCP dla Claude, ChatGPT, Cursora i Claude Code. Agent pyta, co nowego, i dostaje prompty, pliki i kulisy z filmów.',
 }
+
+const MCP_URL = 'https://devince.dev/api/channel/mcp'
+
+// ponytail: UI paths as of 2026-10; clients move menus around, the URL is what matters
+const CLIENTS = [
+  {
+    name: 'Claude (claude.ai, aplikacja)',
+    steps:
+      'Ustawienia → Connectors → Dodaj własny connector. Nazwa: bartek-yt, adres poniżej, bez logowania.',
+    copy: MCP_URL,
+  },
+  {
+    name: 'ChatGPT',
+    steps:
+      'Ustawienia → Apps & Connectors → Advanced: włącz Developer mode, potem Create. Adres poniżej, uwierzytelnianie: brak.',
+    copy: MCP_URL,
+  },
+  {
+    name: 'Cursor',
+    steps: 'Settings → MCP → Add new MCP server albo wpis w ~/.cursor/mcp.json:',
+    copy: `{ "mcpServers": { "bartek-yt": { "url": "${MCP_URL}" } } }`,
+  },
+  {
+    name: 'Claude Code',
+    steps: 'W terminalu:',
+    copy: `claude mcp add --transport http bartek-yt ${MCP_URL}`,
+  },
+]
+
+const PROMPTS = [
+  'Co nowego na kanale Bartka od zeszłego tygodnia? Co z tego przyda się w moim projekcie?',
+  'Znajdź u Bartka film, w którym model sam testował swoją grę, i pokaż mi kulisy.',
+  'Pokaż prompt z najnowszego filmu i powiedz, jak go dopasować do mojego repo.',
+]
 
 const STEPS = [
   {
     title: 'Dodajesz kanał jako connector',
-    body: 'Jeden adres wklejony w ustawieniach Claude, ChatGPT albo Cursora. Nic nie instalujesz na komputerze.',
+    body: 'Jeden adres wklejony w ustawieniach Claude, ChatGPT albo Cursora. Bez konta i bez instalowania czegokolwiek.',
   },
   {
     title: 'Pytasz, kiedy chcesz',
@@ -46,15 +81,15 @@ export default async function McpPage({ searchParams }: Args) {
       <div className="max-w-5xl mx-auto">
         {potwierdzone ? (
           <p role="status" className="mb-12 border-l-4 border-primary bg-card p-4 font-medium">
-            Potwierdzone, jesteś na liście testerów. Pierwszy mail przyjdzie, gdy ruszy budowa.
-            Odpisz na niego, jakiego agenta używasz.
+            Potwierdzone. Raz w tygodniu napiszę, co nowego na kanale i na serwerze. Odpisz na
+            pierwszy mail, jakiego agenta używasz.
           </p>
         ) : null}
 
         <header className="grid gap-12 md:grid-cols-[1fr_1.1fr] md:items-center">
-          <div>
+          <div className="min-w-0">
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-primary mb-4">
-              Eksperyment · lista testerów otwarta
+              Nowe · kanał jako connector MCP
             </p>
             <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6">
               Subskrybuj kanał swoim agentem
@@ -63,6 +98,10 @@ export default async function McpPage({ searchParams }: Args) {
               Dzwonek na YouTube mówi, że jest nowy film. Agent podpięty pod kanał powie Ci, co z
               tego filmu przyda się w Twoim projekcie: prompt, kod, liczby z sesji.
             </p>
+            <div className="mt-8 min-w-0">
+              <p className="text-sm font-medium mb-2">Adres do wklejenia jako connector:</p>
+              <CopyField value={MCP_URL} label="Adres serwera MCP" event="mcp_copy_url" />
+            </div>
           </div>
 
           <figure
@@ -71,7 +110,7 @@ export default async function McpPage({ searchParams }: Args) {
           >
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-2 text-xs text-white/50">
               <span>agent · connector: bartek-yt</span>
-              <span>tak to ma wyglądać</span>
+              <span>przykład</span>
             </div>
             <div className="space-y-4 p-5 leading-relaxed">
               <p>
@@ -104,7 +143,7 @@ export default async function McpPage({ searchParams }: Args) {
 
         <section className="mt-20">
           <h2 className="font-mono text-sm uppercase tracking-[0.2em] text-muted-foreground mb-8">
-            Jak to ma działać
+            Jak to działa
           </h2>
           <ol className="grid gap-8 md:grid-cols-3">
             {STEPS.map((step, i) => (
@@ -115,6 +154,29 @@ export default async function McpPage({ searchParams }: Args) {
               </li>
             ))}
           </ol>
+        </section>
+
+        <section className="mt-20" id="podlacz">
+          <h2 className="text-2xl font-bold mb-8">Podłącz w minutę</h2>
+          <div className="grid gap-6 md:grid-cols-2">
+            {CLIENTS.map((c) => (
+              <div key={c.name} className="min-w-0 bg-card p-6 shadow-sm">
+                <h3 className="font-semibold mb-2">{c.name}</h3>
+                <p className="text-sm text-muted-foreground mb-4">{c.steps}</p>
+                <CopyField value={c.copy} label={c.name} event="mcp_copy_client" />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-20">
+          <h2 className="text-2xl font-bold mb-2">Od czego zacząć</h2>
+          <p className="text-muted-foreground mb-6">Wklej agentowi jedno z tych pytań.</p>
+          <div className="space-y-3">
+            {PROMPTS.map((q) => (
+              <CopyField key={q} value={q} label="Przykładowe pytanie" event="mcp_copy_prompt" />
+            ))}
+          </div>
         </section>
 
         <section className="mt-20 grid gap-12 md:grid-cols-2">
@@ -136,6 +198,10 @@ export default async function McpPage({ searchParams }: Args) {
               żadnego kodu do uruchomienia u Ciebie, żadnego dostępu do Twoich plików z mojej
               strony.
             </p>
+            <p className="text-muted-foreground mb-4">
+              Jedno narzędzie coś wysyła: odbiór paczki. Agent poprosi Cię o adres, a ja wyślę na
+              niego link potwierdzający. Do newslettera nikt Cię przez agenta nie zapisze.
+            </p>
             <p className="text-muted-foreground">
               Kanał oddaje dane, nie polecenia. Jeśli w materiałach jest coś do zrobienia, Twój
               agent pokaże Ci to i zapyta, a decyzja zostaje przy Tobie.
@@ -145,21 +211,20 @@ export default async function McpPage({ searchParams }: Args) {
 
         <section className="mt-20 grid gap-12 md:grid-cols-[1fr_1fr] border-t pt-16">
           <div>
-            <h2 className="text-2xl font-bold mb-6">Gdzie jesteśmy</h2>
+            <h2 className="text-2xl font-bold mb-6">Jak to powstało</h2>
             <p className="text-muted-foreground mb-4">
-              Serwera jeszcze nie ma. Zacznę go budować, gdy zapisze się 10 osób, a pierwsze 20
-              podłączy swojego agenta przed wszystkimi.
+              Serwer zbudowałem z agentami, przy kamerze. Film o tym, jak powstawał, co nie
+              zadziałało i ile to kosztowało, wyjdzie na kanale.
             </p>
             <p className="text-muted-foreground">
-              Każdą sesję budowy nagrywam. Z tego będzie film i kulisy dla testerów: prompty,
-              decyzje i to, co nie zadziałało.
+              Coś nie działa albo brakuje Ci narzędzia? Odpisz na dowolny mail ode mnie.
             </p>
           </div>
           <div id="zapis" className="bg-card p-6 md:p-8 shadow-sm">
-            <h2 className="text-2xl font-bold mb-2">Dołącz do testów</h2>
+            <h2 className="text-2xl font-bold mb-2">Daj znać o nowościach</h2>
             <p className="text-sm text-muted-foreground mb-6">
-              Raz w tygodniu krótki mail o teście: co dodałem i jedno pytanie. Wypisujesz się jednym
-              kliknięciem.
+              Raz w tygodniu krótki mail: co nowego na kanale i na serwerze, plus jedno pytanie.
+              Wypisujesz się jednym kliknięciem.
             </p>
             <WaitlistForm />
             <p className="mt-4 text-xs text-muted-foreground">

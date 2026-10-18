@@ -180,8 +180,7 @@ const translations = {
     'contact.followUs': 'Obserwuj nas',
     'contact.pageTitle': 'Skontaktuj się z nami',
     'contact.metaTitle': 'Kontakt',
-    'contact.metaDescription':
-      'Skontaktuj się z nami. Znajdź nasze dane kontaktowe i lokalizację.',
+    'contact.metaDescription': 'Skontaktuj się z nami. Znajdź nasze dane kontaktowe i lokalizację.',
 
     // ── Apps subdomain (apps.devince.dev) ──
     // Layout / chrome
@@ -199,7 +198,8 @@ const translations = {
     'apps.store.meta': 'Sklep',
     'apps.store.eyebrow': 'sklep',
     'apps.store.title': 'Aplikacje i pliki',
-    'apps.store.lead': 'Gotowe narzędzia, szablony i pliki do pobrania — kup raz, korzystaj bez limitu.',
+    'apps.store.lead':
+      'Gotowe narzędzia, szablony i pliki do pobrania — kup raz, korzystaj bez limitu.',
     'apps.store.empty': 'Wkrótce — pracujemy nad pierwszymi produktami.',
     'apps.store.from': 'od',
     'apps.store.view': 'Zobacz',
@@ -241,6 +241,12 @@ const translations = {
     'claim.granted.title': '✅ Dostęp odblokowany',
     'claim.granted.body':
       'Wszystko gotowe! Wysłaliśmy Ci maila z linkiem dostępowym — sprawdź skrzynkę (i folder spam).',
+    'claim.newsletter.title': 'Chcesz kolejne paczki?',
+    'claim.newsletter.body':
+      'Newsletter: nowe paczki z filmów i informacje o warsztatach, mniej więcej raz w tygodniu. Osobna zgoda, potwierdzisz ją jeszcze jednym mailem.',
+    'claim.newsletter.submit': 'Zapisz mnie do newslettera',
+    'claim.newsletter.done': '📧 Sprawdź skrzynkę i potwierdź zapis do newslettera.',
+    'claim.newsletter.error': 'Nie udało się zapisać. Spróbuj ponownie za chwilę.',
     'claim.used.eyebrow': 'link już wykorzystany',
     'claim.used.title': 'Ten link został już użyty',
     'claim.used.body':
@@ -254,7 +260,8 @@ const translations = {
     'apps.success.meta': 'Dziękujemy',
     'apps.success.eyebrow': 'zakup potwierdzony',
     'apps.success.title': 'Dziękujemy za zakup!',
-    'apps.success.body': 'Wysłaliśmy link do pobrania na Twój adres e-mail. Sprawdź też folder spam.',
+    'apps.success.body':
+      'Wysłaliśmy link do pobrania na Twój adres e-mail. Sprawdź też folder spam.',
     'apps.success.preparing': 'Przygotowujemy Twój plik — to chwila. Link przyjdzie też mailem.',
     'apps.success.ready': 'Twój plik jest gotowy.',
     'apps.success.cta': 'Pobierz plik',
@@ -344,8 +351,7 @@ const translations = {
     'courses.syllabus.stagePlural': 'etapy',
     'courses.syllabus.soon': 'Wkrótce',
     'courses.syllabus.ctaBandTitle': 'Gotowy, żeby zacząć?',
-    'courses.syllabus.ctaBandBody':
-      'Program i warunki masz powyżej. Pytania: bartek@devince.dev',
+    'courses.syllabus.ctaBandBody': 'Program i warunki masz powyżej. Pytania: bartek@devince.dev',
     'courses.syllabus.buy': 'Kup dostęp',
     'courses.syllabus.continue': 'Kontynuuj',
 
@@ -659,7 +665,8 @@ const translations = {
     'apps.store.meta': 'Store',
     'apps.store.eyebrow': 'store',
     'apps.store.title': 'Apps & files',
-    'apps.store.lead': 'Ready-made tools, templates and downloadable files — buy once, use without limits.',
+    'apps.store.lead':
+      'Ready-made tools, templates and downloadable files — buy once, use without limits.',
     'apps.store.empty': 'Coming soon — we are working on our first products.',
     'apps.store.from': 'from',
     'apps.store.view': 'View',
@@ -701,6 +708,12 @@ const translations = {
     'claim.granted.title': '✅ Access unlocked',
     'claim.granted.body':
       'All set! We have emailed you an access link — check your inbox (and the spam folder).',
+    'claim.newsletter.title': 'Want the next packages?',
+    'claim.newsletter.body':
+      'Newsletter: new film packages and workshop news, about once a week. A separate consent, confirmed with one more email.',
+    'claim.newsletter.submit': 'Subscribe me to the newsletter',
+    'claim.newsletter.done': '📧 Check your inbox and confirm the newsletter signup.',
+    'claim.newsletter.error': 'Signup failed. Please try again in a moment.',
     'claim.used.eyebrow': 'link already used',
     'claim.used.title': 'This link has already been used',
     'claim.used.body':
@@ -714,8 +727,10 @@ const translations = {
     'apps.success.meta': 'Thank you',
     'apps.success.eyebrow': 'purchase confirmed',
     'apps.success.title': 'Thank you for your purchase!',
-    'apps.success.body': 'We have sent a download link to your email address. Check your spam folder too.',
-    'apps.success.preparing': 'Preparing your file — just a moment. The link is on its way by email too.',
+    'apps.success.body':
+      'We have sent a download link to your email address. Check your spam folder too.',
+    'apps.success.preparing':
+      'Preparing your file — just a moment. The link is on its way by email too.',
     'apps.success.ready': 'Your file is ready.',
     'apps.success.cta': 'Download file',
     'apps.success.alsoEmail': 'We sent the same link to your email address.',
@@ -727,9 +742,11 @@ const translations = {
     'apps.download.invalidBody':
       'If you have just bought a product — check that the link from the email was copied in full. If you still have problems, reply to your purchase email.',
     'apps.download.expired': 'This link has expired.',
-    'apps.download.expiredBody': 'Reply to your purchase confirmation email and we will send a new one.',
+    'apps.download.expiredBody':
+      'Reply to your purchase confirmation email and we will send a new one.',
     'apps.download.limit': 'The download limit has been reached.',
-    'apps.download.limitBody': 'Reply to your purchase confirmation email and we will send a new one.',
+    'apps.download.limitBody':
+      'Reply to your purchase confirmation email and we will send a new one.',
     'apps.download.remaining': 'downloads left:',
     'apps.download.contact':
       'No files to download — get in touch by replying to your purchase confirmation email.',
@@ -932,7 +949,11 @@ export function getTranslation(locale: Locale, key: TranslationKey): string {
   return translations[locale][key] || translations['pl'][key] || key
 }
 
-export function t(locale: Locale, key: TranslationKey, params?: Record<string, string | number>): string {
+export function t(
+  locale: Locale,
+  key: TranslationKey,
+  params?: Record<string, string | number>,
+): string {
   let translation = getTranslation(locale, key)
 
   if (params) {
