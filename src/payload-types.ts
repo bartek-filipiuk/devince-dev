@@ -88,6 +88,7 @@ export interface Config {
     'course-measurements': CourseMeasurement;
     'course-invites': CourseInvite;
     'agent-api-keys': AgentApiKey;
+    videos: Video;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -126,6 +127,7 @@ export interface Config {
     'course-measurements': CourseMeasurementsSelect<false> | CourseMeasurementsSelect<true>;
     'course-invites': CourseInvitesSelect<false> | CourseInvitesSelect<true>;
     'agent-api-keys': AgentApiKeysSelect<false> | AgentApiKeysSelect<true>;
+    videos: VideosSelect<false> | VideosSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -1787,6 +1789,47 @@ export interface AgentApiKey {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos".
+ */
+export interface Video {
+  id: number;
+  slug: string;
+  title: string;
+  youtubeId: string;
+  publishedAt: string;
+  hidden?: boolean | null;
+  summary?: string | null;
+  description?: string | null;
+  tags?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  chapters?:
+    | {
+        tMs: number;
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  transcript?: string | null;
+  publicFiles?:
+    | {
+        name: string;
+        content: string;
+        id?: string | null;
+      }[]
+    | null;
+  product?: (number | null) | Product;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -2058,6 +2101,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'agent-api-keys';
         value: number | AgentApiKey;
+      } | null)
+    | ({
+        relationTo: 'videos';
+        value: number | Video;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -3087,6 +3134,38 @@ export interface AgentApiKeysSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos_select".
+ */
+export interface VideosSelect<T extends boolean = true> {
+  slug?: T;
+  title?: T;
+  youtubeId?: T;
+  publishedAt?: T;
+  hidden?: T;
+  summary?: T;
+  description?: T;
+  tags?: T;
+  chapters?:
+    | T
+    | {
+        tMs?: T;
+        label?: T;
+        id?: T;
+      };
+  transcript?: T;
+  publicFiles?:
+    | T
+    | {
+        name?: T;
+        content?: T;
+        id?: T;
+      };
+  product?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects_select".
  */
 export interface RedirectsSelect<T extends boolean = true> {
@@ -3666,7 +3745,23 @@ export interface BannerBlock {
  * via the `definition` "CodeBlock".
  */
 export interface CodeBlock {
-  language?: ('typescript' | 'javascript' | 'python' | 'bash' | 'json' | 'css' | 'html' | 'php' | 'sql') | null;
+  language?:
+    | (
+        | 'text'
+        | 'typescript'
+        | 'javascript'
+        | 'python'
+        | 'bash'
+        | 'json'
+        | 'yaml'
+        | 'markdown'
+        | 'diff'
+        | 'css'
+        | 'html'
+        | 'php'
+        | 'sql'
+      )
+    | null;
   code: string;
   id?: string | null;
   blockName?: string | null;

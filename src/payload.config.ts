@@ -4,6 +4,7 @@ import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
+import { Videos } from './collections/Videos'
 import { AgentApiKeys } from './collections/AgentApiKeys'
 import { AppAssets } from './collections/AppAssets'
 import { Categories } from './collections/Categories'
@@ -118,6 +119,7 @@ export default buildConfig({
     CourseMeasurements,
     CourseInvites,
     AgentApiKeys,
+    Videos,
   ],
   cors: [getServerSideURL(), process.env.NEXT_PUBLIC_COURSES_URL, process.env.NEXT_PUBLIC_APPS_URL].filter(Boolean) as string[],
   globals: [Header, Footer, SiteSettings, Roadmap],
