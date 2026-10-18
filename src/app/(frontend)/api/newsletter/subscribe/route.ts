@@ -22,7 +22,15 @@ import { createRateLimiter } from '@/utilities/rateLimit'
  * global caps. Replies never reveal whether the address already existed.
  */
 
-type Source = { listId: string | undefined; templateId: string | undefined }
+type Source = {
+  listId: string | undefined
+  templateId: string | undefined
+  /** Where the DOI click lands when the caller sends no `confirmed`. */
+  confirmedPath?: string
+  /** Honour `newsletter: true` (JSON, strict boolean) as a SEPARATE opt-in that
+   *  also adds the newsletter list. Unchecked = only this source's list. */
+  newsletterOptIn?: boolean
+}
 const SOURCES: Record<string, () => Source> = {
   newsletter: () => ({
     listId: process.env.BREVO_LIST_ID,
@@ -40,6 +48,13 @@ const SOURCES: Record<string, () => Source> = {
   'local-security-en': () => ({
     listId: process.env.BREVO_LOCAL_SECURITY_EN_LIST_ID,
     templateId: process.env.BREVO_LOCAL_SECURITY_EN_DOI_TEMPLATE_ID,
+  }),
+  // devince.dev/mcp: testers of the channel's MCP server (agent "subscription").
+  mcp: () => ({
+    listId: process.env.BREVO_MCP_LIST_ID,
+    templateId: process.env.BREVO_MCP_DOI_TEMPLATE_ID,
+    confirmedPath: '/mcp?potwierdzone=1',
+    newsletterOptIn: true,
   }),
 }
 
@@ -98,6 +113,7 @@ type Parsed = {
   email: unknown
   source: unknown
   projekt: unknown
+  newsletter: unknown
   honeypot: unknown
   next: unknown
   confirmed: unknown
@@ -116,6 +132,7 @@ async function parseBody(req: NextRequest): Promise<{ body: Parsed; isForm: bool
           email: f.get('email'),
           source: f.get('source'),
           projekt: f.get('projekt'),
+          newsletter: undefined, // the opt-in is JSON-only: no form field can tick it
           honeypot: f.get('website'),
           next: f.get('next'),
           confirmed: f.get('confirmed'),
@@ -129,6 +146,7 @@ async function parseBody(req: NextRequest): Promise<{ body: Parsed; isForm: bool
         email: j.email,
         source: j.source,
         projekt: j.projekt,
+        newsletter: j.newsletter,
         honeypot: j.website,
         next: j.next,
         confirmed: j.confirmed,
@@ -173,7 +191,9 @@ export async function POST(request: NextRequest) {
 
   if (!globalCap.check('global') || !perIp.check(clientIp(request)) || !perEmail.check(email)) {
     const masked = email.replace(/(.).*(@.*)/, '$1…$2')
-    console.log(JSON.stringify({ event: 'newsletter_rate_limited', source: sourceKey, email: masked }))
+    console.log(
+      JSON.stringify({ event: 'newsletter_rate_limited', source: sourceKey, email: masked }),
+    )
     return NextResponse.json({ error: 'Too many requests, try again later' }, { status: 429 })
   }
 
@@ -182,11 +202,23 @@ export async function POST(request: NextRequest) {
     attributes.PROJEKT = body.projekt
   }
 
+  const newsletterListId = Number(process.env.BREVO_LIST_ID)
+  const extraListIds =
+    source.newsletterOptIn &&
+    body.newsletter === true &&
+    Number.isInteger(newsletterListId) &&
+    newsletterListId > 0
+      ? [newsletterListId]
+      : []
+
   const sent = await brevoDoubleOptin({
     email,
     listId: Number(source.listId),
+    extraListIds,
     templateId: source.templateId,
-    redirectionUrl: safeRedirect(body.confirmed) ?? `${siteUrl()}/newsletter/confirmed`,
+    redirectionUrl:
+      safeRedirect(body.confirmed) ??
+      `${siteUrl()}${source.confirmedPath ?? '/newsletter/confirmed'}`,
     attributes,
   })
   if (!sent) {

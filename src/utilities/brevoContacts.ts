@@ -81,6 +81,8 @@ export async function addBrevoContact(
 export async function brevoDoubleOptin(args: {
   email: string
   listId: number
+  /** More lists the one confirmation also adds the contact to (a separate opt-in box). */
+  extraListIds?: number[]
   templateId: number | string | undefined
   redirectionUrl: string
   attributes?: Record<string, unknown>
@@ -107,7 +109,7 @@ export async function brevoDoubleOptin(args: {
 
   const body: Record<string, unknown> = {
     email: args.email,
-    includeListIds: [Number(args.listId)],
+    includeListIds: [Number(args.listId), ...(args.extraListIds ?? [])],
     templateId,
     redirectionUrl: args.redirectionUrl,
     updateEnabled: true,

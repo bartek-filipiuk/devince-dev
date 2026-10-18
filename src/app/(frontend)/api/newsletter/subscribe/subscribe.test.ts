@@ -19,6 +19,8 @@ const ENV: Record<string, string> = {
   BREVO_LOCAL_SECURITY_DOI_TEMPLATE_ID: '31',
   BREVO_LOCAL_SECURITY_EN_LIST_ID: '22',
   BREVO_LOCAL_SECURITY_EN_DOI_TEMPLATE_ID: '32',
+  BREVO_MCP_LIST_ID: '40',
+  BREVO_MCP_DOI_TEMPLATE_ID: '41',
   NEXT_PUBLIC_SERVER_URL: 'https://devince.dev',
   NEWSLETTER_REDIRECT_ORIGINS: 'https://stronaw5dni.pl,https://local-security.devince.dev',
 }
@@ -161,5 +163,32 @@ describe('POST /api/newsletter/subscribe', () => {
     delete process.env.BREVO_LESSON_LIST_ID
     const res = await post(json({ email: 'q@example.com', source: 'lekcja' }))
     expect(res.status).toBe(503)
+  })
+
+  it('mcp testers land on their own list and confirm back to /mcp', async () => {
+    const res = await post(json({ email: 't@example.com', source: 'mcp' }))
+    expect(res.status).toBe(200)
+    expect(lastDoi()).toMatchObject({
+      listId: 40,
+      extraListIds: [],
+      templateId: '41',
+      redirectionUrl: 'https://devince.dev/mcp?potwierdzone=1',
+    })
+  })
+
+  it.each([
+    [true, [13]],
+    ['true', []],
+    [1, []],
+    ['on', []],
+    [undefined, []],
+  ])('mcp newsletter opt-in %j adds the newsletter list %j', async (newsletter, extra) => {
+    await post(json({ email: 'n@example.com', source: 'mcp', newsletter }))
+    expect(lastDoi()).toMatchObject({ listId: 40, extraListIds: extra })
+  })
+
+  it('newsletter: true is ignored by sources without the separate opt-in', async () => {
+    await post(json({ email: 'l@example.com', source: 'lekcja', newsletter: true }))
+    expect(lastDoi()).toMatchObject({ listId: 14, extraListIds: [] })
   })
 })
