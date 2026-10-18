@@ -23,7 +23,7 @@ const FILM = {
   ],
   transcript: '[00:00] Start.\n[01:00] Testy w Playwright.\n[01:40] Koniec.',
   publicFiles: [{ name: 'kulisy.md', content: '# Kulisy' }],
-  product: { slug: 'klocek' },
+  product: { slug: 'klocek', _status: 'published' },
 }
 
 function rpc(body: Record<string, unknown>, ip = '203.0.113.7') {
@@ -209,5 +209,33 @@ describe('/api/channel/mcp', () => {
     expect(r.isError).toBe(true)
     expect(r.text).toContain('slug')
     expect(find).not.toHaveBeenCalled()
+  })
+
+  it('hides the package link once the product is unpublished', async () => {
+    find.mockResolvedValueOnce({
+      docs: [{ ...FILM, product: { slug: 'klocek', _status: 'draft' } }],
+      totalDocs: 1,
+    })
+    const { body } = await tool('get_video', { slug: 'mcp-strona' })
+    expect(body.package).toBeNull()
+  })
+
+  it('says why a chapter is empty when the transcript has no timestamps', async () => {
+    find.mockResolvedValueOnce({ docs: [{ ...FILM, transcript: 'bez czasu' }], totalDocs: 1 })
+    const r = await tool('get_transcript', { slug: 'mcp-strona', chapter: 1 })
+    expect(r.isError).toBe(true)
+    expect(r.body.error).toContain('znaczników czasu')
+  })
+
+  it('keys IPv6 clients by /64 and caps everyone at 300 a minute', async () => {
+    const { POST } = await import('./route')
+    const { ipKey } = await import('@/utilities/rateLimit')
+    expect(ipKey('2001:db8:1:2:aaaa::1')).toBe(ipKey('2001:db8:1:2:bbbb::9'))
+    expect(ipKey('203.0.113.7')).toBe('203.0.113.7')
+    let last = 0
+    for (let i = 0; i < 301; i++) {
+      last = (await POST(rpc({ method: 'tools/list' }, `198.51.${i % 250}.${i}`))).status
+    }
+    expect(last).toBe(429)
   })
 })

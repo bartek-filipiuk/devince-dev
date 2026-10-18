@@ -61,3 +61,8 @@ export function createRateLimiter(opts: {
     },
   }
 }
+
+/** Limiter key for a client address: IPv4 as is, IPv6 by its /64 (one host owns the whole prefix). */
+export function ipKey(ip: string): string {
+  return ip.includes(':') ? ip.split(':').slice(0, 4).join(':') : ip
+}
