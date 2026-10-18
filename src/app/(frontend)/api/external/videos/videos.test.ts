@@ -116,9 +116,8 @@ describe('PUT /api/external/videos/:slug', () => {
         { tMs: 0, label: 'A' },
       ],
     })
-    expect(p.create.mock.calls[0]![0].data.chapters.map((c: { label: string }) => c.label)).toEqual(
-      ['A', 'B'],
-    )
+    const chapters = p.create.mock.calls[0]![0].data.chapters as { label: string }[]
+    expect(chapters.map((c) => c.label)).toEqual(['A', 'B'])
     const productQuery = p.find.mock.calls.find((c) => c[0].collection === 'products')![0]
     expect(productQuery.where).toMatchObject({ _status: { equals: 'published' } })
   })
