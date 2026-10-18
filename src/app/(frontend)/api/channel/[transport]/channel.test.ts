@@ -238,6 +238,9 @@ describe('/api/channel/mcp', () => {
     const { ipKey } = await import('@/utilities/rateLimit')
     expect(ipKey('2001:db8:1:2:aaaa::1')).toBe(ipKey('2001:db8:1:2:bbbb::9'))
     expect(ipKey('203.0.113.7')).toBe('203.0.113.7')
+    expect(ipKey('2001:db8::a:1')).toBe(ipKey('2001:db8:0:0:b::1'))
+    expect(ipKey('2001:db8::a:1')).not.toBe(ipKey('2001:db8:0:1::1'))
+    expect(ipKey('::ffff:192.0.2.1')).not.toBe(ipKey('::ffff:192.0.2.2'))
     let last = 0
     for (let i = 0; i < 301; i++) {
       last = (await POST(rpc({ method: 'tools/list' }, `198.51.${i % 250}.${i}`))).status

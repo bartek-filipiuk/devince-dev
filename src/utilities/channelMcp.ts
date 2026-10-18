@@ -9,7 +9,6 @@ import type { BasePayload, Where } from 'payload'
 import { z } from 'zod'
 import type { Video } from '@/payload-types'
 import { claimLeadMagnet } from './freeClaim'
-import { ipKey } from './rateLimit'
 
 type McpServer = Parameters<Parameters<typeof createMcpHandler>[0]>[0]
 
@@ -416,7 +415,7 @@ export function registerChannelTools(server: McpServer, payload: BasePayload) {
         slug: product,
         email,
         newsletter: false,
-        ip: ipKey(callerIp(extra)),
+        ip: callerIp(extra),
         source: 'mcp',
       })
       if (r.status !== 200) return fail(CLAIM_ERRORS[r.status] ?? 'Nie udało się.')

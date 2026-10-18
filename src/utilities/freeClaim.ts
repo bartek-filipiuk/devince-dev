@@ -1,7 +1,7 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { signClaim, type ClaimKind } from './claimToken'
-import { createRateLimiter } from './rateLimit'
+import { createRateLimiter, ipKey } from './rateLimit'
 
 /**
  * Lead-magnet claim shared by POST /api/free-claim (the package page form) and the
@@ -80,7 +80,7 @@ export async function claimLeadMagnet(input: ClaimInput): Promise<ClaimResult> {
   // Rate-limit BEFORE the DB/Brevo work. Short-circuit order matters: a request
   // rejected by an earlier barrier must not consume budget in the later ones,
   // otherwise a blocked flood would burn the global cap and lock out real users.
-  if (!perIp.check(ip) || !perEmail.check(normalizedEmail) || !globalCap.check('*')) {
+  if (!perIp.check(ipKey(ip)) || !perEmail.check(normalizedEmail) || !globalCap.check('*')) {
     // Masked so the log never carries a third party's full address — under an
     // attack these are victims' inboxes, not our users'.
     console.warn(
