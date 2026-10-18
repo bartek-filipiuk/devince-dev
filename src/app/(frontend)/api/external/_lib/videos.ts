@@ -23,6 +23,8 @@ export const VIDEO_LIMITS = {
   body: 1_000_000,
 }
 
+const MAX_T_MS = 24 * 3_600_000
+
 export type VideoData = {
   slug: string
   title: string
@@ -39,7 +41,13 @@ export type VideoData = {
 }
 
 const L = VIDEO_LIMITS
-const str = (v: unknown, max: number) => typeof v === 'string' && v.length <= max
+// Postgres rejects NUL and lone surrogates (500 instead of 400); other control
+// characters (ANSI escapes from terminal logs) must not reach other people's agents.
+// \t \n \r stay.
+const UNSAFE_CHARS =
+  /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/
+const str = (v: unknown, max: number) =>
+  typeof v === 'string' && v.length <= max && !UNSAFE_CHARS.test(v)
 
 function optText(body: Record<string, unknown>, key: string, max: number): string | null | Error {
   const v = body[key]
@@ -88,6 +96,7 @@ export function parseVideo(slug: string, body: unknown): VideoData | Error {
         typeof c !== 'object' ||
         !Number.isInteger(c.tMs) ||
         c.tMs < 0 ||
+        c.tMs > MAX_T_MS ||
         !str(c.label, L.chapterLabel) ||
         !c.label.trim(),
     )
@@ -131,10 +140,9 @@ export function parseVideo(slug: string, body: unknown): VideoData | Error {
     summary,
     description,
     tags: tags.map((t: string) => t.trim()),
-    chapters: chapters.map((c: { tMs: number; label: string }) => ({
-      tMs: c.tMs,
-      label: c.label.trim(),
-    })),
+    chapters: chapters
+      .map((c: { tMs: number; label: string }) => ({ tMs: c.tMs, label: c.label.trim() }))
+      .sort((a: { tMs: number }, b: { tMs: number }) => a.tMs - b.tMs),
     transcript,
     publicFiles: files.map((f: { name: string; content: string }) => ({
       name: f.name,

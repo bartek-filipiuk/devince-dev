@@ -52,13 +52,16 @@ export async function PUT(request: NextRequest, { params }: Args) {
     if (video.productSlug) {
       const found = await payload.find({
         collection: 'products',
-        where: { slug: { equals: video.productSlug } },
+        where: { slug: { equals: video.productSlug }, _status: { equals: 'published' } },
         limit: 1,
         depth: 0,
         overrideAccess: true,
       })
       if (found.docs.length === 0) {
-        return createErrorResponse('VALIDATION_ERROR', `product not found: ${video.productSlug}`)
+        return createErrorResponse(
+          'VALIDATION_ERROR',
+          `published product not found: ${video.productSlug}`,
+        )
       }
       product = found.docs[0]!.id
     }
@@ -101,6 +104,10 @@ export async function PUT(request: NextRequest, { params }: Args) {
       existing.docs[0] ? 200 : 201,
     )
   } catch (error) {
+    // Payload maps unique-index violations (two concurrent first exports) to a 400.
+    if ((error as { status?: number }).status === 400) {
+      return createErrorResponse('VALIDATION_ERROR', (error as Error).message)
+    }
     return handleRouteError('Upsert video', error)
   }
 }

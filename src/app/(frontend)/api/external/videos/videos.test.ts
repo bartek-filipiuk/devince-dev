@@ -104,6 +104,25 @@ describe('PUT /api/external/videos/:slug', () => {
     expect(p.update.mock.calls[0]![0]).toMatchObject({ id: 5, data: { product: null } })
   })
 
+  it('sorts chapters and only links a published product', async () => {
+    const p = mockPayload()
+    const { getPayloadClient } = await import('../_lib/payload.js')
+    vi.mocked(getPayloadClient).mockResolvedValue(p as never)
+
+    await call('opus-vs-gpt6', {
+      ...VALID,
+      chapters: [
+        { tMs: 61000, label: 'B' },
+        { tMs: 0, label: 'A' },
+      ],
+    })
+    expect(p.create.mock.calls[0]![0].data.chapters.map((c: { label: string }) => c.label)).toEqual(
+      ['A', 'B'],
+    )
+    const productQuery = p.find.mock.calls.find((c) => c[0].collection === 'products')![0]
+    expect(productQuery.where).toMatchObject({ _status: { equals: 'published' } })
+  })
+
   it('unknown product slug is a 400, nothing written', async () => {
     const p = mockPayload({ product: false })
     const { getPayloadClient } = await import('../_lib/payload.js')
@@ -145,6 +164,14 @@ describe('PUT /api/external/videos/:slug', () => {
     ['too many tags', 'ok', { ...VALID, tags: Array.from({ length: 31 }, (_, i) => `t${i}`) }],
     ['transcript size', 'ok', { ...VALID, transcript: 'a'.repeat(200_001) }],
     ['hidden type', 'ok', { ...VALID, hidden: 'true' }],
+    ['NUL byte', 'ok', { ...VALID, transcript: 'a\u0000b' }],
+    [
+      'ANSI escape in file',
+      'ok',
+      { ...VALID, publicFiles: [{ name: 'a.md', content: '\u001b[31mred' }] },
+    ],
+    ['lone surrogate', 'ok', { ...VALID, title: 'x\ud800' }],
+    ['chapter beyond 24 h', 'ok', { ...VALID, chapters: [{ tMs: 1e300, label: 'x' }] }],
     ['array body', 'ok', [VALID]],
     ['invalid JSON', 'ok', '{nope'],
   ])('400 on bad %s', async (_label, slug, body) => {
