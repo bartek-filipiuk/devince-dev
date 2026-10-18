@@ -243,7 +243,8 @@ const translations = {
       'Wszystko gotowe! Wysłaliśmy Ci maila z linkiem dostępowym — sprawdź skrzynkę (i folder spam).',
     'claim.newsletter.title': 'Chcesz kolejne paczki?',
     'claim.newsletter.body':
-      'Newsletter: nowe paczki z filmów i informacje o warsztatach, mniej więcej raz w tygodniu. Osobna zgoda, potwierdzisz ją jeszcze jednym mailem.',
+      'Newsletter devince.dev (Bartek Filipiuk): nowe paczki z filmów i informacje o warsztatach, mniej więcej raz w tygodniu. Osobna zgoda, potwierdzisz ją jeszcze jednym mailem; wypisujesz się jednym kliknięciem w każdym mailu.',
+    'claim.newsletter.privacy': 'Polityka prywatności',
     'claim.newsletter.submit': 'Zapisz mnie do newslettera',
     'claim.newsletter.done': '📧 Sprawdź skrzynkę i potwierdź zapis do newslettera.',
     'claim.newsletter.error': 'Nie udało się zapisać. Spróbuj ponownie za chwilę.',
@@ -710,7 +711,8 @@ const translations = {
       'All set! We have emailed you an access link — check your inbox (and the spam folder).',
     'claim.newsletter.title': 'Want the next packages?',
     'claim.newsletter.body':
-      'Newsletter: new film packages and workshop news, about once a week. A separate consent, confirmed with one more email.',
+      'devince.dev newsletter (Bartek Filipiuk): new film packages and workshop news, about once a week. A separate consent, confirmed with one more email; unsubscribe with one click in any email.',
+    'claim.newsletter.privacy': 'Privacy policy',
     'claim.newsletter.submit': 'Subscribe me to the newsletter',
     'claim.newsletter.done': '📧 Check your inbox and confirm the newsletter signup.',
     'claim.newsletter.error': 'Signup failed. Please try again in a moment.',

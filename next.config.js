@@ -53,6 +53,11 @@ const nextConfig = {
         source: '/set-password',
         headers: [{ key: 'Referrer-Policy', value: 'no-referrer' }],
       },
+      {
+        // The lead-magnet grant token in /claim/confirmed carries the email: no Referer.
+        source: '/:locale(en)?/claim/confirmed',
+        headers: [{ key: 'Referrer-Policy', value: 'no-referrer' }],
+      },
     ]
   },
 }

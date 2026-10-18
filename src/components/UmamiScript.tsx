@@ -14,5 +14,6 @@ export function UmamiScript() {
   const src = process.env.NEXT_PUBLIC_UMAMI_SRC
   const id = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID
   if (!src || !id) return null
-  return <script defer src={src} data-website-id={id} />
+  // Query strings never go to analytics: the /claim/confirmed grant token carries an email.
+  return <script defer src={src} data-website-id={id} data-exclude-search="true" />
 }

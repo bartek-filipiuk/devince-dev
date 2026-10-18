@@ -21,7 +21,7 @@ const MCP_URL = 'https://devince.dev/api/channel/mcp'
 // ponytail: UI paths as of 2026-10; clients move menus around, the URL is what matters
 const CLIENTS = [
   {
-    name: 'Claude (claude.ai, aplikacja)',
+    name: 'Claude (claude.ai w przeglądarce, aplikacja desktop)',
     steps:
       'Ustawienia → Connectors → Dodaj własny connector. Nazwa: bartek-yt, adres poniżej, bez logowania.',
     copy: MCP_URL,
@@ -29,12 +29,12 @@ const CLIENTS = [
   {
     name: 'ChatGPT',
     steps:
-      'Ustawienia → Apps & Connectors → Advanced: włącz Developer mode, potem Create. Adres poniżej, uwierzytelnianie: brak.',
+      'Na planie płatnym: Ustawienia → Apps & Connectors → Advanced: włącz Developer mode, potem Create. Adres poniżej, uwierzytelnianie: brak.',
     copy: MCP_URL,
   },
   {
     name: 'Cursor',
-    steps: 'Settings → MCP → Add new MCP server albo wpis w ~/.cursor/mcp.json:',
+    steps: 'Settings → Tools & MCP → New MCP Server albo wpis w ~/.cursor/mcp.json:',
     copy: `{ "mcpServers": { "bartek-yt": { "url": "${MCP_URL}" } } }`,
   },
   {

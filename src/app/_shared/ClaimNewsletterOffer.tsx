@@ -17,6 +17,7 @@ export function ClaimNewsletterOffer(props: {
   done: string
   error: string
   invalidEmail: string
+  privacy: string
 }) {
   const [email, setEmail] = useState('')
   const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle')
@@ -76,6 +77,11 @@ export function ClaimNewsletterOffer(props: {
       >
         {props.submit}
       </button>
+      <p className="lead-magnet__note">
+        <a href="https://devince.dev/polityka-prywatnosci" target="_blank" rel="noopener">
+          {props.privacy}
+        </a>
+      </p>
       {error ? (
         <p className="lead-magnet__error" role="alert">
           {error}

@@ -67,6 +67,7 @@ export async function ClaimConfirmed({
           done={t(locale, 'claim.newsletter.done')}
           error={t(locale, 'claim.newsletter.error')}
           invalidEmail={t(locale, 'leadMagnet.invalidEmail')}
+          privacy={t(locale, 'claim.newsletter.privacy')}
         />
       ) : null}
     </section>
