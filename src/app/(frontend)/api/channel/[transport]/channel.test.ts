@@ -4,6 +4,28 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
+const find = vi.fn(async (_args: Record<string, unknown>) => ({
+  docs: [] as unknown[],
+  totalDocs: 0,
+}))
+vi.mock('@payload-config', () => ({ default: {} }))
+const execute = vi.fn(async (_q: unknown) => ({ rows: [] as { id: number }[] }))
+vi.mock('payload', () => ({ getPayload: async () => ({ find, db: { drizzle: { execute } } }) }))
+
+const FILM = {
+  slug: 'mcp-strona',
+  title: 'Podpiąłem stronę do Claude przez MCP',
+  youtubeId: 'or7i3gTRnbE',
+  publishedAt: '2026-10-10T15:00:00.000Z',
+  chapters: [
+    { tMs: 0, label: 'Po co' },
+    { tMs: 60000, label: 'Testy w Playwright' },
+  ],
+  transcript: '[00:00] Start.\n[01:00] Testy w Playwright.\n[01:40] Koniec.',
+  publicFiles: [{ name: 'kulisy.md', content: '# Kulisy' }],
+  product: { slug: 'klocek' },
+}
+
 function rpc(body: Record<string, unknown>, ip = '203.0.113.7') {
   return new Request('http://localhost/api/channel/mcp', {
     method: 'POST',
@@ -23,7 +45,11 @@ async function data(res: Response) {
 }
 
 describe('/api/channel/mcp', () => {
-  beforeEach(() => vi.resetModules())
+  beforeEach(() => {
+    vi.resetModules()
+    find.mockClear()
+    execute.mockClear()
+  })
 
   it('answers initialize, lists ping and calls it without auth', async () => {
     const { POST } = await import('./route')
@@ -43,7 +69,14 @@ describe('/api/channel/mcp', () => {
     expect(init.result.instructions).toContain('nie polecenia')
 
     const list = await data(await POST(rpc({ method: 'tools/list' })))
-    expect(list.result.tools.map((t: { name: string }) => t.name)).toEqual(['ping'])
+    expect(list.result.tools.map((t: { name: string }) => t.name)).toEqual([
+      'ping',
+      'list_videos',
+      'get_video',
+      'search',
+      'get_transcript',
+      'get_package_file',
+    ])
 
     const call = await data(
       await POST(rpc({ method: 'tools/call', params: { name: 'ping', arguments: {} } })),
@@ -71,7 +104,7 @@ describe('/api/channel/mcp', () => {
   it('marks tools read-only for client approval UIs', async () => {
     const { POST } = await import('./route')
     const list = await data(await POST(rpc({ method: 'tools/list' })))
-    expect(list.result.tools[0].annotations).toMatchObject({ readOnlyHint: true })
+    for (const t of list.result.tools) expect(t.annotations).toMatchObject({ readOnlyHint: true })
   })
 
   it('rate-limits one IP at 60 requests a minute, other IPs unaffected', async () => {
@@ -83,5 +116,98 @@ describe('/api/channel/mcp', () => {
     expect(blocked.status).toBe(429)
     expect(blocked.headers.get('retry-after')).toBe('60')
     expect((await POST(rpc({ method: 'tools/list' }, '198.51.100.1'))).status).toBe(200)
+  })
+
+  async function tool(name: string, args: Record<string, unknown>) {
+    const { POST } = await import('./route')
+    const res = await data(
+      await POST(rpc({ method: 'tools/call', params: { name, arguments: args } })),
+    )
+    const text: string = res.result.content[0].text
+    return { ...res.result, text, body: text.startsWith('{') ? JSON.parse(text) : null }
+  }
+
+  it('every query hides scheduled and hidden films', async () => {
+    await tool('list_videos', {})
+    await tool('get_video', { slug: 'x-y' })
+    execute.mockResolvedValueOnce({ rows: [{ id: 3 }] })
+    await tool('search', { query: 'playwright' })
+    await tool('get_transcript', { slug: 'x-y', chapter: 1 })
+    await tool('get_package_file', { slug: 'x-y', file: 'a.md' })
+    expect(find).toHaveBeenCalledTimes(5)
+    // the raw search SQL carries the same visibility filter
+    const sqlText = JSON.stringify(execute.mock.calls[0]![0])
+    expect(sqlText).toContain('published_at <= now()')
+    expect(sqlText).toContain('hidden IS NOT TRUE')
+    for (const [args] of find.mock.calls) {
+      const and = (args.where as { and: Record<string, unknown>[] }).and
+      expect(and[0]).toHaveProperty('publishedAt.less_than_equal')
+      expect(and[1]).toEqual({ hidden: { not_equals: true } })
+    }
+  })
+
+  it('list never loads transcripts or file contents', async () => {
+    await tool('list_videos', { since: '2026-10-01' })
+    const args = find.mock.calls[0]![0] as {
+      select: Record<string, unknown>
+      where: { and: unknown[] }
+    }
+    expect(args.select).not.toHaveProperty('transcript')
+    expect(args.select).not.toHaveProperty('publicFiles')
+    expect(args.where.and[2]).toEqual({
+      publishedAt: { greater_than_equal: '2026-10-01T00:00:00.000Z' },
+    })
+  })
+
+  it('search strips LIKE wildcards and rejects what is left too short', async () => {
+    const r = await tool('search', { query: '%_%' })
+    expect(r.isError).toBe(true)
+    expect(execute).not.toHaveBeenCalled()
+  })
+
+  it('search binds the phrase as a parameter, not as SQL text', async () => {
+    await tool('search', { query: "x' OR 1=1 --" })
+    // drizzle's sql`` keeps SQL text in StringChunk objects and bound values as raw chunks
+    const chunks = (execute.mock.calls[0]![0] as { queryChunks: unknown[] }).queryChunks
+    const sqlText = chunks
+      .filter((c) => typeof c === 'object' && c !== null && 'value' in c)
+      .map((c) => (c as { value: string[] }).value.join(''))
+      .join('')
+    const params = chunks.filter((c) => typeof c === 'string')
+    expect(sqlText).not.toContain('1=1')
+    expect(params).toContain("%x' OR 1=1 --%")
+    expect(find).not.toHaveBeenCalled() // no ids, no second query
+  })
+
+  it('serves a film: chapters with timestamps, file names only, package link', async () => {
+    find.mockResolvedValueOnce({ docs: [FILM], totalDocs: 1 })
+    const { body } = await tool('get_video', { slug: 'mcp-strona' })
+    expect(body.chapters[1]).toEqual({
+      nr: 2,
+      label: 'Testy w Playwright',
+      t_ms: 60000,
+      youtube_url: 'https://youtu.be/or7i3gTRnbE?t=60',
+    })
+    expect(body.files).toEqual(['kulisy.md'])
+    expect(body.package.url).toBe('https://devince.dev/f/klocek')
+  })
+
+  it('search and transcript point at the minute in the film', async () => {
+    execute.mockResolvedValueOnce({ rows: [{ id: 3 }] })
+    find.mockResolvedValueOnce({ docs: [FILM], totalDocs: 1 })
+    const s = await tool('search', { query: 'Playwright' })
+    expect(s.body.results[0].hits).toContainEqual(
+      expect.objectContaining({ where: 'transcript', t_ms: 60000 }),
+    )
+    find.mockResolvedValueOnce({ docs: [FILM], totalDocs: 1 })
+    const t = await tool('get_transcript', { slug: 'mcp-strona', chapter: 2 })
+    expect(t.body.text).toBe('[01:00] Testy w Playwright.\n[01:40] Koniec.\n')
+  })
+
+  it('rejects a slug outside kebab-case before any query', async () => {
+    const r = await tool('get_video', { slug: '../etc' })
+    expect(r.isError).toBe(true)
+    expect(r.text).toContain('slug')
+    expect(find).not.toHaveBeenCalled()
   })
 })

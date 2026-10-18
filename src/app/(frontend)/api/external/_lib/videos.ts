@@ -4,24 +4,13 @@
  * channel MCP, so every field is typed, length-capped and allow-listed.
  */
 
+import { VIDEO_LIMITS } from '@/collections/Videos'
+
+export { VIDEO_LIMITS }
+
 export const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const YOUTUBE_ID_RE = /^[A-Za-z0-9_-]{11}$/
 const FILE_NAME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,79}\.(md|txt)$/
-
-export const VIDEO_LIMITS = {
-  slug: 80,
-  title: 200,
-  summary: 1_000,
-  description: 5_000,
-  tags: 30,
-  tag: 60,
-  chapters: 50,
-  chapterLabel: 120,
-  transcript: 200_000,
-  files: 10,
-  fileContent: 100_000,
-  body: 1_000_000,
-}
 
 const MAX_T_MS = 24 * 3_600_000
 
