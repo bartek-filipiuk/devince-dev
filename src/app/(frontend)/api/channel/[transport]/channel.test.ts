@@ -11,6 +11,8 @@ const find = vi.fn(async (_args: Record<string, unknown>) => ({
 vi.mock('@payload-config', () => ({ default: {} }))
 const execute = vi.fn(async (_q: unknown) => ({ rows: [] as { id: number }[] }))
 vi.mock('payload', () => ({ getPayload: async () => ({ find, db: { drizzle: { execute } } }) }))
+const claimLeadMagnet = vi.fn(async (_input: Record<string, unknown>) => ({ status: 200 }) as never)
+vi.mock('@/utilities/freeClaim', () => ({ claimLeadMagnet }))
 
 const FILM = {
   slug: 'mcp-strona',
@@ -49,6 +51,7 @@ describe('/api/channel/mcp', () => {
     vi.resetModules()
     find.mockClear()
     execute.mockClear()
+    claimLeadMagnet.mockClear()
   })
 
   it('answers initialize, lists ping and calls it without auth', async () => {
@@ -76,6 +79,7 @@ describe('/api/channel/mcp', () => {
       'search',
       'get_transcript',
       'get_package_file',
+      'claim_package',
     ])
 
     const call = await data(
@@ -104,7 +108,9 @@ describe('/api/channel/mcp', () => {
   it('marks tools read-only for client approval UIs', async () => {
     const { POST } = await import('./route')
     const list = await data(await POST(rpc({ method: 'tools/list' })))
-    for (const t of list.result.tools) expect(t.annotations).toMatchObject({ readOnlyHint: true })
+    for (const t of list.result.tools) {
+      expect(t.annotations.readOnlyHint).toBe(t.name !== 'claim_package')
+    }
   })
 
   it('rate-limits one IP at 60 requests a minute, other IPs unaffected', async () => {
@@ -237,5 +243,37 @@ describe('/api/channel/mcp', () => {
       last = (await POST(rpc({ method: 'tools/list' }, `198.51.${i % 250}.${i}`))).status
     }
     expect(last).toBe(429)
+  })
+
+  it('claim_package sends the DOI for the film package, never the newsletter', async () => {
+    find.mockResolvedValueOnce({ docs: [FILM], totalDocs: 1 })
+    const r = await tool('claim_package', { slug: 'mcp-strona', email: 'Ja@Example.com' })
+    expect(r.body).toMatchObject({ ok: true })
+    expect(claimLeadMagnet).toHaveBeenCalledWith({
+      surface: 'apps',
+      slug: 'klocek',
+      email: 'Ja@Example.com',
+      newsletter: false,
+      ip: '203.0.113.7',
+      source: 'mcp',
+    })
+  })
+
+  it('claim_package without a published package sends nothing', async () => {
+    find.mockResolvedValueOnce({
+      docs: [{ ...FILM, product: { slug: 'klocek', _status: 'draft' } }],
+      totalDocs: 1,
+    })
+    const r = await tool('claim_package', { slug: 'mcp-strona', email: 'ja@example.com' })
+    expect(r.isError).toBe(true)
+    expect(claimLeadMagnet).not.toHaveBeenCalled()
+  })
+
+  it('claim_package reports the rate limit without details', async () => {
+    find.mockResolvedValueOnce({ docs: [FILM], totalDocs: 1 })
+    claimLeadMagnet.mockResolvedValueOnce({ status: 429, error: 'too many requests' } as never)
+    const r = await tool('claim_package', { slug: 'mcp-strona', email: 'ja@example.com' })
+    expect(r.isError).toBe(true)
+    expect(r.body.error).toContain('Za dużo prób')
   })
 })
