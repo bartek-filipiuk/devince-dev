@@ -1,6 +1,6 @@
 # Channel MCP: "subscribe to the channel with your agent"
 
-Status: planned (2026-10-18). Branches: `feat/channel-mcp` (devince.dev, from `feat/mcp-waitlist`), `feat/devince-export` (video pipeline).
+Status: built on branches, not deployed (2026-10-18). Branches: `feat/channel-mcp` (devince.dev, from `feat/mcp-waitlist`), `feat/devince-export` (video pipeline).
 
 ## Goal
 
@@ -62,3 +62,24 @@ Main risk: list growth depends on agents proposing `claim_package`. Mitigation: 
 - v2: claim → sign up for the monthly live session.
 - v3: MCP Registry, Smithery, Anthropic connectors directory.
 - v3: Postgres full-text and semantic search over transcripts.
+
+## Built (2026-10-18)
+
+Each step was reviewed for security and performance by a separate advisor pass; findings fixed in follow-up commits.
+
+- devince.dev `feat/channel-mcp`: `/api/channel/mcp` (ping, list_videos, get_video, search, get_transcript, get_package_file, claim_package), `videos` collection + migration, `PUT /api/external/videos/:slug`, shared `utilities/freeClaim.ts`, `/mcp` connect page, newsletter opt-in on the claim confirmation page.
+- Pipeline `feat/devince-export`: `POST /jobs/{id}/export/devince`, film transcript from the rendered file (AssemblyAI, cached in `film_words.json`).
+- Measured on a throwaway DB, 41 films (40 × 150k-char transcripts): search 40–90 ms, list 20 ms, transcript chunk 15 ms.
+
+Decisions made while building:
+- Metrics are JSON log lines (`channel_mcp_connect`, `channel_mcp_call`), not a DB table yet.
+- `claim_package` never subscribes to the newsletter; the confirmation page offers it as a self-clicked opt-in.
+- Rate limits: MCP 60/min per IP (/64 for IPv6) + 300/min global; claims keep the free-claim barriers, shared with the form.
+
+## Deploy checklist
+
+1. Brevo: list "MCP" and its DOI template → Coolify env `BREVO_MCP_LIST_ID`, `BREVO_MCP_DOI_TEMPLATE_ID` (the /mcp signup answers 503 without them; the MCP itself does not need them).
+2. Merge `feat/channel-mcp` → Coolify deploy runs the `channel_videos` migration.
+3. Pipeline `.env`: `DEVINCE_EXTERNAL_API_TOKEN` = devince.dev `EXTERNAL_API_TOKEN`; merge `feat/devince-export`, `scripts/dev.sh restart` (not during a render).
+4. Backfill: `POST /jobs/{id}/export/devince` for each uploaded film (one AssemblyAI transcription per film); the klocek film with `product_slug` and `package_dir`.
+5. Check on prod: connect from claude.ai, ChatGPT (developer mode), Cursor, Claude Code; `curl -H 'X-Forwarded-For: 1.2.3.4'` ×61 still answers 429 (Traefik overwrites XFF).
