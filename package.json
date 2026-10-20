@@ -48,7 +48,7 @@
     "graphql": "^16.8.2",
     "lucide-react": "^1.24.0",
     "mcp-handler": "^1.1.0",
-    "next": "15.4.11",
+    "next": "16.2.10",
     "next-sitemap": "^4.2.3",
     "payload": "3.86.0",
     "prism-react-renderer": "^2.3.1",
