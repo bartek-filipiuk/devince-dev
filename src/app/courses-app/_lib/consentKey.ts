@@ -17,15 +17,21 @@ export function checkoutConsentKey(program: {
 }
 
 /**
- * Programs sold under an additional, product-specific set of terms (the live
- * workshop is sold on stronaw5dni.pl terms, section "Warsztat"). Keyed by slug
- * because it is content-in-code (no schema/migration for a single program).
+ * Programs sold under an additional, product-specific set of terms: the live
+ * workshop on stronaw5dni.pl terms (section "Warsztat"), the security sprint
+ * cohort on the terms published with its landing. Keyed by slug because it is
+ * content-in-code (no schema/migration for a handful of programs).
  */
 const EXTRA_TERMS_BY_SLUG: Record<string, { pl: string; en: string; href: string }> = {
   'od-localhosta-do-produkcji': {
     pl: 'Regulamin warsztatu',
     en: 'Workshop terms',
     href: 'https://stronaw5dni.pl/regulamin.html#warsztat',
+  },
+  'sprint-bezpieczenstwa': {
+    pl: 'Regulamin kursu',
+    en: 'Course terms',
+    href: 'https://security.devince.dev/regulamin.html',
   },
 }
 
