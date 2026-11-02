@@ -26,6 +26,19 @@ describe('checkout consent links', () => {
     expect(links[2].label).toBe('Workshop terms')
   })
 
+  it('security sprint (terms-only) links its own course terms', () => {
+    const links = checkoutConsentLinks(
+      { slug: 'sprint-bezpieczenstwa', checkoutConsentMode: 'terms-only' },
+      'pl',
+    )
+    expect(links.map((l) => l.href)).toEqual([
+      'https://devince.dev/regulamin',
+      'https://devince.dev/polityka-prywatnosci',
+      'https://security.devince.dev/regulamin.html',
+    ])
+    expect(links[2].label).toBe('Regulamin kursu')
+  })
+
   it('other terms-only programs get only the general documents', () => {
     const links = checkoutConsentLinks({ slug: 'x', checkoutConsentMode: 'terms-only' }, 'pl')
     expect(links).toHaveLength(2)
