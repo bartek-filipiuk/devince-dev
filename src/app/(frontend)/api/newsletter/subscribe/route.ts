@@ -30,6 +30,9 @@ type Source = {
   /** Honour `newsletter: true` (JSON, strict boolean) as a SEPARATE opt-in that
    *  also adds the newsletter list. Unchecked = only this source's list. */
   newsletterOptIn?: boolean
+  /** Also honour the opt-in from a plain <form> checkbox (`newsletter=on`), for
+   *  static landings without JS. The visitor ticks it; the DOI click confirms it. */
+  formOptIn?: boolean
 }
 const SOURCES: Record<string, () => Source> = {
   newsletter: () => ({
@@ -55,6 +58,15 @@ const SOURCES: Record<string, () => Source> = {
     templateId: process.env.BREVO_MCP_DOI_TEMPLATE_ID,
     confirmedPath: '/mcp?potwierdzone=1',
     newsletterOptIn: true,
+  }),
+  // security.devince.dev: the "Zanim wypuścisz apkę z AI" checklist (lead magnet of the
+  // security sprint). The DOI click opens the checklist; a separate, unticked checkbox on
+  // the static form adds the newsletter list.
+  'sprint-checklista': () => ({
+    listId: process.env.BREVO_SPRINT_CHECKLIST_LIST_ID,
+    templateId: process.env.BREVO_SPRINT_CHECKLIST_DOI_TEMPLATE_ID,
+    newsletterOptIn: true,
+    formOptIn: true,
   }),
 }
 
@@ -114,6 +126,8 @@ type Parsed = {
   source: unknown
   projekt: unknown
   newsletter: unknown
+  /** The form checkbox, kept apart from the JSON boolean: only `formOptIn` sources read it. */
+  newsletterForm: boolean
   honeypot: unknown
   next: unknown
   confirmed: unknown
@@ -132,7 +146,8 @@ async function parseBody(req: NextRequest): Promise<{ body: Parsed; isForm: bool
           email: f.get('email'),
           source: f.get('source'),
           projekt: f.get('projekt'),
-          newsletter: undefined, // the opt-in is JSON-only: no form field can tick it
+          newsletter: undefined,
+          newsletterForm: f.get('newsletter') === 'on',
           honeypot: f.get('website'),
           next: f.get('next'),
           confirmed: f.get('confirmed'),
@@ -147,6 +162,7 @@ async function parseBody(req: NextRequest): Promise<{ body: Parsed; isForm: bool
         source: j.source,
         projekt: j.projekt,
         newsletter: j.newsletter,
+        newsletterForm: false,
         honeypot: j.website,
         next: j.next,
         confirmed: j.confirmed,
@@ -205,7 +221,7 @@ export async function POST(request: NextRequest) {
   const newsletterListId = Number(process.env.BREVO_LIST_ID)
   const extraListIds =
     source.newsletterOptIn &&
-    body.newsletter === true &&
+    (body.newsletter === true || (source.formOptIn === true && body.newsletterForm)) &&
     Number.isInteger(newsletterListId) &&
     newsletterListId > 0
       ? [newsletterListId]

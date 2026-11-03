@@ -21,8 +21,10 @@ const ENV: Record<string, string> = {
   BREVO_LOCAL_SECURITY_EN_DOI_TEMPLATE_ID: '32',
   BREVO_MCP_LIST_ID: '40',
   BREVO_MCP_DOI_TEMPLATE_ID: '41',
+  BREVO_SPRINT_CHECKLIST_LIST_ID: '20',
+  BREVO_SPRINT_CHECKLIST_DOI_TEMPLATE_ID: '16',
   NEXT_PUBLIC_SERVER_URL: 'https://devince.dev',
-  NEWSLETTER_REDIRECT_ORIGINS: 'https://stronaw5dni.pl,https://local-security.devince.dev',
+  NEWSLETTER_REDIRECT_ORIGINS: 'https://stronaw5dni.pl,https://local-security.devince.dev,https://security.devince.dev',
 }
 const saved: Record<string, string | undefined> = {}
 
@@ -189,6 +191,42 @@ describe('POST /api/newsletter/subscribe', () => {
 
   it('newsletter: true is ignored by sources without the separate opt-in', async () => {
     await post(json({ email: 'l@example.com', source: 'lekcja', newsletter: true }))
+    expect(lastDoi()).toMatchObject({ listId: 14, extraListIds: [] })
+  })
+
+  it('sprint checklist form: own list, DOI lands on the allow-listed checklist page, 303 to next', async () => {
+    const res = await post(
+      form({
+        email: 'c@example.com',
+        source: 'sprint-checklista',
+        next: 'https://security.devince.dev/checklista/sprawdz-skrzynke/',
+        confirmed: 'https://security.devince.dev/checklista/x/',
+      }),
+    )
+    expect(res.status).toBe(303)
+    expect(res.headers.get('location')).toBe('https://security.devince.dev/checklista/sprawdz-skrzynke/')
+    expect(lastDoi()).toMatchObject({
+      listId: 20,
+      extraListIds: [],
+      templateId: '16',
+      redirectionUrl: 'https://security.devince.dev/checklista/x/',
+    })
+  })
+
+  it.each([
+    ['on', [13]],
+    ['true', []],
+    ['1', []],
+    ['', []],
+  ])('sprint checklist form checkbox newsletter=%j adds the newsletter list %j', async (value, extra) => {
+    await post(form({ email: 'f@example.com', source: 'sprint-checklista', newsletter: value }))
+    expect(lastDoi()).toMatchObject({ listId: 20, extraListIds: extra })
+  })
+
+  it('a form checkbox cannot opt in for sources without formOptIn', async () => {
+    await post(form({ email: 'm@example.com', source: 'mcp', newsletter: 'on' }))
+    expect(lastDoi()).toMatchObject({ listId: 40, extraListIds: [] })
+    await post(form({ email: 'k@example.com', source: 'lekcja', newsletter: 'on' }))
     expect(lastDoi()).toMatchObject({ listId: 14, extraListIds: [] })
   })
 })
