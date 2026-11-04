@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { brevoDoubleOptin } from '@/utilities/brevoContacts'
 import { createRateLimiter } from '@/utilities/rateLimit'
+import { verifyTurnstile } from '@/utilities/turnstile'
 
 /**
  * POST /api/newsletter/subscribe — Brevo double opt-in for a named list.
@@ -18,8 +19,9 @@ import { createRateLimiter } from '@/utilities/rateLimit'
  * accepted only for allow-listed origins; anything else silently falls back to
  * the platform defaults, so this route cannot be used as an open redirector.
  *
- * Abuse controls mirror /api/free-claim: honeypot field, per-IP, per-email and
- * global caps. Replies never reveal whether the address already existed.
+ * Abuse controls: Cloudflare Turnstile token (when TURNSTILE_SECRET_KEY is set;
+ * a bot sending one signup per hour to a fresh address slips under every rate
+ * limit), honeypot field, per-IP, per-email and global caps. Replies never reveal whether the address already existed.
  */
 
 type Source = {
@@ -33,6 +35,8 @@ type Source = {
   /** Also honour the opt-in from a plain <form> checkbox (`newsletter=on`), for
    *  static landings without JS. The visitor ticks it; the DOI click confirms it. */
   formOptIn?: boolean
+  /** false = no Turnstile check: external landings that do not embed the widget yet. */
+  captcha?: boolean
 }
 const SOURCES: Record<string, () => Source> = {
   newsletter: () => ({
@@ -42,15 +46,18 @@ const SOURCES: Record<string, () => Source> = {
   lekcja: () => ({
     listId: process.env.BREVO_LESSON_LIST_ID,
     templateId: process.env.BREVO_LESSON_DOI_TEMPLATE_ID,
+    captcha: false, // stronaw5dni.pl static landing, no widget yet
   }),
   // local-security.devince.dev (ai-agent-audit landing): one list and DOI template per language.
   'local-security': () => ({
     listId: process.env.BREVO_LOCAL_SECURITY_LIST_ID,
     templateId: process.env.BREVO_LOCAL_SECURITY_DOI_TEMPLATE_ID,
+    captcha: false, // external landing, no widget yet
   }),
   'local-security-en': () => ({
     listId: process.env.BREVO_LOCAL_SECURITY_EN_LIST_ID,
     templateId: process.env.BREVO_LOCAL_SECURITY_EN_DOI_TEMPLATE_ID,
+    captcha: false, // external landing, no widget yet
   }),
   // devince.dev/mcp: testers of the channel's MCP server (agent "subscription").
   mcp: () => ({
@@ -129,6 +136,7 @@ type Parsed = {
   /** The form checkbox, kept apart from the JSON boolean: only `formOptIn` sources read it. */
   newsletterForm: boolean
   honeypot: unknown
+  captchaToken: unknown
   next: unknown
   confirmed: unknown
 }
@@ -149,6 +157,8 @@ async function parseBody(req: NextRequest): Promise<{ body: Parsed; isForm: bool
           newsletter: undefined,
           newsletterForm: f.get('newsletter') === 'on',
           honeypot: f.get('website'),
+          // Turnstile's implicit widget adds this hidden field to the form.
+          captchaToken: f.get('cf-turnstile-response'),
           next: f.get('next'),
           confirmed: f.get('confirmed'),
         },
@@ -164,6 +174,7 @@ async function parseBody(req: NextRequest): Promise<{ body: Parsed; isForm: bool
         newsletter: j.newsletter,
         newsletterForm: false,
         honeypot: j.website,
+        captchaToken: j.turnstileToken,
         next: j.next,
         confirmed: j.confirmed,
       },
@@ -205,7 +216,17 @@ export async function POST(request: NextRequest) {
   // Honeypot: bots fill every field. Pretend success, send nothing.
   if (typeof body.honeypot === 'string' && body.honeypot.trim() !== '') return ok()
 
-  if (!globalCap.check('global') || !perIp.check(clientIp(request)) || !perEmail.check(email)) {
+  // Before the rate limiters, so tokenless bot traffic cannot use up the global cap.
+  const ip = clientIp(request)
+  if (source.captcha !== false && !(await verifyTurnstile(body.captchaToken, ip))) {
+    console.log(JSON.stringify({ event: 'newsletter_captcha_failed', source: sourceKey }))
+    return NextResponse.json(
+      { error: 'Verification failed. Refresh the page and try again.' },
+      { status: 403 },
+    )
+  }
+
+  if (!globalCap.check('global') || !perIp.check(ip) || !perEmail.check(email)) {
     const masked = email.replace(/(.).*(@.*)/, '$1…$2')
     console.log(
       JSON.stringify({ event: 'newsletter_rate_limited', source: sourceKey, email: masked }),

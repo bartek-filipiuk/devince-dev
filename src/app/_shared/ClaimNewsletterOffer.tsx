@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { track } from '@/utilities/track'
+import { useTurnstile } from '@/components/Turnstile/useTurnstile'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -22,6 +23,7 @@ export function ClaimNewsletterOffer(props: {
   const [email, setEmail] = useState('')
   const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle')
   const [error, setError] = useState<string | null>(null)
+  const captcha = useTurnstile()
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,7 +35,7 @@ export function ClaimNewsletterOffer(props: {
       const res = await fetch('/api/newsletter/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: value, source: 'newsletter' }),
+        body: JSON.stringify({ email: value, source: 'newsletter', turnstileToken: captcha.token() }),
       })
       if (!res.ok) throw new Error(String(res.status))
       track('claim_newsletter_optin')
@@ -41,6 +43,7 @@ export function ClaimNewsletterOffer(props: {
     } catch {
       setError(props.error)
       setState('idle')
+      captcha.reset()
     }
   }
 
@@ -77,6 +80,7 @@ export function ClaimNewsletterOffer(props: {
       >
         {props.submit}
       </button>
+      {captcha.widget}
       <p className="lead-magnet__note">
         <a href="https://devince.dev/polityka-prywatnosci" target="_blank" rel="noopener">
           {props.privacy}

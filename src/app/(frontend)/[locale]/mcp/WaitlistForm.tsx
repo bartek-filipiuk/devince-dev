@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { track } from '@/utilities/track'
+import { useTurnstile } from '@/components/Turnstile/useTurnstile'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -17,6 +18,7 @@ export function WaitlistForm() {
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const captcha = useTurnstile()
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,9 +34,10 @@ export function WaitlistForm() {
       const res = await fetch('/api/newsletter/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: value, source: 'mcp', newsletter }),
+        body: JSON.stringify({ email: value, source: 'mcp', newsletter, turnstileToken: captcha.token() }),
       })
       if (!res.ok) {
+        captcha.reset()
         setError(
           res.status === 503
             ? 'Zapisy chwilowo nie działają. Wróć za godzinę.'
@@ -48,6 +51,7 @@ export function WaitlistForm() {
     } catch {
       setError('Coś poszło nie tak. Spróbuj ponownie za chwilę.')
       setBusy(false)
+      captcha.reset()
     }
   }
 
@@ -90,6 +94,7 @@ export function WaitlistForm() {
       <Button type="submit" size="lg" disabled={busy} aria-busy={busy}>
         {busy ? 'Zapisuję…' : 'Zapisz mnie'}
       </Button>
+      {captcha.widget}
       {error ? (
         <p role="alert" className="text-sm text-destructive">
           {error}
