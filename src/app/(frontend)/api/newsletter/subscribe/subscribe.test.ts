@@ -229,4 +229,75 @@ describe('POST /api/newsletter/subscribe', () => {
     await post(form({ email: 'k@example.com', source: 'lekcja', newsletter: 'on' }))
     expect(lastDoi()).toMatchObject({ listId: 14, extraListIds: [] })
   })
+
+  describe('Turnstile', () => {
+    const fetchMock = vi.fn()
+    beforeEach(() => {
+      process.env.TURNSTILE_SECRET_KEY = 'ts-secret'
+      fetchMock.mockReset()
+      vi.stubGlobal('fetch', fetchMock)
+    })
+    afterEach(() => {
+      delete process.env.TURNSTILE_SECRET_KEY
+      vi.unstubAllGlobals()
+    })
+    const verdict = (success: boolean) =>
+      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ success })))
+
+    it('rejects a request without a token and never calls Cloudflare or Brevo', async () => {
+      const res = await post(json({ email: 'bot@example.com' }))
+      expect(res.status).toBe(403)
+      expect(fetchMock).not.toHaveBeenCalled()
+      expect(brevoDoubleOptin).not.toHaveBeenCalled()
+    })
+
+    it('rejects a token Cloudflare does not accept', async () => {
+      verdict(false)
+      const res = await post(json({ email: 'bot@example.com', turnstileToken: 'forged' }))
+      expect(res.status).toBe(403)
+      expect(brevoDoubleOptin).not.toHaveBeenCalled()
+    })
+
+    it('fails closed when Cloudflare is unreachable', async () => {
+      fetchMock.mockRejectedValueOnce(new Error('network'))
+      const res = await post(json({ email: 'a@example.com', turnstileToken: 'tok' }))
+      expect(res.status).toBe(403)
+    })
+
+    it('accepts a valid JSON token and sends secret, token and client IP', async () => {
+      verdict(true)
+      const res = await post(
+        json({ email: 'a@example.com', turnstileToken: 'tok' }, { 'x-forwarded-for': '203.0.113.7' }),
+      )
+      expect(res.status).toBe(200)
+      const sent = fetchMock.mock.calls[0]![1].body as URLSearchParams
+      expect(Object.fromEntries(sent)).toEqual({
+        secret: 'ts-secret',
+        response: 'tok',
+        remoteip: '203.0.113.7',
+      })
+      expect(brevoDoubleOptin).toHaveBeenCalledOnce()
+    })
+
+    it('reads the widget field from a plain form post', async () => {
+      verdict(true)
+      const res = await post(
+        form({
+          source: 'sprint-checklista',
+          email: 'a@example.com',
+          'cf-turnstile-response': 'tok',
+          next: 'https://security.devince.dev/checklista/sprawdz-skrzynke/',
+        }),
+      )
+      expect(res.status).toBe(303)
+      expect(brevoDoubleOptin).toHaveBeenCalledOnce()
+    })
+
+    it('skips the check for external landings marked captcha:false', async () => {
+      const res = await post(form({ source: 'lekcja', email: 'a@example.com' }))
+      expect(res.status).not.toBe(403)
+      expect(fetchMock).not.toHaveBeenCalled()
+      expect(brevoDoubleOptin).toHaveBeenCalledOnce()
+    })
+  })
 })

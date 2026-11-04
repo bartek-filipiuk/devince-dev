@@ -168,6 +168,11 @@ secrets live in Coolify, not in the repo.
 - `cohortConfig.programLength` NIE może być `required: true` (grupa stałaby
   się wymagana w generowanych typach i psuła create self-paced) — wymagalność
   w trybie cohort egzekwuje `validate` na polu.
+- `/api/newsletter/subscribe` wymaga tokenu Cloudflare Turnstile, gdy jest
+  `TURNSTILE_SECRET_KEY` (bez klucza przepuszcza). Nowy formularz zapisu =
+  `useTurnstile()` z `src/components/Turnstile/` i `turnstileToken` w body;
+  statyczny landing = widget `cf-turnstile` w `<form>`. Źródło bez widgetu
+  dostaje `captcha: false` w `SOURCES`, inaczej zwraca 403.
 
 ### Jak dodać feature (playbook)
 1. Read `docs/HANDOFF.md` + the relevant flow above; find the two most similar

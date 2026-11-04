@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/utilities/ui'
 import { useTranslation } from '@/providers/Locale'
+import { useTurnstile } from '@/components/Turnstile/useTurnstile'
 
 type NewsletterFormProps = {
   className?: string
@@ -15,6 +16,7 @@ export const NewsletterForm: React.FC<NewsletterFormProps> = ({ className }) => 
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
+  const captcha = useTurnstile()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,7 +26,7 @@ export const NewsletterForm: React.FC<NewsletterFormProps> = ({ className }) => 
       const response = await fetch('/api/newsletter/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, turnstileToken: captcha.token() }),
       })
 
       const data = await response.json()
@@ -40,6 +42,8 @@ export const NewsletterForm: React.FC<NewsletterFormProps> = ({ className }) => 
     } catch (error) {
       setStatus('error')
       setMessage(t('newsletter.errorRetry'))
+    } finally {
+      captcha.reset()
     }
   }
 
@@ -64,6 +68,7 @@ export const NewsletterForm: React.FC<NewsletterFormProps> = ({ className }) => 
           {status === 'loading' ? t('newsletter.subscribing') : t('newsletter.subscribe')}
         </Button>
       </div>
+      {captcha.widget}
       {message && (
         <p
           className={cn(

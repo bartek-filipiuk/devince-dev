@@ -7,6 +7,7 @@ import type { BrevoSignupBlock as BrevoSignupProps } from '@/payload-types'
 
 import RichText from '@/components/RichText'
 import { ScrollReveal } from '@/components/ScrollReveal'
+import { useTurnstile } from '@/components/Turnstile/useTurnstile'
 
 /**
  * BrevoSignup Block - Newsletter Signup Form
@@ -39,6 +40,7 @@ export const BrevoSignupBlock: React.FC<BrevoSignupProps> = ({
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
+  const captcha = useTurnstile()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,7 +60,7 @@ export const BrevoSignupBlock: React.FC<BrevoSignupProps> = ({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, listId }),
+        body: JSON.stringify({ email, listId, turnstileToken: captcha.token() }),
       })
 
       const data = await response.json()
@@ -74,6 +76,8 @@ export const BrevoSignupBlock: React.FC<BrevoSignupProps> = ({
     } catch {
       setStatus('error')
       setMessage('Wystąpił błąd. Spróbuj ponownie.')
+    } finally {
+      captcha.reset()
     }
   }
 
@@ -114,6 +118,8 @@ export const BrevoSignupBlock: React.FC<BrevoSignupProps> = ({
                   {status === 'loading' ? 'Zapisywanie...' : buttonText || 'Zapisz się'}
                 </button>
               </div>
+
+              {captcha.widget}
 
               {message && (
                 <p
