@@ -26,6 +26,17 @@ describe('checkout consent links', () => {
     expect(links[2].label).toBe('Workshop terms')
   })
 
+  it('audit service (terms-only) links its section of the sprint terms', () => {
+    const links = checkoutConsentLinks(
+      { slug: 'audyt-z-omowieniem', checkoutConsentMode: 'terms-only' },
+      'pl',
+    )
+    expect(links[2]).toEqual({
+      href: 'https://security.devince.dev/regulamin.html#audyt',
+      label: 'Regulamin usługi',
+    })
+  })
+
   it('security sprint (terms-only) links its own course terms', () => {
     const links = checkoutConsentLinks(
       { slug: 'sprint-bezpieczenstwa', checkoutConsentMode: 'terms-only' },
