@@ -10,8 +10,8 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 
-import { authenticated } from '../../access/authenticated'
-import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
+import { adminOnly } from '../../access/adminOnly'
+import { adminOrPublished } from '../../access/adminOrPublished'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { revalidateProject, revalidateDelete } from './hooks/revalidateProject'
 
@@ -28,10 +28,10 @@ import { slugifyField } from '../../fields/slugifyPl'
 export const Projects: CollectionConfig<'projects'> = {
   slug: 'projects',
   access: {
-    create: authenticated,
-    delete: authenticated,
-    read: authenticatedOrPublished,
-    update: authenticated,
+    create: adminOnly,
+    delete: adminOnly,
+    read: adminOrPublished,
+    update: adminOnly,
   },
   defaultPopulate: {
     title: true,
