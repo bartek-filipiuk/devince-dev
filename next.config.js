@@ -48,6 +48,17 @@ const nextConfig = {
         ],
       },
       {
+        // Uploaded files are served same-origin as /admin. An SVG opened as a page must not run
+        // script or load anything (stored XSS -> admin takeover); <img> rendering is unaffected.
+        source: '/media/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; sandbox",
+          },
+        ],
+      },
+      {
         // The password-reset token is carried in the /set-password URL — never
         // leak it via the Referer header. Overrides the baseline for this route.
         source: '/set-password',

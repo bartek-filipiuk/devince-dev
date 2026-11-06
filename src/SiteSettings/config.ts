@@ -1,4 +1,5 @@
 import type { GlobalConfig } from 'payload'
+import { adminOnly } from '@/access/adminOnly'
 
 import { revalidateSiteSettings } from './hooks/revalidateSiteSettings'
 
@@ -6,6 +7,7 @@ export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
   access: {
     read: () => true,
+    update: adminOnly,
   },
   fields: [
     {

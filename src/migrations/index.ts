@@ -24,6 +24,7 @@ import * as migration_20260718_080019_cohort_mode from './20260718_080019_cohort
 import * as migration_20260721_200312_checkout_consent_mode from './20260721_200312_checkout_consent_mode';
 import * as migration_20260801_004500_repair_localized_columns from './20260801_004500_repair_localized_columns';
 import * as migration_20261018_072454_channel_videos from './20261018_072454_channel_videos';
+import * as migration_20261106_105728_payload_3_93_upgrade from './20261106_105728_payload_3_93_upgrade';
 
 export const migrations = [
   {
@@ -154,6 +155,11 @@ export const migrations = [
   {
     up: migration_20261018_072454_channel_videos.up,
     down: migration_20261018_072454_channel_videos.down,
-    name: '20261018_072454_channel_videos'
+    name: '20261018_072454_channel_videos',
+  },
+  {
+    up: migration_20261106_105728_payload_3_93_upgrade.up,
+    down: migration_20261106_105728_payload_3_93_upgrade.down,
+    name: '20261106_105728_payload_3_93_upgrade'
   },
 ];

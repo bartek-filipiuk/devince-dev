@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
-import { authenticated } from '../../access/authenticated'
-import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
+import { adminOnly } from '../../access/adminOnly'
+import { adminOrPublished } from '../../access/adminOrPublished'
 import { Archive } from '../../blocks/ArchiveBlock/config'
 import { BrevoSignup } from '../../blocks/BrevoSignup/config'
 import { BuildLogHero } from '../../blocks/BuildLogHero/config'
@@ -32,10 +32,10 @@ import {
 export const Pages: CollectionConfig<'pages'> = {
   slug: 'pages',
   access: {
-    create: authenticated,
-    delete: authenticated,
-    read: authenticatedOrPublished,
-    update: authenticated,
+    create: adminOnly,
+    delete: adminOnly,
+    read: adminOrPublished,
+    update: adminOnly,
   },
   // This config controls what's populated by default when a page is referenced
   // https://payloadcms.com/docs/queries/select#defaultpopulate-collection-config-property

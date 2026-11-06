@@ -4,6 +4,8 @@ import { redirectsPlugin } from '@payloadcms/plugin-redirects'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { searchPlugin } from '@payloadcms/plugin-search'
 import { Plugin } from 'payload'
+import { adminOnly } from '@/access/adminOnly'
+import { anyone } from '@/access/anyone'
 import { revalidateRedirects } from '@/hooks/revalidateRedirects'
 import { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
@@ -30,6 +32,8 @@ export const plugins: Plugin[] = [
   redirectsPlugin({
     collections: ['pages', 'posts'],
     overrides: {
+      // Plugin default lets any logged-in user (customers too) write redirects.
+      access: { read: anyone, create: adminOnly, update: adminOnly, delete: adminOnly },
       // @ts-expect-error - This is a valid override, mapped fields don't resolve to the same type
       fields: ({ defaultFields }) => {
         return defaultFields.map((field) => {
@@ -62,6 +66,7 @@ export const plugins: Plugin[] = [
       payment: false,
     },
     formOverrides: {
+      access: { read: anyone, create: adminOnly, update: adminOnly, delete: adminOnly },
       fields: ({ defaultFields }) => {
         return defaultFields.map((field) => {
           if ('name' in field && field.name === 'confirmationMessage') {
@@ -82,11 +87,16 @@ export const plugins: Plugin[] = [
         })
       },
     },
+    // Visitors submit forms; only admins read or change submissions.
+    formSubmissionOverrides: {
+      access: { create: anyone, read: adminOnly, update: adminOnly, delete: adminOnly },
+    },
   }),
   searchPlugin({
     collections: ['posts'],
     beforeSync: beforeSyncWithSearch,
     searchOverrides: {
+      access: { read: anyone, create: adminOnly, update: adminOnly, delete: adminOnly },
       fields: ({ defaultFields }) => {
         return [...defaultFields, ...searchFields]
       },

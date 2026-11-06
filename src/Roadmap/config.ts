@@ -1,9 +1,11 @@
 import type { GlobalConfig } from 'payload'
+import { adminOnly } from '@/access/adminOnly'
 
 export const Roadmap: GlobalConfig = {
   slug: 'roadmap',
   access: {
     read: () => true,
+    update: adminOnly,
   },
   fields: [
     {
