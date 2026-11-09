@@ -33,6 +33,11 @@ const EXTRA_TERMS_BY_SLUG: Record<string, { pl: string; en: string; href: string
     en: 'Course terms',
     href: 'https://security.devince.dev/regulamin.html',
   },
+  'audyt-z-omowieniem': {
+    pl: 'Regulamin usługi',
+    en: 'Service terms',
+    href: 'https://security.devince.dev/regulamin.html#audyt',
+  },
 }
 
 export type ConsentLink = { href: string; label: string }
