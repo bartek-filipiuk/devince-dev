@@ -5,6 +5,8 @@
 // will need either a Payload email adapter (Brevo SMTP) or a custom endpoint —
 // that is a B3/follow-up concern and is intentionally NOT handled here.
 
+import { ACCESS_LINK_DAYS, onboardingFor } from './purchaseOnboarding'
+
 const BREVO_URL = 'https://api.brevo.com/v3/smtp/email'
 
 export async function sendTransactionalEmail(args: {
@@ -117,7 +119,9 @@ export async function sendDownloadLinkEmail(args: {
   withdrawalConsentAt?: string
 }): Promise<string | null> {
   const locale = args.locale === 'en' ? 'en' : 'pl'
-  const consentLine = args.withdrawalConsentAt ? buildConsentLine(locale, args.withdrawalConsentAt) : ''
+  const consentLine = args.withdrawalConsentAt
+    ? buildConsentLine(locale, args.withdrawalConsentAt)
+    : ''
 
   const templateId = process.env.BREVO_DOWNLOAD_TEMPLATE_ID
   if (templateId) {
@@ -133,11 +137,11 @@ export async function sendDownloadLinkEmail(args: {
     locale === 'en'
       ? {
           subject: `Your purchase: ${args.productTitle} — download link`,
-          body: `<p>Thank you for purchasing <strong>${esc(args.productTitle)}</strong>.</p><p><a href="${esc(args.link)}">Download files</a></p>${installHint("en", args.link)}<p>The link expires after 7 days and has a download limit. If it expires — just reply to this email.</p>`,
+          body: `<p>Thank you for purchasing <strong>${esc(args.productTitle)}</strong>.</p><p><a href="${esc(args.link)}">Download files</a></p>${installHint('en', args.link)}<p>The link expires after 7 days and has a download limit. If it expires — just reply to this email.</p>`,
         }
       : {
           subject: `Twój zakup: ${args.productTitle} — link do pobrania`,
-          body: `<p>Dziękujemy za zakup <strong>${esc(args.productTitle)}</strong>.</p><p><a href="${esc(args.link)}">Pobierz pliki</a></p>${installHint("pl", args.link)}<p>Link wygaśnie po 7 dniach i ma limit pobrań. Jeśli wygaśnie — odpisz na tego maila.</p>`,
+          body: `<p>Dziękujemy za zakup <strong>${esc(args.productTitle)}</strong>.</p><p><a href="${esc(args.link)}">Pobierz pliki</a></p>${installHint('pl', args.link)}<p>Link wygaśnie po 7 dniach i ma limit pobrań. Jeśli wygaśnie — odpisz na tego maila.</p>`,
         }
 
   const res = await sendTransactionalEmail({
@@ -167,13 +171,13 @@ export async function sendProductUpdateEmail(args: {
     `<p>Cześć! Produkt, który kupiłeś — <strong>${esc(args.productTitle)}</strong> — ma nową wersję do pobrania.</p>` +
     noteBlock +
     `<p><a href="${esc(args.link)}">Pobierz najnowszą wersję</a></p>` +
-    installHint("pl", args.link) +
+    installHint('pl', args.link) +
     `<p style="font-size:13px;color:#555">Link wygaśnie po 7 dniach i ma limit pobrań. To wiadomość serwisowa dotycząca zakupionego produktu — jeśli nie chcesz takich powiadomień, odpisz na tego maila.</p>`
   const en =
     `<hr/><p>Hi! The product you purchased — <strong>${esc(args.productTitle)}</strong> — has a new version available.</p>` +
     noteBlock +
     `<p><a href="${esc(args.link)}">Download the latest version</a></p>` +
-    installHint("en", args.link) +
+    installHint('en', args.link) +
     `<p style="font-size:13px;color:#555">The link expires after 7 days and has a download limit. This is a service message about a product you purchased — to stop these, just reply to this email.</p>`
   const res = await sendTransactionalEmail({
     to: args.to,
@@ -200,14 +204,19 @@ export async function sendSellerSaleNotification(args: {
   amountCents?: number
   currency?: string
   buyerEmail: string
+  // Per-product checklist (purchaseOnboarding.ts), so the sale email says what to do now.
+  todo?: string[]
 }): Promise<void> {
   try {
-    const to = process.env.SELLER_NOTIFY_EMAIL ?? process.env.BREVO_SENDER_EMAIL ?? 'bartek@devince.dev'
+    const to =
+      process.env.SELLER_NOTIFY_EMAIL ?? process.env.BREVO_SENDER_EMAIL ?? 'bartek@devince.dev'
     const curr = (args.currency ?? 'pln').toUpperCase()
     let money = '—'
     if (typeof args.amountCents === 'number') {
       try {
-        money = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: curr }).format(args.amountCents / 100)
+        money = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: curr }).format(
+          args.amountCents / 100,
+        )
       } catch {
         money = `${(args.amountCents / 100).toFixed(2)} ${curr}`
       }
@@ -223,7 +232,16 @@ export async function sendSellerSaleNotification(args: {
     await sendTransactionalEmail({
       to,
       subject,
-      htmlContent: `<p>🎉 <strong>Nowa sprzedaż</strong></p><ul>${rows}</ul><p style="font-size:13px;color:#555">Szczegóły i pełna lista zamówień: panel admina (Download Grants).</p>`,
+      htmlContent:
+        `<p>🎉 <strong>Nowa sprzedaż</strong></p><ul>${rows}</ul>` +
+        (args.todo?.length
+          ? `<p><strong>Do zrobienia:</strong></p><ol>${args.todo.map((t) => `<li>${esc(t)}</li>`).join('')}</ol>`
+          : '') +
+        `<p style="font-size:13px;color:#555">${
+          args.surface === 'apps'
+            ? 'Szczegóły i pełna lista zamówień: panel admina (Download Grants).'
+            : 'Kupujący: panel admina, Users (filtr Purchases). Płatność i zwrot: Stripe, Payments.'
+        }</p>`,
     })
   } catch (err) {
     // Best-effort: an owner-notification failure must never break fulfillment.
@@ -243,6 +261,8 @@ export async function sendCourseAccessEmail(args: {
   // carries the durable-medium confirmation block. Absent for legacy / out-of-flow
   // purchases made before the consent gate existed.
   withdrawalConsentAt?: string
+  // Picks the per-product "what happens next" copy (purchaseOnboarding.ts).
+  program?: { slug?: string; title?: string }
 }) {
   // Course access mails are Polish-only for now (the courses surface is PL); the
   // consent block is built in PL to match. If/when EN courses ship, thread a
@@ -250,20 +270,38 @@ export async function sendCourseAccessEmail(args: {
   const locale: 'pl' | 'en' = 'pl'
   const base = process.env.NEXT_PUBLIC_COURSES_URL ?? 'https://courses.devince.dev'
   const link = `${base}/set-password?token=${args.token}${args.next ? `&next=${args.next}` : ''}`
-  const consentLine = args.withdrawalConsentAt ? buildConsentLine(locale, args.withdrawalConsentAt) : ''
+  const consentLine = args.withdrawalConsentAt
+    ? buildConsentLine(locale, args.withdrawalConsentAt)
+    : ''
+  const ob = onboardingFor(args.program?.slug, args.program?.title)
   const templateId = process.env.BREVO_COURSE_ACCESS_TEMPLATE_ID
-  if (templateId) {
+  // A product with its own "co dalej" always gets our copy; the Brevo template is the generic look.
+  if (templateId && ob.steps.length === 0) {
     return sendTransactionalEmail({
       to: args.to,
       templateId: Number(templateId),
       params: { activationLink: link, CONSENT: consentLine, LOCALE: locale },
     })
   }
+  const linkNote = args.isNew
+    ? `Link działa ${ACCESS_LINK_DAYS} dni. Jeśli wygaśnie, odpisz na tego maila, wyślę nowy.`
+    : `Masz już konto: możesz się zalogować jak zwykle albo ustawić nowe hasło tym linkiem (działa ${ACCESS_LINK_DAYS} dni).`
+  const steps = ob.steps.length
+    ? `<p style="margin:24px 0 8px"><strong>Co dalej</strong></p><ol style="padding-left:20px;margin:0">${ob.steps
+        .map((s) => `<li style="margin:0 0 8px">${esc(s)}</li>`)
+        .join('')}</ol>`
+    : ''
   return sendTransactionalEmail({
     to: args.to,
-    subject: 'Twój dostęp do kursu',
+    subject: ob.subject,
     htmlContent:
-      `<p>Dziękujemy za zakup. Ustaw hasło i wejdź do kursu:</p><p><a href="${esc(link)}">${esc(link)}</a></p>` +
+      `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#16191d;max-width:560px">` +
+      `<p>${esc(ob.lead)}</p>` +
+      `<p style="margin:24px 0"><a href="${esc(link)}" style="background:#d6262c;color:#ffffff;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:6px;display:inline-block">Ustaw hasło i wejdź</a></p>` +
+      `<p style="font-size:13px;color:#555">${esc(linkNote)}<br/>Jeśli przycisk nie działa, skopiuj adres: <a href="${esc(link)}">${esc(link)}</a></p>` +
+      steps +
+      `<p style="margin-top:24px">Pytanie albo coś się zmieniło? Odpisz na tego maila, czytam go sam.<br/>Bartek</p>` +
+      `</div>` +
       consentLine,
   })
 }

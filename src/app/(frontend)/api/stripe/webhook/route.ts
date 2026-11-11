@@ -5,6 +5,8 @@ import configPromise from '@payload-config'
 import { addProgramToPurchases } from '@/utilities/purchases'
 import { sendCourseAccessEmail, sendDownloadLinkEmail, sendSellerSaleNotification } from '@/utilities/brevo'
 import { fulfillAppPurchase } from '@/utilities/appsFulfillment'
+import { onboardingFor } from '@/utilities/purchaseOnboarding'
+import { markOrderRefunded, recordOrder } from '@/utilities/orders'
 import { notifyEvent } from '@/utilities/notify'
 
 // Lazy-init: constructing Stripe at module scope throws if STRIPE_SECRET_KEY is
@@ -239,6 +241,7 @@ export async function POST(req: NextRequest) {
       // post-purchase redirect slug, so capture it here.
       type PriceDoc = {
         slug?: string
+        title?: string
         priceCents?: unknown
         currency?: unknown
         stripePriceId?: unknown
@@ -300,103 +303,123 @@ export async function POST(req: NextRequest) {
       else if (cohortResult === 'error')
         console.error(`[stripe webhook] program ${programIdRaw}: przypisanie do kohorty nie powiodło się dla ${email}`)
 
-      // Observability: the grant above is durable — fire the sales-pulse ping.
-      // Best-effort (notifyEvent never throws); placed AFTER the grant so a
-      // failing log/Discord POST can never break or roll back access.
-      await notifyEvent('purchase', {
+      // Ledger row (never throws, own transaction). false = this session was
+      // already recorded (re-delivery / second checkout event): the grant above
+      // is idempotent, but the pings and emails below must not repeat.
+      const fresh = await recordOrder(payload, {
+        stripeSessionId: session.id,
         surface: 'courses',
-        item: `program ${programIdRaw}`,
-        amount: session.amount_total ?? undefined,
-        currency: session.currency ?? 'pln',
-        orderId: session.id,
+        item: programDoc?.slug,
+        title: programDoc?.title,
         email,
-      })
-      // Seller "you made a sale" email (best-effort, never throws).
-      await sendSellerSaleNotification({
-        surface: 'courses',
-        item: programDoc?.slug ?? `program ${programIdRaw}`,
-        amountCents: session.amount_total ?? undefined,
+        amountPaid: session.amount_total ?? undefined,
         currency: session.currency ?? undefined,
-        buyerEmail: email,
       })
-
-      // Newsletter opt-in (Part A): if the buyer ticked the newsletter box at
-      // checkout (metadata.newsletter==='true'), trigger Brevo's native double
-      // opt-in to add them to the list. Placed AFTER the durable grant + sales
-      // ping, exactly like notifyEvent: brevoDoubleOptin is best-effort and never
-      // throws, so it can never block, roll back, or break course access. No-ops
-      // entirely when BREVO_DOI_TEMPLATE_ID is unset (ships dark).
-      if (session.metadata?.newsletter === 'true') {
-        const { brevoDoubleOptin } = await import('@/utilities/brevoContacts')
-        await brevoDoubleOptin({
+      if (fresh) {
+        // Observability: the grant above is durable — fire the sales-pulse ping.
+        // Best-effort (notifyEvent never throws); placed AFTER the grant so a
+        // failing log/Discord POST can never break or roll back access.
+        await notifyEvent('purchase', {
+          surface: 'courses',
+          item: `program ${programIdRaw}`,
+          amount: session.amount_total ?? undefined,
+          currency: session.currency ?? 'pln',
+          orderId: session.id,
           email,
-          listId: Number(process.env.BREVO_LIST_ID),
-          templateId: process.env.BREVO_DOI_TEMPLATE_ID,
-          redirectionUrl: process.env.NEXT_PUBLIC_COURSES_URL ?? 'https://courses.devince.dev',
-          attributes: { SOURCE: 'purchase', PRODUCT: programDoc?.slug ?? String(programId), SURFACE: 'courses' },
         })
-      }
-
-      // Art. 38 pkt 13 consent timestamp, server-stamped at checkout creation by
-      // /api/courses/checkout. Absent for sessions created outside our flow (e.g.
-      // a hand-made Stripe Payment Link) — the email then omits the confirmation.
-      const withdrawalConsentAt = session.metadata?.withdrawalConsentAt || undefined
-      // terms-only (reservation) checkouts stamp termsConsentAt INSTEAD of a
-      // withdrawal waiver — a valid consent record, not a missing one.
-      const termsConsentAt = session.metadata?.termsConsentAt || undefined
-      // The legal gate lives at /api/courses/checkout (consent !== true → 400), so
-      // every course session WE create carries one of the stamps. A session
-      // reaching here without either was created outside our flow — flag it: that
-      // purchase has NO durable-medium consent record (mirror the apps branch warning).
-      if (!withdrawalConsentAt && !termsConsentAt) {
-        console.warn(
-          `[stripe webhook] course purchase (program ${programIdRaw}, session ${session.id}) has no consent stamp (withdrawalConsentAt/termsConsentAt) — created outside /api/courses/checkout; no consent recorded`,
-        )
-      }
-
-      // Email delivery is best-effort and MUST NOT cause a Stripe retry storm or
-      // duplicate emails. If Brevo (or token generation) fails, log and CONTINUE
-      // so the event is still marked processed below. The access grant already
-      // succeeded; the customer can also recover access via /forgot-password.
-      try {
-        // Resolve the program slug for the post-purchase redirect so the buyer
-        // lands on their course right after setting a password. Reuse the
-        // program doc already loaded above for price verification (no second
-        // fetch). Best-effort: a missing slug must not block the access mail —
-        // the grant already succeeded.
-        let next: string | undefined
-        const slug = programDoc?.slug
-        if (slug) next = `/${slug}`
-
-        // Generate a password-reset token WITHOUT sending Payload's own email
-        // (we deliver the access link via Brevo). In Payload 3.67,
-        // forgotPassword({ disableEmail: true }) returns the raw token string,
-        // which is stored verbatim in `resetPasswordToken` and accepted as-is by
-        // POST /api/users/reset-password (the /set-password page) — verified
-        // against the installed Payload source.
-        const token = (await payload.forgotPassword({
-          collection: 'users',
-          data: { email },
-          disableEmail: true,
-        })) as unknown as string
-
-        await sendCourseAccessEmail({
-          to: email,
-          token,
-          isNew,
-          programId: String(programId),
-          next,
-          withdrawalConsentAt,
+        // Seller "you made a sale" email (best-effort, never throws).
+        await sendSellerSaleNotification({
+          surface: 'courses',
+          item: programDoc?.slug ?? `program ${programIdRaw}`,
+          amountCents: session.amount_total ?? undefined,
+          currency: session.currency ?? undefined,
+          buyerEmail: email,
+          todo: onboardingFor(programDoc?.slug).sellerTodo,
         })
-      } catch (err) {
-        console.error(
-          `[stripe webhook] access email failed for ${email} (program ${programId}); grant succeeded, continuing:`,
-          err,
-        )
-        // Observability: grant is OK, only the durable-medium email failed —
-        // ping so the owner can recover delivery manually. Best-effort.
-        await notifyEvent('email_failed', { kind: 'set-password', orderId: session.id, email })
-      }
+
+        // Newsletter opt-in (Part A): if the buyer ticked the newsletter box at
+        // checkout (metadata.newsletter==='true'), trigger Brevo's native double
+        // opt-in to add them to the list. Placed AFTER the durable grant + sales
+        // ping, exactly like notifyEvent: brevoDoubleOptin is best-effort and never
+        // throws, so it can never block, roll back, or break course access. No-ops
+        // entirely when BREVO_DOI_TEMPLATE_ID is unset (ships dark).
+        if (session.metadata?.newsletter === 'true') {
+          const { brevoDoubleOptin } = await import('@/utilities/brevoContacts')
+          await brevoDoubleOptin({
+            email,
+            listId: Number(process.env.BREVO_LIST_ID),
+            templateId: process.env.BREVO_DOI_TEMPLATE_ID,
+            redirectionUrl: process.env.NEXT_PUBLIC_COURSES_URL ?? 'https://courses.devince.dev',
+            attributes: { SOURCE: 'purchase', PRODUCT: programDoc?.slug ?? String(programId), SURFACE: 'courses' },
+          })
+        }
+
+        // Art. 38 pkt 13 consent timestamp, server-stamped at checkout creation by
+        // /api/courses/checkout. Absent for sessions created outside our flow (e.g.
+        // a hand-made Stripe Payment Link) — the email then omits the confirmation.
+        const withdrawalConsentAt = session.metadata?.withdrawalConsentAt || undefined
+        // terms-only (reservation) checkouts stamp termsConsentAt INSTEAD of a
+        // withdrawal waiver — a valid consent record, not a missing one.
+        const termsConsentAt = session.metadata?.termsConsentAt || undefined
+        // The legal gate lives at /api/courses/checkout (consent !== true → 400), so
+        // every course session WE create carries one of the stamps. A session
+        // reaching here without either was created outside our flow — flag it: that
+        // purchase has NO durable-medium consent record (mirror the apps branch warning).
+        if (!withdrawalConsentAt && !termsConsentAt) {
+          console.warn(
+            `[stripe webhook] course purchase (program ${programIdRaw}, session ${session.id}) has no consent stamp (withdrawalConsentAt/termsConsentAt) — created outside /api/courses/checkout; no consent recorded`,
+          )
+        }
+
+        // Email delivery is best-effort and MUST NOT cause a Stripe retry storm or
+        // duplicate emails. If Brevo (or token generation) fails, log and CONTINUE
+        // so the event is still marked processed below. The access grant already
+        // succeeded; the customer can also recover access via /forgot-password.
+        try {
+          // Resolve the program slug for the post-purchase redirect so the buyer
+          // lands on their course right after setting a password. Reuse the
+          // program doc already loaded above for price verification (no second
+          // fetch). Best-effort: a missing slug must not block the access mail —
+          // the grant already succeeded.
+          let next: string | undefined
+          const slug = programDoc?.slug
+          if (slug) next = `/${slug}`
+
+          // Generate a password-reset token WITHOUT sending Payload's own email
+          // (we deliver the access link via Brevo). In Payload 3.67,
+          // forgotPassword({ disableEmail: true }) returns the raw token string,
+          // which is stored verbatim in `resetPasswordToken` and accepted as-is by
+          // POST /api/users/reset-password (the /set-password page) — verified
+          // against the installed Payload source.
+          const token = (await payload.forgotPassword({
+            collection: 'users',
+            data: { email },
+            disableEmail: true,
+          })) as unknown as string
+
+          await sendCourseAccessEmail({
+            to: email,
+            token,
+            isNew,
+            programId: String(programId),
+            next,
+            withdrawalConsentAt,
+            program: { slug: programDoc?.slug, title: programDoc?.title },
+          })
+        } catch (err) {
+          console.error(
+            `[stripe webhook] access email failed for ${email} (program ${programId}); grant succeeded, continuing:`,
+            err,
+          )
+          // Observability: grant is OK, only the durable-medium email failed —
+          // ping so the owner can recover delivery manually. Best-effort.
+          await notifyEvent('email_failed', { kind: 'set-password', orderId: session.id, email })
+        }
+      } else {
+        // Already in the ledger: grant re-applied, notifications skipped. If the
+        // buyer says no email arrived, resend the access link by hand.
+        console.warn(`[stripe webhook] session ${session.id} already recorded; skipped purchase emails/pings`)
+      } // end if (fresh)
       } // end if (reconciled)
     }
 
@@ -462,6 +485,14 @@ export async function POST(req: NextRequest) {
         withdrawalConsentAt,
         // Purchase record for the sales panel (which license, how much, currency).
         tier: typeof session.metadata?.tier === 'string' ? session.metadata.tier : undefined,
+        amountPaid: session.amount_total ?? undefined,
+        currency: session.currency ?? undefined,
+      })
+      await recordOrder(payload, {
+        stripeSessionId: session.id,
+        surface: 'apps',
+        item: productDoc?.slug,
+        email,
         amountPaid: session.amount_total ?? undefined,
         currency: session.currency ?? undefined,
       })
@@ -586,6 +617,14 @@ export async function POST(req: NextRequest) {
         await notifyEvent('email_failed', { kind: 'ndqs-enroll', orderId: session.id, email })
       } else {
         // Enroll succeeded → the NDQS access grant is durable. Sales-pulse ping.
+        await recordOrder(payload, {
+          stripeSessionId: session.id,
+          surface: 'ndqs',
+          item: `course ${ndqsCourseId}`,
+          email,
+          amountPaid: session.amount_total ?? undefined,
+          currency: session.currency ?? undefined,
+        })
         await notifyEvent('purchase', {
           surface: 'ndqs',
           item: `course ${ndqsCourseId}`,
@@ -652,8 +691,21 @@ export async function POST(req: NextRequest) {
         const email =
           session?.customer_details?.email ?? session?.customer_email ?? undefined
 
+        if (session?.id) await markOrderRefunded(payload, session.id, charge.amount_refunded)
+
+        // A PARTIAL refund (e.g. the sprint price returned on an audit order) keeps
+        // access: revoke only when the whole charge is refunded.
+        const fullRefund = charge.refunded === true
+        if (!fullRefund) {
+          await notifyEvent('refund', {
+            item: `częściowy zwrot ${(charge.amount_refunded / 100).toFixed(2)} ${charge.currency.toUpperCase()}, dostęp zostaje`,
+            orderId: session?.id,
+            email,
+          })
+        }
+
         // ── 1) NDQS revoke (the original durable revoke — runs first) ───────
-        if (ndqsCourseId && email) {
+        if (fullRefund && ndqsCourseId && email) {
           const { revokeNdqsByEmail } = await import('@/utilities/ndqsRevoke')
           const r = await revokeNdqsByEmail({ email, courseId: ndqsCourseId })
           if (!r.ok) {
@@ -671,7 +723,7 @@ export async function POST(req: NextRequest) {
         // buyer's purchases. Best-effort + idempotent — removing an id that is
         // already absent is a no-op. Isolated try/catch so a failure here can
         // never break the NDQS revoke above nor the stripe-events write below.
-        if (programIdRaw && email) {
+        if (fullRefund && programIdRaw && email) {
           try {
             const programId = Number.isNaN(Number(programIdRaw))
               ? programIdRaw
@@ -718,7 +770,7 @@ export async function POST(req: NextRequest) {
         // so the download link stops working. Idempotent — a missing grant is a
         // no-op. We EXPIRE (set expiresAt to the past) rather than delete so the
         // refund leaves an audit trail on the grant row. Isolated best-effort.
-        if (productIdRaw && session?.id) {
+        if (fullRefund && productIdRaw && session?.id) {
           try {
             const grants = await payload.find({
               collection: 'download-grants',

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { sendTransactionalEmail, sendDownloadLinkEmail, sendCourseAccessEmail } from './brevo'
+import { sendTransactionalEmail, sendDownloadLinkEmail, sendCourseAccessEmail, sendSellerSaleNotification } from './brevo'
 
 beforeEach(() => {
   process.env.BREVO_API_KEY = 'k'
@@ -141,5 +141,52 @@ describe('sendCourseAccessEmail', () => {
     expect(body.templateId).toBe(99)
     expect(body.params.activationLink).toContain('next=/kurs')
     expect(String(body.params.CONSENT).toLowerCase()).toContain('odstąp')
+  })
+})
+
+describe('purchase onboarding copy', () => {
+  afterEach(() => {
+    delete process.env.BREVO_COURSE_ACCESS_TEMPLATE_ID
+  })
+
+  const send = async (args: Partial<Parameters<typeof sendCourseAccessEmail>[0]> = {}) => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ messageId: '1' }) })
+    vi.stubGlobal('fetch', fetchMock)
+    await sendCourseAccessEmail({ to: 'a@b.c', token: 'tok', isNew: true, programId: '22', ...args })
+    return JSON.parse(fetchMock.mock.calls[0][1].body as string)
+  }
+
+  it('a service product tells the buyer what happens next, even when a Brevo template is set', async () => {
+    process.env.BREVO_COURSE_ACCESS_TEMPLATE_ID = '99'
+    const body = await send({ program: { slug: 'audyt-z-omowieniem', title: 'Audyt z omówieniem' } })
+    expect(body.templateId).toBeUndefined()
+    expect(body.subject).toContain('co dalej')
+    expect(body.htmlContent).toContain('Co dalej')
+    expect(body.htmlContent).toContain('2 dni roboczych')
+    expect(body.htmlContent).toContain('set-password?token=tok')
+    expect(body.htmlContent).toContain('7 dni')
+  })
+
+  it('any other program gets the generic copy with its title, escaped', async () => {
+    const body = await send({ program: { slug: 'x', title: 'Kurs <b>' } })
+    expect(body.subject).toBe('Masz dostęp: Kurs <b>')
+    expect(body.htmlContent).toContain('Kurs &lt;b&gt;')
+    expect(body.htmlContent).not.toContain('Co dalej')
+  })
+
+  it('an existing account is told it can just log in', async () => {
+    const body = await send({ isNew: false })
+    expect(body.htmlContent).toContain('Masz już konto')
+  })
+
+  it('the seller email lists the product checklist; courses point at Users, not Download Grants', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) })
+    vi.stubGlobal('fetch', fetchMock)
+    await sendSellerSaleNotification({ surface: 'courses', item: 'audyt-z-omowieniem', buyerEmail: 'a@b.c', todo: ['Zrób <to>'] })
+    const html = JSON.parse(fetchMock.mock.calls[0][1].body as string).htmlContent as string
+    expect(html).toContain('Do zrobienia')
+    expect(html).toContain('Zrób &lt;to&gt;')
+    expect(html).toContain('Users')
+    expect(html).not.toContain('Download Grants')
   })
 })

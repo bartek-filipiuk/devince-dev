@@ -440,7 +440,7 @@ const translations = {
     'courses.auth.startCourse': 'Rozpocznij kurs',
     'courses.auth.activating': 'Aktywowanie…',
     'courses.auth.passwordMismatch': 'Hasła nie są identyczne.',
-    'courses.auth.invalidToken': 'Link aktywacyjny wygasł lub jest nieprawidłowy.',
+    'courses.auth.invalidToken': 'Link wygasł albo został już użyty. Napisz na bartek@devince.dev, wyślę nowy.',
     'courses.auth.missingToken': 'Nieprawidłowy lub brakujący link aktywacyjny.',
     'courses.auth.sendNewLink': 'Wyślij nowy link',
     'courses.auth.genericError': 'Coś poszło nie tak. Spróbuj ponownie.',
@@ -448,7 +448,7 @@ const translations = {
     'courses.auth.forgotPasswordTitle': 'Resetuj hasło',
     'courses.auth.sendLink': 'Wyślij link',
     'courses.auth.sending': 'Wysyłanie…',
-    'courses.auth.resetSent': 'Jeśli konto istnieje, wyślemy link do zresetowania hasła.',
+    'courses.auth.resetSent': 'Nowy link do hasła wysyłam ręcznie: napisz na bartek@devince.dev z adresu użytego przy zakupie.',
     'courses.auth.backToLogin': 'Wróć do logowania',
 
     // Not found
@@ -912,7 +912,7 @@ const translations = {
     'courses.auth.startCourse': 'Start the course',
     'courses.auth.activating': 'Activating…',
     'courses.auth.passwordMismatch': 'Passwords do not match.',
-    'courses.auth.invalidToken': 'This activation link has expired or is invalid.',
+    'courses.auth.invalidToken': 'This link has expired or was already used. Email bartek@devince.dev for a new one.',
     'courses.auth.missingToken': 'Invalid or missing activation link.',
     'courses.auth.sendNewLink': 'Send a new link',
     'courses.auth.genericError': 'Something went wrong. Please try again.',
@@ -920,7 +920,7 @@ const translations = {
     'courses.auth.forgotPasswordTitle': 'Reset your password',
     'courses.auth.sendLink': 'Send link',
     'courses.auth.sending': 'Sending…',
-    'courses.auth.resetSent': 'If an account exists, we will send a password reset link.',
+    'courses.auth.resetSent': 'New password links are sent by hand: email bartek@devince.dev from the address you bought with.',
     'courses.auth.backToLogin': 'Back to sign in',
 
     // Not found

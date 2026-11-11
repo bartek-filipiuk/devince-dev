@@ -43,7 +43,8 @@ secrets live in Coolify, not in the repo.
   `DownloadGrants` + `ClaimGrants` (apps store), `Users` (auth + `purchases`),
   `Pages`/`Posts`/`Projects` + `Categories.ts`, `Media.ts` + private
   `AppAssets`/`CourseAssets`, `StripeEvents` (webhook idempotency),
-  `LessonProgress.ts`; tryb kohortowy (2026-07-18, `docs/COHORT-MODE.md`):
+  `LessonProgress.ts`, `Orders` (księga opłaconych zamówień ze wszystkich
+  powierzchni, pisze ją tylko webhook przez `src/utilities/orders.ts`); tryb kohortowy (2026-07-18, `docs/COHORT-MODE.md`):
   `Cohorts` + `CohortMembers` + `Checkins` + `CourseMeasurements` +
   `CourseInvites` + `AgentApiKeys` (klucze naturalne = unikalne indeksy DB).
 - Globals: `src/Header/`, `src/Footer/`, `src/SiteSettings/`, `src/Changelog/`,
@@ -168,6 +169,12 @@ secrets live in Coolify, not in the repo.
 - `cohortConfig.programLength` NIE może być `required: true` (grupa stałaby
   się wymagana w generowanych typach i psuła create self-paced) — wymagalność
   w trybie cohort egzekwuje `validate` na polu.
+- Brak email adaptera: publiczny `/api/users/forgot-password` jest ZABLOKOWANY
+  (`blockUndeliverableReset` w `Users`), bo nadpisywał ważny token z maila
+  zakupowego tokenem, którego nikt nie dostaje. Token mintuje tylko kod serwera z
+  `disableEmail: true` (webhook, claim); ważny `ACCESS_LINK_DAYS` = 7 dni.
+- Zwrot w Stripe: dostęp odbiera TYLKO pełny zwrot (`charge.refunded === true`);
+  częściowy zostawia dostęp i stempluje `orders.refundedAmount`.
 - `/api/newsletter/subscribe` wymaga tokenu Cloudflare Turnstile, gdy jest
   `TURNSTILE_SECRET_KEY` (bez klucza przepuszcza). Nowy formularz zapisu =
   `useTurnstile()` z `src/components/Turnstile/` i `turnstileToken` w body;
@@ -187,7 +194,10 @@ secrets live in Coolify, not in the repo.
    theme.css semantic classes.
 5. Content that agents should manage → extend `api/external/` + mirror a tool in
    `mcp-server/src/tools/` + update `docs/EXTERNAL-CONTENT-API.md`.
-6. Colocate `*.test.ts`; graduate invariants — finished work leaves a test or a
+6. New paid program, especially a SERVICE (someone acts after payment): add its
+   buyer "co dalej" copy and seller checklist in `src/utilities/purchaseOnboarding.ts`
+   (keyed by slug; others get the default). Repo is public: no private links there.
+7. Colocate `*.test.ts`; graduate invariants — finished work leaves a test or a
    `scripts/lint-security.mjs` rule that CI re-verifies, not just a green
    session. Run Weryfikacja below before claiming done.
 

@@ -80,6 +80,7 @@ export interface Config {
     users: User;
     'stripe-events': StripeEvent;
     'download-grants': DownloadGrant;
+    orders: Order;
     'claim-grants': ClaimGrant;
     'lesson-progress': LessonProgress;
     cohorts: Cohort;
@@ -119,6 +120,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     'stripe-events': StripeEventsSelect<false> | StripeEventsSelect<true>;
     'download-grants': DownloadGrantsSelect<false> | DownloadGrantsSelect<true>;
+    orders: OrdersSelect<false> | OrdersSelect<true>;
     'claim-grants': ClaimGrantsSelect<false> | ClaimGrantsSelect<true>;
     'lesson-progress': LessonProgressSelect<false> | LessonProgressSelect<true>;
     cohorts: CohortsSelect<false> | CohortsSelect<true>;
@@ -1650,6 +1652,36 @@ export interface DownloadGrant {
   createdAt: string;
 }
 /**
+ * Wszystkie opłacone zamówienia (kwoty w groszach). Zapisuje je webhook Stripe; edytujesz tylko notatki.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
+  id: number;
+  stripeSessionId: string;
+  surface: 'courses' | 'apps' | 'ndqs';
+  /**
+   * Slug produktu w chwili zakupu.
+   */
+  item?: string | null;
+  title?: string | null;
+  email: string;
+  /**
+   * W groszach/centach (59000 = 590,00).
+   */
+  amountPaid?: number | null;
+  currency?: string | null;
+  refundedAt?: string | null;
+  /**
+   * Suma zwrotów w groszach.
+   */
+  refundedAmount?: number | null;
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "claim-grants".
  */
@@ -2070,6 +2102,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'download-grants';
         value: number | DownloadGrant;
+      } | null)
+    | ({
+        relationTo: 'orders';
+        value: number | Order;
       } | null)
     | ({
         relationTo: 'claim-grants';
@@ -3025,6 +3061,24 @@ export interface DownloadGrantsSelect<T extends boolean = true> {
   emailSentAt?: T;
   withdrawalConsentAt?: T;
   stripeSessionId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders_select".
+ */
+export interface OrdersSelect<T extends boolean = true> {
+  stripeSessionId?: T;
+  surface?: T;
+  item?: T;
+  title?: T;
+  email?: T;
+  amountPaid?: T;
+  currency?: T;
+  refundedAt?: T;
+  refundedAmount?: T;
+  notes?: T;
   updatedAt?: T;
   createdAt?: T;
 }

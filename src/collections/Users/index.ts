@@ -1,6 +1,22 @@
 import type { CollectionConfig } from 'payload'
 
 import { adminOnlyField } from '../../access/adminOnly'
+import { APIError } from 'payload'
+import type { CollectionBeforeOperationHook } from 'payload'
+import { ACCESS_LINK_DAYS } from '../../utilities/purchaseOnboarding'
+
+/**
+ * No email adapter: a public POST /api/users/forgot-password would only REPLACE
+ * the buyer's valid set-password token with one nobody receives (anyone knowing
+ * the email could lock a buyer out). Only server code that delivers the token
+ * itself (disableEmail: true: purchase webhook, claims) may mint one.
+ * Remove when a Brevo email adapter + reset email exist.
+ */
+export const blockUndeliverableReset: CollectionBeforeOperationHook = ({ args, operation }) => {
+  if (operation === 'forgotPassword' && (args as { disableEmail?: boolean }).disableEmail !== true)
+    throw new APIError('Password reset by email is not available.', 403)
+  return args
+}
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -23,7 +39,10 @@ export const Users: CollectionConfig = {
     defaultColumns: ['name', 'email'],
     useAsTitle: 'name',
   },
-  auth: true,
+  // The only reset tokens buyers get arrive in the purchase/claim email (no email
+  // adapter). Payload's 1 h default locked out anyone who opened it later.
+  auth: { forgotPassword: { expiration: ACCESS_LINK_DAYS * 24 * 60 * 60 * 1000 } },
+  hooks: { beforeOperation: [blockUndeliverableReset] },
   fields: [
     { name: 'name', type: 'text' },
     {

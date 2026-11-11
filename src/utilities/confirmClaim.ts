@@ -98,14 +98,16 @@ export async function confirmClaim(
   // Best-effort email — the purchases grant above is durable.
   try {
     let next: string | undefined
+    let program: { slug?: string; title?: string } | undefined
     try {
-      const program = (await payload.findByID({
+      const doc = (await payload.findByID({
         collection: 'program',
         id: Number.isNaN(Number(programId)) ? programId : Number(programId),
         depth: 0,
         overrideAccess: true,
-      })) as { slug?: string } | null
-      if (program?.slug) next = `/${program.slug}`
+      })) as { slug?: string; title?: string } | null
+      if (doc?.slug) next = `/${doc.slug}`
+      program = doc ?? undefined
     } catch {
       /* slug is a nicety; a missing one must not block the access mail */
     }
@@ -115,6 +117,7 @@ export async function confirmClaim(
       isNew,
       programId: String(programId),
       next,
+      program,
     })
   } catch (err) {
     console.error(
