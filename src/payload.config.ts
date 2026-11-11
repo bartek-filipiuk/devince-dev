@@ -17,6 +17,7 @@ import { CourseMeasurements } from './collections/CourseMeasurements'
 import { LessonProgress } from './collections/LessonProgress'
 import { CourseAssets } from './collections/CourseAssets'
 import { DownloadGrants } from './collections/DownloadGrants'
+import { Orders } from './collections/Orders'
 import { Media } from './collections/Media'
 import { Lessons } from './collections/Lessons'
 import { Pages } from './collections/Pages'
@@ -111,6 +112,7 @@ export default buildConfig({
     Users,
     StripeEvents,
     DownloadGrants,
+    Orders,
     ClaimGrants,
     LessonProgress,
     Cohorts,

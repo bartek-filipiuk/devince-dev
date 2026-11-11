@@ -110,7 +110,12 @@ function completedEvent(session: Record<string, unknown>, id = 'evt_1') {
 }
 
 function refundedEvent(charge: Record<string, unknown>, id = 'evt_refund_1') {
-  return { id, type: 'charge.refunded', data: { object: charge } }
+  // Default: a FULL refund (only full refunds revoke access).
+  return {
+    id,
+    type: 'charge.refunded',
+    data: { object: { refunded: true, amount_refunded: 0, currency: 'pln', ...charge } },
+  }
 }
 
 function asyncSucceededEvent(session: Record<string, unknown>, id = 'evt_async_ok') {
@@ -156,11 +161,13 @@ function appsSession(over: Record<string, unknown> = {}): Record<string, unknown
 function setFind(opts: {
   user?: Record<string, unknown> | null
   grant?: Record<string, unknown> | null
+  order?: Record<string, unknown> | null
 }) {
   find.mockImplementation(async ({ collection }: { collection: string }) => {
     if (collection === 'stripe-events') return { docs: [] }
     if (collection === 'users') return { docs: opts.user ? [opts.user] : [] }
     if (collection === 'download-grants') return { docs: opts.grant ? [opts.grant] : [] }
+    if (collection === 'orders') return { docs: opts.order ? [opts.order] : [] }
     return { docs: [] }
   })
 }
@@ -848,5 +855,67 @@ describe('seller sale notification', () => {
 
     expect(res.status).toBe(200)
     expect(sendSellerSaleNotification).not.toHaveBeenCalled()
+  })
+})
+
+describe('orders ledger', () => {
+  it('a paid course purchase writes one order row with slug, title and amount', async () => {
+    const { POST } = await import('./route')
+    setFind({ user: { id: 5, email: BUYER, purchases: [] } })
+    setFindByID({ 'program:16': { ...PROGRAM_16, title: 'Kurs' } })
+    stageEvent(
+      completedEvent({
+        id: 'cs_new',
+        payment_status: 'paid',
+        amount_total: 4700,
+        currency: 'pln',
+        customer_details: { email: BUYER },
+        metadata: { programId: '16' },
+      }),
+    )
+    await POST(makeReq())
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'orders',
+        data: expect.objectContaining({ stripeSessionId: 'cs_new', item: 'kurs', title: 'Kurs', amountPaid: 4700, surface: 'courses' }),
+      }),
+    )
+    expect(sendCourseAccessEmail).toHaveBeenCalledOnce()
+  })
+
+  it('a session already in the ledger keeps the grant but sends no second emails', async () => {
+    const { POST } = await import('./route')
+    setFind({ user: { id: 5, email: BUYER, purchases: [] }, order: { id: 1, stripeSessionId: 'cs_dup' } })
+    setFindByID({ 'program:16': PROGRAM_16 })
+    stageEvent(
+      completedEvent({
+        id: 'cs_dup',
+        payment_status: 'paid',
+        amount_total: 4700,
+        currency: 'pln',
+        customer_details: { email: BUYER },
+        metadata: { programId: '16' },
+      }, 'evt_second'),
+    )
+    await POST(makeReq())
+    expect(update).toHaveBeenCalledWith(expect.objectContaining({ collection: 'users' }))
+    expect(sendCourseAccessEmail).not.toHaveBeenCalled()
+    expect(sendSellerSaleNotification).not.toHaveBeenCalled()
+  })
+
+  it('a PARTIAL refund keeps access and stamps the order', async () => {
+    const { POST } = await import('./route')
+    setFind({ user: { id: 5, email: BUYER, purchases: [22] }, order: { id: 1, stripeSessionId: 'cs_audit' } })
+    sessionsList.mockResolvedValue({
+      data: [{ id: 'cs_audit', customer_details: { email: BUYER }, metadata: { programId: '22' } }],
+    })
+    stageEvent(refundedEvent({ payment_intent: 'pi_p', refunded: false, amount_refunded: 24900 }))
+    const res = await POST(makeReq())
+    expect(res.status).toBe(200)
+    expect(update).not.toHaveBeenCalledWith(expect.objectContaining({ collection: 'users' }))
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({ collection: 'orders', id: 1, data: expect.objectContaining({ refundedAmount: 24900 }) }),
+    )
+    expect(notifyEvent).toHaveBeenCalledWith('refund', expect.objectContaining({ item: expect.stringContaining('częściowy') }))
   })
 })
